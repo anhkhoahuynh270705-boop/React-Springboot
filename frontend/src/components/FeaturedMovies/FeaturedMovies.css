@@ -1,0 +1,95 @@
+.featured-movies {
+  padding: 2rem 0 4rem 0;
+  background: #f8fafc;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.info-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #ffa726;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(255, 167, 38, 0.3);
+}
+
+.info-icon {
+  color: #333;
+  flex-shrink: 0;
+}
+
+.banner-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.movies-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 0;
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.no-movies {
+  text-align: center;
+  padding: 3rem 0;
+}
+
+.no-movies p {
+  font-size: 1.1rem;
+  color: #6b7280;
+  margin: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .featured-movies {
+    padding: 1rem 0 2rem 0;
+  }
+  
+  .container {
+    padding: 0 1rem;
+  }
+  
+  .info-banner {
+    padding: 14px 16px;
+    margin-bottom: 1.5rem;
+  }
+  
+  .banner-text {
+    font-size: 14px;
+  }
+  
+  .movies-grid {
+    max-width: 600px;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-banner {
+    padding: 12px 14px;
+    margin-bottom: 1rem;
+  }
+  
+  .banner-text {
+    font-size: 13px;
+  }
+  
+  .movies-grid {
+    max-width: 500px;
+    gap: 1rem;
+  }
+}

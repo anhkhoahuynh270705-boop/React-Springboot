@@ -1,0 +1,64 @@
+package com.example.demo.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.demo.model.Product;
+import com.example.demo.repository.ProductRepository;
+
+@RestController
+@RequestMapping("/api/products")
+@CrossOrigin(origins = "*") 
+public class ProductController {
+
+    @Autowired
+    private ProductRepository productRepository;
+
+    @GetMapping
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+
+    @PostMapping
+    public Product createProduct(@RequestBody Product product) {
+        return productRepository.save(product);
+    }
+
+    @GetMapping("/{id}")
+    public Product getProductById(@PathVariable String id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Can not found ID product: " + id));
+    } 
+
+        // Chỉnh sửa sản phẩm từ postcode
+        @PutMapping("/postcode/{postcode}")
+        public Product updateProductByPostcode(@PathVariable String postcode, @RequestBody Product product) {
+        Product existingProduct = productRepository.findAll().stream()
+            .filter(p -> postcode.equals(p.postcode))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Không tìm thấy sản phẩm với postcode: " + postcode));
+
+        product.id = existingProduct.id;
+        return productRepository.save(product);
+        }
+
+        // Xóa sản phẩm theo id
+        @DeleteMapping("/{id}")
+        public void deleteProduct(@PathVariable String id) {
+            if (!productRepository.existsById(id)) {
+                throw new RuntimeException("Không tìm thấy sản phẩm với id: " + id);
+            }
+            productRepository.deleteById(id);
+        }
+    
+}

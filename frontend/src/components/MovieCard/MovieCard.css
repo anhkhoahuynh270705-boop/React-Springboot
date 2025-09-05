@@ -1,0 +1,227 @@
+/* ===== MOVIE CARD COMPONENT STYLES ===== */
+/* Professional Movie Card with Enhanced Design */
+
+.movie-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  gap: 0;
+  min-height: 280px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.movie-card-image {
+  position: relative;
+  width: 200px;
+  height: auto;
+  flex-shrink: 0;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  margin: 16px;
+  overflow: hidden;
+}
+
+.movie-card-image img {
+  width: 100%;
+  height: 100%;
+  min-height: 248px;
+  max-height: 248px;
+  border-radius: 8px;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+
+.movie-card-content {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: flex-start;
+}
+
+.movie-card .movie-title {
+  font-size: 1.3rem !important;
+  font-weight: 800 !important;
+  margin: 0 0 6px 0 !important;
+  line-height: 1.2 !important;
+  color: #1f2937 !important;
+}
+
+.movie-english-title {
+  font-size: 0.9rem;
+  color: #6b7280;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.movie-rating-format {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 6px;
+}
+
+.rating-badge {
+  background: #3b82f6;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.format-text {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
+.movie-card .movie-meta {
+  display: flex;
+  gap: 24px;
+  margin: 6px 0;
+}
+
+.movie-card .meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.movie-card .meta-item svg {
+  color: #9ca3af;
+}
+
+.movie-card .movie-genre {
+  color: #6b7280 !important;
+  font-size: 0.9rem !important;
+  margin: 6px 0 !important;
+  font-weight: 500 !important;
+}
+
+.trailer-link {
+  margin: 6px 0;
+}
+
+.btn-trailer {
+  display: inline-block;
+  color: white;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 10px 20px;
+  background: #1f2937 !important;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.trailer-btn:hover {
+  background: #374151;
+  transform: translateY(-1px);
+}
+
+.movie-card .showtimes-section {
+  margin-top: 8px;
+}
+
+.movie-card .showtimes-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  color: #374151 !important;
+  margin: 0 0 10px 0 !important;
+}
+
+.movie-card .showtimes-grid {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px !important;
+}
+
+.movie-card .showtime-btn {
+  background: #f3f4f6 !important;
+  border-color: 1px solid #12263f !important;
+  color: #374151 !important;
+  padding: 12px 16px !important;
+  border-radius: 8px !important;
+  font-size: 0.9rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  text-align: center !important;
+  min-height: 44px !important;
+  min-width: 80px !important;
+  white-space: nowrap !important;
+}
+
+.movie-card .showtime-btn:hover {
+  background-color: #12263f !important;
+  border-color: #12263f !important;
+  color: white !important;
+}
+
+.showtimes-loading {
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+}
+
+.no-showtimes {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .movie-card {
+    flex-direction: column !important;
+    min-height: auto;
+    max-width: 100%;
+  }
+  
+  .movie-card-image {
+    width: 100%;
+    height: 200px;
+  }
+  
+  .movie-card-image img {
+    min-height: 200px;
+    max-height: 200px;
+  }
+  
+  .movie-card-content {
+    padding: 20px;
+    gap: 12px;
+  }
+  
+  .movie-card .showtimes-grid {
+    flex-direction: row !important;
+    gap: 8px !important;
+  }
+  
+  .movie-card .showtime-btn {
+    padding: 10px 12px !important;
+    min-height: 40px !important;
+    min-width: 70px !important;
+    font-size: 0.85rem !important;
+  }
+}

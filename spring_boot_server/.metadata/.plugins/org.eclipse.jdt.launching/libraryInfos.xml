@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<libraryInfos>
+    <libraryInfo home="C:\Users\Asus\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_21.0.8.v20250724-1412" version="21.0.8">
+        <bootpath>
+            <entry path="null"/>
+        </bootpath>
+        <extensionDirs>
+            <entry path="null"/>
+        </extensionDirs>
+        <endorsedDirs>
+            <entry path="null"/>
+        </endorsedDirs>
+    </libraryInfo>
+    <libraryInfo home="C:\Program Files\Java\jre7" version="1.7.0_79">
+        <bootpath>
+            <entry path="C:\Program Files\Java\jre7\lib\resources.jar"/>
+            <entry path="C:\Program Files\Java\jre7\lib\rt.jar"/>
+            <entry path="C:\Program Files\Java\jre7\lib\sunrsasign.jar"/>
+            <entry path="C:\Program Files\Java\jre7\lib\jsse.jar"/>
+            <entry path="C:\Program Files\Java\jre7\lib\jce.jar"/>
+            <entry path="C:\Program Files\Java\jre7\lib\charsets.jar"/>
+            <entry path="C:\Program Files\Java\jre7\lib\jfr.jar"/>
+            <entry path="C:\Program Files\Java\jre7\classes"/>
+        </bootpath>
+        <extensionDirs>
+            <entry path="C:\Program Files\Java\jre7\lib\ext"/>
+            <entry path="C:\WINDOWS\Sun\Java\lib\ext"/>
+        </extensionDirs>
+        <endorsedDirs>
+            <entry path="C:\Program Files\Java\jre7\lib\endorsed"/>
+        </endorsedDirs>
+    </libraryInfo>
+    <libraryInfo home="C:\Users\Asus\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_21.0.8.v20250724-1412\jre" version="21.0.8"/>
+    <libraryInfo home="C:\Program Files\Java\jdk-21" version="21.0.8"/>
+    <libraryInfo home="C:\Program Files\Java\jdk1.7.0_79" version="1.7.0_79">
+        <bootpath>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\resources.jar"/>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\rt.jar"/>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\sunrsasign.jar"/>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\jsse.jar"/>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\jce.jar"/>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\charsets.jar"/>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\jfr.jar"/>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\classes"/>
+        </bootpath>
+        <extensionDirs>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\ext"/>
+            <entry path="C:\WINDOWS\Sun\Java\lib\ext"/>
+        </extensionDirs>
+        <endorsedDirs>
+            <entry path="C:\Program Files\Java\jdk1.7.0_79\jre\lib\endorsed"/>
+        </endorsedDirs>
+    </libraryInfo>
+</libraryInfos>
