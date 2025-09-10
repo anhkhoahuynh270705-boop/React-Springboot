@@ -75,7 +75,6 @@ public class CinemaController {
     @PostMapping
     public ResponseEntity<Cinema> addCinema(@RequestBody Cinema cinema) {
         try {
-            // Basic validation
             if (cinema.getName() == null || cinema.getName().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
@@ -83,7 +82,6 @@ public class CinemaController {
                 return ResponseEntity.badRequest().build();
             }
             
-            // Set default status if not provided
             if (cinema.getStatus() == null || cinema.getStatus().trim().isEmpty()) {
                 cinema.setStatus("bán vé");
             }
@@ -101,8 +99,6 @@ public class CinemaController {
             if (!cinemaRepository.existsById(id)) {
                 return ResponseEntity.notFound().build();
             }
-            
-            // Basic validation
             if (cinema.getName() == null || cinema.getName().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }

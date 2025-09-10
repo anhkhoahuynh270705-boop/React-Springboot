@@ -106,7 +106,6 @@ public class ReviewController {
     @PostMapping
     public ResponseEntity<Review> createReview(@RequestBody Review review) {
         try {
-            // Basic validation
             if (review.getMovieId() == null || review.getMovieId().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
@@ -123,7 +122,6 @@ public class ReviewController {
                 return ResponseEntity.badRequest().build();
             }
 
-            // Set default values
             if (review.getLikes() == null) {
                 review.setLikes(0);
             }
@@ -137,7 +135,6 @@ public class ReviewController {
                 review.setIsVerified(false);
             }
 
-            // Set timestamps
             LocalDateTime now = LocalDateTime.now();
             review.setCreatedAt(now);
             review.setUpdatedAt(now);
@@ -155,8 +152,6 @@ public class ReviewController {
             if (!reviewRepository.existsById(id)) {
                 return ResponseEntity.notFound().build();
             }
-
-            // Basic validation
             if (review.getRating() != null && (review.getRating() < 1 || review.getRating() > 5)) {
                 return ResponseEntity.badRequest().build();
             }

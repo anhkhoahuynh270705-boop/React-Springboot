@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import Header from './components/Header/Header';
-import Footer from './components/Footer/Footer';
-import ScrollToTop from './components/ScrollToTop';
-import Homepage from './pages/Homepage/Homepage';
-import MovieDetailPage from './pages/MovieDetailPage/MovieDetailPage';
-import CinemasPage from './pages/CinemasPage/CinemasPage';
-import TicketListPage from './pages/TicketListPage/TicketListPage';
-import ProfilePage from './pages/ProfilePage/ProfilePage';
-import SeatMapPage from './pages/SeatMap/SeatMapPage';
+import Header from './Client/components/Header/Header';
+import Footer from './Client/components/Footer/Footer';
+import ScrollToTop from './Client/components/ScrollToTop';
+import Homepage from './Client/pages/Homepage/Homepage';
+import MovieDetailPage from './Client/pages/MovieDetailPage/MovieDetailPage';
+import CinemasPage from './Client/pages/CinemasPage/CinemasPage';
+import TicketListPage from './Client/pages/TicketListPage/TicketListPage';
+import ProfilePage from './Client/pages/ProfilePage/ProfilePage';
+import SeatMapPage from './Client/pages/SeatMap/SeatMapPage';
+import NewsPage from './Client/pages/NewsPage/NewsPage';
+import NewsDetailPage from './Client/pages/NewsDetailPage/NewsDetailPage';
+import AdminLogin from './Admin/pages/Admin/AdminLogin';
+import AdminDashboard from './Admin/pages/Admin/AdminDashboard';
+import AdminRoute from './Admin/components/Admin/AdminRoute';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import { getCurrentUser, logoutUser, isAuthenticated } from './services/userService';
 
@@ -28,7 +33,6 @@ function App() {
         }
       } catch (error) {
         console.error('Auth check failed:', error);
-        // Xóa token nếu không hợp lệ
         localStorage.removeItem('authToken');
       } finally {
         setIsLoading(false);
@@ -48,7 +52,6 @@ function App() {
       setUser(null);
     } catch (error) {
       console.error('Logout failed:', error);
-      // Vẫn xóa user state ngay cả khi API fail
       setUser(null);
     }
   };
@@ -88,6 +91,8 @@ function App() {
             <Route path="/movie/:movieId" element={<MovieDetailPage />} />
             <Route path="/tickets" element={<TicketListPage userId={user?.id} />} />
             <Route path="/seat-selection" element={<SeatMapPage />} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/news/:id" element={<NewsDetailPage />} />
             
             {/* Protected routes - chỉ cho user đã đăng nhập */}
             <Route 
@@ -99,11 +104,23 @@ function App() {
               } 
             />
             
+            {/* Admin routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route 
+              path="/admin/dashboard" 
+              element={
+                <AdminRoute>
+                  <AdminDashboard />
+                </AdminRoute>
+              } 
+            />
+            <Route path="/admin/*" element={<Navigate to="/admin/dashboard" replace />} />
+            
             {/* Catch all route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
-        <Footer />
+        {!window.location.pathname.startsWith('/admin') && <Footer />}
       </div>
     </Router>
   );

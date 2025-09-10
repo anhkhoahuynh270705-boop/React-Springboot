@@ -96,14 +96,19 @@ public class MovieController {
 
     // Search movies by title
     @GetMapping("/search")
-    public ResponseEntity<List<Movie>> searchMoviesByTitle(@RequestParam String title) {
+    public ResponseEntity<List<Movie>> searchMoviesByTitle(@RequestParam String q) {
         try {
-            // This would need a custom query method in repository
-            // For now, we'll filter from all movies
             List<Movie> allMovies = movieRepository.findAll();
             List<Movie> filteredMovies = allMovies.stream()
-                .filter(movie -> movie.getTitle() != null && 
-                               movie.getTitle().toLowerCase().contains(title.toLowerCase()))
+                .filter(movie -> {
+                    String searchQuery = q.toLowerCase();
+                    return (movie.getTitle() != null && movie.getTitle().toLowerCase().contains(searchQuery)) ||
+                           (movie.getGenre() != null && movie.getGenre().toLowerCase().contains(searchQuery)) ||
+                           (movie.getDirector() != null && movie.getDirector().toLowerCase().contains(searchQuery)) ||
+                           (movie.getActors() != null && movie.getActors().toLowerCase().contains(searchQuery)) ||
+                           (movie.getName() != null && movie.getName().toLowerCase().contains(searchQuery)) ||
+                           (movie.getMovieName() != null && movie.getMovieName().toLowerCase().contains(searchQuery));
+                })
                 .toList();
             return ResponseEntity.ok(filteredMovies);
         } catch (Exception e) {

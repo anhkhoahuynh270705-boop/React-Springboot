@@ -13,6 +13,7 @@ public class Showtime {
     @Id
     private String id;
     private String movieId;
+    private String movieName; // Transient field for display
     private LocalDateTime startTime;
     private String room;
 }

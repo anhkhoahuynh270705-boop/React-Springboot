@@ -124,14 +124,15 @@ export async function deleteSeat(seatId) {
 export async function bookSeat(seatId, userId) {
   try {
     const response = await fetch(`${API_BASE_URL}/seats/${seatId}/book`, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ userId })
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     return await response.json();
   } catch (error) {
@@ -141,16 +142,18 @@ export async function bookSeat(seatId, userId) {
 }
 
 // Hủy đặt ghế
-export async function unbookSeat(seatId) {
+export async function unbookSeat(seatId, userId) {
   try {
     const response = await fetch(`${API_BASE_URL}/seats/${seatId}/unbook`, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-      }
+      },
+      body: JSON.stringify({ userId })
     });
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
     }
     return await response.json();
   } catch (error) {

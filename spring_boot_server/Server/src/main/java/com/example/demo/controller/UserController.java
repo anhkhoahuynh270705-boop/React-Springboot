@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +55,6 @@ public class UserController {
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         try {
-            // Basic validation
             if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
@@ -65,18 +65,15 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
 
-            // Check if username already exists
-            if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            if (userRepository.existsByUsername(user.getUsername())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
 
-            // Check if email already exists
-            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            if (userRepository.existsByEmail(user.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
 
             User savedUser = userRepository.save(user);
-            // Don't return password in response
             savedUser.setPassword(null);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (Exception e) {
@@ -90,8 +87,6 @@ public class UserController {
             if (!userRepository.existsById(id)) {
                 return ResponseEntity.notFound().build();
             }
-
-            // Basic validation
             if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
@@ -99,10 +94,43 @@ public class UserController {
                 return ResponseEntity.badRequest().build();
             }
 
-            user.setId(id);
-            User updatedUser = userRepository.save(user);
-            // Don't return password in response
-            updatedUser.setPassword(null);
+            // Lấy user hiện tại từ database để giữ nguyên password
+            Optional<User> existingUserOpt = userRepository.findById(id);
+            if (!existingUserOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User existingUser = existingUserOpt.get();
+            
+            // Chỉ cập nhật các field được gửi lên, giữ nguyên password
+            if (user.getUsername() != null) {
+                existingUser.setUsername(user.getUsername());
+            }
+            if (user.getEmail() != null) {
+                existingUser.setEmail(user.getEmail());
+            }
+            if (user.getFullName() != null) {
+                existingUser.setFullName(user.getFullName());
+            }
+            if (user.getPhone() != null) {
+                existingUser.setPhone(user.getPhone());
+            }
+            if (user.getAddress() != null) {
+                existingUser.setAddress(user.getAddress());
+            }
+            if (user.getNotes() != null) {
+                existingUser.setNotes(user.getNotes());
+            }
+            if (user.getAvatar() != null) {
+                existingUser.setAvatar(user.getAvatar());
+            }
+            // Chỉ cập nhật password nếu được gửi lên và không null
+            if (user.getPassword() != null && !user.getPassword().trim().isEmpty()) {
+                existingUser.setPassword(user.getPassword());
+            }
+
+            User updatedUser = userRepository.save(existingUser);
+            updatedUser.setPassword(null); // Chỉ ẩn password trong response
             return ResponseEntity.ok(updatedUser);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -127,7 +155,6 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<User> register(@RequestBody User user) {
         try {
-            // Basic validation
             if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
@@ -137,19 +164,14 @@ public class UserController {
             if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
-
-            // Check if username already exists
-            if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            if (userRepository.existsByUsername(user.getUsername())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
-
-            // Check if email already exists
-            if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+            if (userRepository.existsByEmail(user.getEmail())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
 
             User savedUser = userRepository.save(user);
-            // Don't return password in response
             savedUser.setPassword(null);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
         } catch (Exception e) {
@@ -160,17 +182,14 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<User> login(@RequestParam String username, @RequestParam String password) {
         try {
-            Optional<User> userOpt = userRepository.findByUsername(username);
+            Optional<User> userOpt = userRepository.findByUsernameAndPassword(username, password);
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                // Simple password check (in production, use proper password hashing)
-                if (password.equals(user.getPassword())) {
-                    // Don't return password in response
-                    user.setPassword(null);
-                    return ResponseEntity.ok(user);
-                } else {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                }
+                // Cập nhật thời gian đăng nhập cuối
+                user.setLastLoginAt(java.time.LocalDateTime.now());
+                userRepository.save(user);
+                user.setPassword(null);
+                return ResponseEntity.ok(user);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
@@ -182,7 +201,7 @@ public class UserController {
     @GetMapping("/check-username")
     public ResponseEntity<Boolean> checkUsername(@RequestParam String username) {
         try {
-            boolean exists = userRepository.findByUsername(username).isPresent();
+            boolean exists = userRepository.existsByUsername(username);
             return ResponseEntity.ok(exists);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -192,8 +211,114 @@ public class UserController {
     @GetMapping("/check-email")
     public ResponseEntity<Boolean> checkEmail(@RequestParam String email) {
         try {
-            boolean exists = userRepository.findByEmail(email).isPresent();
+            boolean exists = userRepository.existsByEmail(email);
             return ResponseEntity.ok(exists);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Cập nhật thời gian đăng nhập cuối
+    @PostMapping("/{id}/update-login")
+    public ResponseEntity<User> updateLastLogin(@PathVariable String id) {
+        try {
+            Optional<User> userOpt = userRepository.findById(id);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                user.setLastLoginAt(java.time.LocalDateTime.now());
+                userRepository.save(user);
+                user.setPassword(null);
+                return ResponseEntity.ok(user);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // Lấy thông tin user profile (có lastLoginAt)
+    @GetMapping("/profile")
+    public ResponseEntity<User> getProfile(@RequestParam String userId) {
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isPresent()) {
+                User user = userOpt.get();
+                user.setPassword(null);
+                return ResponseEntity.ok(user);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Cập nhật thông tin user (cho user tự cập nhật)
+    @PutMapping("/profile/{userId}")
+    public ResponseEntity<User> updateProfile(@PathVariable String userId, @RequestBody User userData) {
+        try {
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User user = userOpt.get();
+            
+            // Cập nhật thông tin nếu có
+            if (userData.getFullName() != null && !userData.getFullName().trim().isEmpty()) {
+                user.setFullName(userData.getFullName());
+            }
+            if (userData.getEmail() != null && !userData.getEmail().trim().isEmpty()) {
+                String newEmail = userData.getEmail();
+                // Kiểm tra email trùng lặp (trừ chính user hiện tại)
+                if (!user.getEmail().equals(newEmail) && userRepository.existsByEmail(newEmail)) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).build();
+                }
+                user.setEmail(newEmail);
+            }
+            if (userData.getPhone() != null) {
+                user.setPhone(userData.getPhone());
+            }
+            if (userData.getAddress() != null) {
+                user.setAddress(userData.getAddress());
+            }
+            
+            User updatedUser = userRepository.save(user);
+            updatedUser.setPassword(null);
+            return ResponseEntity.ok(updatedUser);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Thay đổi mật khẩu
+    @PostMapping("/change-password/{userId}")
+    public ResponseEntity<User> changePassword(@PathVariable String userId, @RequestBody Map<String, String> passwordData) {
+        try {
+            String currentPassword = passwordData.get("currentPassword");
+            String newPassword = passwordData.get("newPassword");
+            
+            if (currentPassword == null || newPassword == null) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User user = userOpt.get();
+            if (!user.getPassword().equals(currentPassword)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            
+            user.setPassword(newPassword);
+            User updatedUser = userRepository.save(user);
+            updatedUser.setPassword(null);
+            return ResponseEntity.ok(updatedUser);
+            
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

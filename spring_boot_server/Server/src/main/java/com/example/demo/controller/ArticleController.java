@@ -126,15 +126,12 @@ public class ArticleController {
     @PostMapping
     public ResponseEntity<Article> createArticle(@RequestBody Article article) {
         try {
-            // Basic validation
             if (article.getTitle() == null || article.getTitle().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
             if (article.getContent() == null || article.getContent().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
-
-            // Set default values
             if (article.getStatus() == null || article.getStatus().trim().isEmpty()) {
                 article.setStatus("draft");
             }
@@ -175,8 +172,6 @@ public class ArticleController {
             if (!articleRepository.existsById(id)) {
                 return ResponseEntity.notFound().build();
             }
-
-            // Basic validation
             if (article.getTitle() == null || article.getTitle().trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
@@ -187,7 +182,6 @@ public class ArticleController {
             article.setId(id);
             article.setUpdatedAt(LocalDateTime.now());
 
-            // Set publishedAt if status changed to published
             if (article.getStatus() != null && article.getStatus().equals("published")) {
                 Optional<Article> existingArticle = articleRepository.findById(id);
                 if (existingArticle.isPresent() && !"published".equals(existingArticle.get().getStatus())) {

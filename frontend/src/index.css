@@ -73,7 +73,7 @@ html, body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   color: white;
   text-align: center;
 }
@@ -89,26 +89,3 @@ html, body {
   font-weight: 600;
 }
 
-/* Profile page */
-.profile-page {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 3rem 2rem;
-  text-align: center;
-}
-
-.profile-page h1 {
-  font-size: 3rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 1.5rem;
-}
-
-.profile-page p {
-  font-size: 1.25rem;
-  color: #6b7280;
-  margin-bottom: 2rem;
-}

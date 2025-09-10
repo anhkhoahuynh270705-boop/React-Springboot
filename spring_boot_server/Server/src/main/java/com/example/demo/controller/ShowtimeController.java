@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Showtime;
+import com.example.demo.model.Movie;
 import com.example.demo.repository.ShowtimeRepository;
+import com.example.demo.repository.MovieRepository;
 
 @RestController
 @RequestMapping("/api/showtimes")
@@ -24,10 +26,36 @@ import com.example.demo.repository.ShowtimeRepository;
 public class ShowtimeController {
     @Autowired
     private ShowtimeRepository showtimeRepository;
+    
+    @Autowired
+    private MovieRepository movieRepository;
 
     @GetMapping
     public List<Showtime> getAllShowtimes() {
-        return showtimeRepository.findAll();
+        List<Showtime> showtimes = showtimeRepository.findAll();
+        
+        // Populate movieName for each showtime
+        for (Showtime showtime : showtimes) {
+            if (showtime.getMovieId() != null) {
+                Optional<Movie> movie = movieRepository.findById(showtime.getMovieId());
+                if (movie.isPresent()) {
+                    Movie movieData = movie.get();
+                    // Set movieName from various possible fields
+                    String movieName = movieData.getTitle() != null ? movieData.getTitle() :
+                                     movieData.getName() != null ? movieData.getName() :
+                                     movieData.getMovieName() != null ? movieData.getMovieName() :
+                                     movieData.getEnglishTitle() != null ? movieData.getEnglishTitle() :
+                                     "Unknown Movie";
+                    showtime.setMovieName(movieName);
+                } else {
+                    showtime.setMovieName("Movie Not Found");
+                }
+            } else {
+                showtime.setMovieName("No Movie ID");
+            }
+        }
+        
+        return showtimes;
     }
 
     // Thêm endpoint để lấy showtimes theo movieId

@@ -116,19 +116,6 @@
   gap: 0.75rem;
 }
 
-.user-profile {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.profile-image {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 2px solid #e5e7eb;
-}
-
 .username {
   font-weight: 600;
   color: #374151;
@@ -183,7 +170,7 @@
 }
 
 .register-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background:  #667eea;
   color: white;
   border: none;
 }
@@ -409,5 +396,73 @@
   .movies-grid {
     grid-template-columns: 1fr;
     gap: 1rem;
+  }
+}
+
+/* User Profile Popup - Force slide from right */
+.user-profile.popup {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0) !important;
+  z-index: 9999 !important;
+  display: flex !important;
+  align-items: stretch !important;
+  justify-content: flex-end !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  transition: background-color 0.3s ease-out, backdrop-filter 0.3s ease-out !important;
+  backdrop-filter: blur(0px) !important;
+  -webkit-backdrop-filter: blur(0px) !important;
+}
+
+body .user-profile.popup {
+  background: rgba(0, 0, 0, 0) !important;
+  backdrop-filter: blur(0px) !important;
+  -webkit-backdrop-filter: blur(0px) !important;
+}
+
+.user-profile.popup > div {
+  position: relative !important;
+  transform: translateX(-2%) !important;
+  transition: transform 0.3s ease-in-out !important;
+  max-width: 450px !important;
+  width: 100% !important;
+  height: 100vh !important;
+  max-height: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: white !important;
+  box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.user-profile.popup.show > div {
+  transform: translateX(0) !important;
+}
+
+.user-profile.popup.closing > div {
+  transform: translateX(100%) !important;
+}
+
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

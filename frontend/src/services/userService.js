@@ -25,7 +25,7 @@ export async function registerUser(userData) {
     const user = await res.json();
     const avatarUrl = generateAIPersonAvatar(user.username);
     user.avatarUrl = avatarUrl;
-    user.customAvatar = false; // Đánh dấu là avatar AI mặc định
+    user.customAvatar = false; 
     
     console.log('Generated default AI avatar for user:', user.username, 'URL:', avatarUrl);
     
@@ -64,11 +64,22 @@ export async function loginUser({ username, password }) {
     if (!user.avatarUrl) {
       const avatarUrl = generateAIPersonAvatar(user.username);
       user.avatarUrl = avatarUrl;
-      user.customAvatar = false; // Đánh dấu là avatar AI mặc định
+      user.customAvatar = false; 
       console.log('Generated default AI avatar for login user:', user.username, 'URL:', avatarUrl);
     }
     
+    // Lưu token và user vào localStorage
+    localStorage.setItem('authToken', 'user-token-' + user.id);
     localStorage.setItem('currentUser', JSON.stringify(user));
+    
+    console.log('User logged in:', user.username, 'Last login:', user.lastLoginAt);
+    
+    try {
+      await updateLastLogin(user.id);
+    } catch (error) {
+      console.warn('Could not update last login time:', error);
+    }
+    
     return user;
   } catch (error) {
     console.error('Login error:', error);
@@ -89,6 +100,27 @@ export async function logoutUser() {
   }
 }
 
+// Cập nhật thời gian đăng nhập cuối
+export async function updateLastLogin(userId) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}/update-login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+
+    if (!res.ok) {
+      throw new Error(`Update last login failed: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error('Update last login error:', error);
+    throw error;
+  }
+}
+
 export async function getCurrentUser() {
   try {
     const userStr = localStorage.getItem('currentUser');
@@ -106,48 +138,30 @@ export async function getCurrentUser() {
 // Lấy thông tin user từ database
 export async function getUserProfile() {
   try {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      const localUser = getCurrentUserSync();
-      if (localUser) {
-        return localUser;
-      }
+    const localUser = getCurrentUserSync();
+    if (!localUser || !localUser.id) {
       throw new Error('Không có quyền truy cập');
     }
-
-    const res = await fetch(`${API_BASE_URL}/users/profile`, {
+    const res = await fetch(`${API_BASE_URL}/users/profile?userId=${localUser.id}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       }
     });
 
     if (!res.ok) {
-      if (res.status === 401) {
-        throw new Error('Phiên đăng nhập đã hết hạn');
-      }
       if (res.status === 404) {
         throw new Error('Không tìm thấy thông tin người dùng');
       }
-      // Nếu API lỗi, fallback về localStorage
       console.warn('API failed, using localStorage data');
-      const localUser = getCurrentUserSync();
-      if (localUser) {
-        return localUser;
-      }
-      throw new Error(`Lấy thông tin thất bại: ${res.status}`);
+      return localUser;
     }
 
     const userData = await res.json();
-    
-    // Cập nhật localStorage với dữ liệu từ database
     localStorage.setItem('currentUser', JSON.stringify(userData));
     
     return userData;
   } catch (error) {
-    console.error('Get user profile error:', error);
-    // Fallback về localStorage nếu có
     const localUser = getCurrentUserSync();
     if (localUser) {
       console.warn('Using localStorage data as fallback');
@@ -157,7 +171,6 @@ export async function getUserProfile() {
   }
 }
 
-// Cập nhật thông tin user trong database
 export async function updateUserProfile(userData) {
   try {
     // Lấy thông tin user hiện tại
@@ -166,49 +179,51 @@ export async function updateUserProfile(userData) {
       throw new Error('Không tìm thấy thông tin người dùng');
     }
 
-    // Tạo user object mới với dữ liệu đã cập nhật
-    const updatedUser = {
-      ...currentUser,
-      ...userData,
-      id: currentUser.id,
-      avatarUrl: currentUser.avatarUrl,
-      customAvatar: currentUser.customAvatar
+    // Chỉ gửi các field cần cập nhật, không gửi password
+    const updateData = {
+      username: userData.username || currentUser.username,
+      fullName: userData.fullName || currentUser.fullName,
+      email: userData.email || currentUser.email,
+      phone: userData.phone || currentUser.phone,
+      address: userData.address || currentUser.address,
+      notes: userData.notes || currentUser.notes,
+      avatar: userData.avatar || currentUser.avatar
     };
 
     // Cập nhật localStorage trước
+    const updatedUser = {
+      ...currentUser,
+      ...updateData,
+      avatarUrl: currentUser.avatarUrl,
+      customAvatar: currentUser.customAvatar
+    };
     localStorage.setItem('currentUser', JSON.stringify(updatedUser));
 
-    // Thử gọi API nếu có token
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      try {
-        const res = await fetch(`${API_BASE_URL}/users/profile`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(userData)
-        });
+    try {
+      const res = await fetch(`${API_BASE_URL}/users/${currentUser.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updateData)
+      });
 
-        if (res.ok) {
-          const serverUser = await res.json();
-          // Cập nhật lại với dữ liệu từ server
-          localStorage.setItem('currentUser', JSON.stringify(serverUser));
-          return serverUser;
-        } else {
-          console.warn('API update failed, but local update succeeded');
-          // Trả về dữ liệu local đã cập nhật
-          return updatedUser;
-        }
-      } catch (apiError) {
-        console.warn('API call failed, but local update succeeded:', apiError);
-        // Trả về dữ liệu local đã cập nhật
+      if (res.ok) {
+        const serverUser = await res.json();
+        // Merge với thông tin local để giữ avatarUrl và customAvatar
+        const finalUser = {
+          ...serverUser,
+          avatarUrl: currentUser.avatarUrl,
+          customAvatar: currentUser.customAvatar
+        };
+        localStorage.setItem('currentUser', JSON.stringify(finalUser));
+        return finalUser;
+      } else {
+        console.warn('API update failed, but local update succeeded');
         return updatedUser;
       }
-    } else {
-      // Không có token, chỉ cập nhật local
-      console.warn('No auth token, updating local data only');
+    } catch (apiError) {
+      console.warn('API call failed, but local update succeeded:', apiError);
       return updatedUser;
     }
   } catch (error) {
@@ -219,26 +234,39 @@ export async function updateUserProfile(userData) {
 
 export async function changePassword({ currentPassword, newPassword }) {
   try {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-      throw new Error('Không có quyền truy cập');
+    const currentUser = getCurrentUserSync();
+    if (!currentUser) {
+      throw new Error('Không tìm thấy thông tin người dùng');
     }
 
-    const res = await fetch(`${API_BASE_URL}/users/change-password`, {
-      method: 'PUT',
+    // Gọi API để đổi mật khẩu
+    const res = await fetch(`${API_BASE_URL}/users/change-password/${currentUser.id}`, {
+      method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ currentPassword, newPassword })
+      body: JSON.stringify({
+        currentPassword: currentPassword,
+        newPassword: newPassword
+      })
     });
 
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({}));
-      throw new Error(errorData.message || `Đổi mật khẩu thất bại: ${res.status}`);
+      if (res.status === 401) {
+        throw new Error('Mật khẩu hiện tại không đúng');
+      }
+      throw new Error(`Đổi mật khẩu thất bại: ${res.status}`);
     }
 
-    return await res.json();
+    const serverUser = await res.json();
+    const finalUser = {
+      ...serverUser,
+      avatarUrl: currentUser.avatarUrl,
+      customAvatar: currentUser.customAvatar
+    };
+    localStorage.setItem('currentUser', JSON.stringify(finalUser));
+    
+    return finalUser;
   } catch (error) {
     console.error('Change password error:', error);
     throw new Error(error.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại.');

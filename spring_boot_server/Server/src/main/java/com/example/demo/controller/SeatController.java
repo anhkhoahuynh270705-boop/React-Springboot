@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,25 +60,55 @@ public class SeatController {
 
     // Đặt ghế
     @PutMapping("/{id}/book")
-    public Seat bookSeat(@PathVariable String id) {
+    public Seat bookSeat(@PathVariable String id, @RequestBody Map<String, String> request) {
         Optional<Seat> seatOpt = seatRepository.findById(id);
         if (seatOpt.isPresent()) {
             Seat seat = seatOpt.get();
+            
+            // Kiểm tra ghế đã được đặt chưa
+            if (seat.isBooked()) {
+                throw new RuntimeException("Ghế đã được đặt bởi người khác");
+            }
+            
+            String userId = request.get("userId");
+            if (userId == null || userId.trim().isEmpty()) {
+                throw new RuntimeException("UserId không được để trống");
+            }
+            
             seat.setBooked(true);
+            seat.setBookedBy(userId);
+            seat.setBookedAt(java.time.LocalDateTime.now().toString());
             return seatRepository.save(seat);
         }
-        return null;
+        throw new RuntimeException("Không tìm thấy ghế");
     }
 
     @PutMapping("/{id}/unbook")
-    public Seat unbookSeat(@PathVariable String id) {
+    public Seat unbookSeat(@PathVariable String id, @RequestBody Map<String, String> request) {
         Optional<Seat> seatOpt = seatRepository.findById(id);
         if (seatOpt.isPresent()) {
             Seat seat = seatOpt.get();
+            
+            // Kiểm tra quyền hủy đặt ghế
+            String userId = request.get("userId");
+            if (userId == null || userId.trim().isEmpty()) {
+                throw new RuntimeException("UserId không được để trống");
+            }
+            
+            if (!seat.isBooked()) {
+                throw new RuntimeException("Ghế chưa được đặt");
+            }
+            
+            if (!userId.equals(seat.getBookedBy())) {
+                throw new RuntimeException("Bạn không có quyền hủy đặt ghế này");
+            }
+            
             seat.setBooked(false);
+            seat.setBookedBy(null);
+            seat.setBookedAt(null);
             return seatRepository.save(seat);
         }
-        return null;
+        throw new RuntimeException("Không tìm thấy ghế");
     }
 
     @DeleteMapping("/{id}")

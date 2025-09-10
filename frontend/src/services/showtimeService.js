@@ -32,8 +32,6 @@ export const getShowtimesByMovie = async (movieId) => {
     
     return data;
   } catch (error) {
-    console.error('Error fetching showtimes by movie (query param):', error);
-
     try {
       const response = await fetch(`${API_BASE_URL}/showtimes/movie/${movieId}`);
       if (!response.ok) {
