@@ -10,7 +10,8 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState(false);
   const [message, setMessage] = useState('');
-  const [step, setStep] = useState(1); 
+  const [step, setStep] = useState(1);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('cash'); 
 
   useEffect(() => {
     if (isOpen && showtime?.id) {
@@ -32,7 +33,7 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
   };
 
   const handleSeatClick = (seat) => {
-    if (seat.booked) return;
+    if (seat.booked && seat.bookedBy && seat.bookedBy.trim() !== '') return;
 
     setSelectedSeats(prev => {
       const isSelected = prev.find(s => s.id === seat.id);
@@ -96,8 +97,8 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
         showTime: showTime,
         price: totalPrice, 
         status: 'pending',
-        paymentMethod: 'online', 
-        paymentStatus: 'paid',
+        paymentMethod: selectedPaymentMethod, 
+        paymentStatus: selectedPaymentMethod === 'cash' ? 'pending' : 'paid',
         isRefundable: true
       };
       await bookTicket(ticketData);
@@ -184,7 +185,8 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
                 <div className="seats-grid">
                   {seats.map(seat => {
                     const isSelected = selectedSeats.find(s => s.id === seat.id);
-                    const className = `seat ${seat.booked ? 'booked' : ''} ${
+                    const isActuallyBooked = seat.booked && seat.bookedBy && seat.bookedBy.trim() !== '';
+                    const className = `seat ${isActuallyBooked ? 'booked' : ''} ${
                       isSelected ? 'selected' : ''
                     }`;
                     
@@ -193,11 +195,11 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
                         key={seat.id}
                         className={className}
                         style={inlineStyle}
-                        disabled={seat.booked}
+                        disabled={isActuallyBooked}
                         onClick={() => handleSeatClick(seat)}
-                        title={seat.booked ? `Đã được đặt bởi ${seat.bookedBy || 'người khác'}` : ''}
+                        title={isActuallyBooked ? `Đã được đặt bởi ${seat.bookedBy || 'người khác'}` : ''}
                       >
-                        {seat.booked ? (
+                        {isActuallyBooked ? (
                           <span style={{ color: '#ef4444', fontSize: '14px', fontWeight: 'bold' }}>✕</span>
                         ) : (
                           seat.seatNumber
@@ -234,9 +236,12 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
                 </div>
                 <button 
                   className="continue-btn" 
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    onClose();
+                    window.location.href = `/combo-selection?showtime=${encodeURIComponent(JSON.stringify(showtime))}&movie=${encodeURIComponent(JSON.stringify(movie))}&seats=${encodeURIComponent(JSON.stringify(selectedSeats))}&user=${encodeURIComponent(JSON.stringify({id: userId}))}`;
+                  }}
                 >
-                  Tiếp tục
+                  Đặt vé
                 </button>
               </div>
             )}
@@ -245,7 +250,8 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
           </div>
         )}
 
-        {step === 2 && (
+        {/* Payment step removed - now handled in ComboSelectionPage */}
+        {false && (
           <div className="payment-content">
             <h3>Thông tin thanh toán</h3>
             <div className="booking-summary">
@@ -271,12 +277,76 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
               <h4>Phương thức thanh toán</h4>
               <div className="payment-options">  
                 <label className="payment-option">
-                  <input type="radio" name="payment" value="cash" defaultChecked />
-                  <span>Thanh toán tại quầy</span>
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="cash" 
+                    checked={selectedPaymentMethod === 'cash'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
+                  <div className="payment-option-content">
+                    <div className="payment-icon">
+                      <img src="/payment-icons/cash-icon.png" alt="Cash" className="payment-icon-img" />
+                    </div>
+                    <div className="payment-details">
+                      <span className="payment-title">Thanh toán tại quầy</span>
+                      <span className="payment-desc">Thanh toán khi đến rạp</span>
+                    </div>
+                  </div>
                 </label>
                 <label className="payment-option">
-                  <input type="radio" name="payment" value="card" />
-                  <span>Thẻ tín dụng</span>
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="vietqr" 
+                    checked={selectedPaymentMethod === 'vietqr'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
+                  <div className="payment-option-content">
+                    <div className="payment-icon">
+                      <img src="https://vietqr.net/img/VIETQR_logo.png" alt="VietQR" className="payment-icon-img" />
+                    </div>
+                    <div className="payment-details">
+                      <span className="payment-title">VietQR</span>
+                      <span className="payment-desc">Quét mã QR để thanh toán</span>
+                    </div>
+                  </div>
+                </label>
+                <label className="payment-option">
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="momo" 
+                    checked={selectedPaymentMethod === 'momo'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
+                  <div className="payment-option-content">
+                    <div className="payment-icon">
+                      <img src="/payment-icons/momo-logo.png" alt="MoMo" className="payment-icon-img" />
+                    </div>
+                    <div className="payment-details">
+                      <span className="payment-title">Ví MoMo</span>
+                      <span className="payment-desc">Thanh toán qua ứng dụng MoMo</span>
+                    </div>
+                  </div>
+                </label>
+                <label className="payment-option">
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="zalopay" 
+                    checked={selectedPaymentMethod === 'zalopay'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
+                  <div className="payment-option-content">
+                    <div className="payment-icon">
+                      <img src="/payment-icons/zalopay-logo.png" alt="ZaloPay" className="payment-icon-img" />
+                    </div>
+                    <div className="payment-details">
+                      <span className="payment-title">ZaloPay</span>
+                      <span className="payment-desc">Thanh toán qua ZaloPay</span>
+                    </div>
+                  </div>
                 </label>
               </div>
             </div>
@@ -301,7 +371,8 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
           </div>
         )}
 
-        {step === 3 && (
+        {/* Success step removed - now handled in ComboSelectionPage */}
+        {false && (
           <div className="success-content">
             <div className="success-icon">
               <CheckCircle size={64} color="#10b981" />

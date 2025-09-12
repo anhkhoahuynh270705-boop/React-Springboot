@@ -1,9 +1,20 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
+// Function to remove Vietnamese diacritics for search
+const removeVietnameseDiacritics = (str) => {
+  if (!str) return '';
+  
+  return str
+    .normalize('NFD') // Decompose characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+    .toLowerCase();
+};
+
 export const getCinemaLogo = (cinemaName) => {
   if (!cinemaName) return null;
   
-  const name = cinemaName.toLowerCase();
+  const name = removeVietnameseDiacritics(cinemaName);
   
   // Beta Cinemas
   if (name.includes('beta')) {
@@ -36,7 +47,7 @@ export const getCinemaLogo = (cinemaName) => {
   }
   
   // Đống Đa
-  if (name.includes('đống đa') || name.includes('dong da')) {
+  if (name.includes('dong da') || name.includes('đống đa')) {
     return {
       type: 'dongda',
       color: '#ea580c',

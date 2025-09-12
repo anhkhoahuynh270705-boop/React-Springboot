@@ -27,13 +27,14 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
       
       try {
         const seatsData = await getSeatsByShowtime(showtimeId);
-        if (seatsData && seatsData.length > 0) {
-          setSeats(seatsData);
-          onSeatsChange(seatsData);
-        }
+        setSeats(seatsData || []);
+        onSeatsChange(seatsData || []);
       } catch (error) {
         console.error('Error loading seats:', error);
         setApiConnected(false);
+        // Reset seats when there's an error
+        setSeats([]);
+        onSeatsChange([]);
       }
     };
 
@@ -45,6 +46,8 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
       seatNumber: `${newSeat.row}${newSeat.number}`,
       showtimeId: showtimeId || 'default',
       booked: newSeat.booked,
+      bookedBy: newSeat.booked ? 'admin' : null,
+      bookedAt: newSeat.booked ? new Date().toISOString() : null,
       isPending: true
     };
 
@@ -62,7 +65,9 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
     const seat = {
       seatNumber: `${newSeat.row}${newSeat.number}`,
       showtimeId: showtimeId || 'default',
-      booked: newSeat.booked
+      booked: newSeat.booked,
+      bookedBy: newSeat.booked ? 'admin' : null,
+      bookedAt: newSeat.booked ? new Date().toISOString() : null
     };
 
     if (seats.find(s => s.seatNumber === seat.seatNumber) || 
@@ -130,7 +135,25 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
     if (!seat) return;
 
     try {
-      const updatedSeat = await updateSeat(seatId, { ...seat, booked: !seat.booked });
+      let updatedSeat;
+      if (seat.booked) {
+        // Hủy đặt ghế
+        updatedSeat = await updateSeat(seatId, { 
+          ...seat, 
+          booked: false, 
+          bookedBy: null, 
+          bookedAt: null 
+        });
+      } else {
+        // Đặt ghế
+        updatedSeat = await updateSeat(seatId, { 
+          ...seat, 
+          booked: true, 
+          bookedBy: 'admin', 
+          bookedAt: new Date().toISOString() 
+        });
+      }
+      
       const updatedSeats = seats.map(s => 
         s.id === seatId ? updatedSeat : s
       );
@@ -149,7 +172,9 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
         allSeats.push({
           seatNumber: `${row}${num}`,
           showtimeId: showtimeId || 'default',
-          booked: false 
+          booked: false,
+          bookedBy: null,
+          bookedAt: null
         });
       }
     });
@@ -235,10 +260,11 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
       console.error('Error refreshing seats:', error);
 
       if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-        console.log('API not available, keeping current state');
         alert('Không thể tải lại ghế từ database do lỗi kết nối API. Giao diện sẽ hiển thị dữ liệu hiện tại.');
       } else {
         alert('Lỗi khi tải lại ghế: ' + error.message);
+        setSeats([]);
+        onSeatsChange([]);
       }
     }
   };

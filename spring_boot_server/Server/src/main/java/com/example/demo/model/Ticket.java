@@ -2,6 +2,7 @@ package com.example.demo.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import java.time.LocalDateTime;
@@ -34,6 +35,8 @@ public class Ticket {
     private String paymentMethod;
     private String paymentStatus;
     private String notes;
+    
+    @JsonProperty("isRefundable")
     private boolean isRefundable;
     private double refundAmount;
     private LocalDateTime refundedAt;

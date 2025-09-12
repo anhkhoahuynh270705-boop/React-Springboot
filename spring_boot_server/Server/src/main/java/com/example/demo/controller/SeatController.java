@@ -66,7 +66,7 @@ public class SeatController {
             Seat seat = seatOpt.get();
             
             // Kiểm tra ghế đã được đặt chưa
-            if (seat.isBooked()) {
+            if (seat.isBooked() && seat.getBookedBy() != null && !seat.getBookedBy().trim().isEmpty()) {
                 throw new RuntimeException("Ghế đã được đặt bởi người khác");
             }
             
@@ -95,7 +95,7 @@ public class SeatController {
                 throw new RuntimeException("UserId không được để trống");
             }
             
-            if (!seat.isBooked()) {
+            if (!seat.isBooked() || seat.getBookedBy() == null || seat.getBookedBy().trim().isEmpty()) {
                 throw new RuntimeException("Ghế chưa được đặt");
             }
             
@@ -114,5 +114,11 @@ public class SeatController {
     @DeleteMapping("/{id}")
     public void deleteSeat(@PathVariable String id) {
         seatRepository.deleteById(id);
+    }
+
+    // Xóa tất cả ghế theo showtime
+    @DeleteMapping("/showtime/{showtimeId}")
+    public void deleteSeatsByShowtime(@PathVariable String showtimeId) {
+        seatRepository.deleteByShowtimeId(showtimeId);
     }
 }

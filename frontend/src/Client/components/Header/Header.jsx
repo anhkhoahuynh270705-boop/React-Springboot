@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, MapPin, ChevronDown, User, LogOut, Settings, Ticket, Building2, Shield } from 'lucide-react';
+import { Search, MapPin, ChevronDown, User, LogOut, Settings, Ticket, Building2, Shield, Bell } from 'lucide-react';
 import { getCinemas, getCinemasByCity, searchCinemas, getCinemaLogo } from '../../../services/cinemaService';
 import { logoutUser } from '../../../services/userService';
 import { searchMovies } from '../../../services/movieService';
+import { getUnreadNotificationCount, getNotificationsByUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification } from '../../../services/notificationService';
 
 import LoginModal from '../LoginModal/LoginModal';
 import UserProfile from '../UserProfile/UserProfile';
@@ -27,10 +28,15 @@ const Header = ({ user, setUser, onLogout }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationLoading, setNotificationLoading] = useState(false);
   
   const dropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
   const searchRef = useRef(null);
+  const notificationRef = useRef(null);
 
   // Kiểm tra xem có đang ở admin mode không
   const isAdminMode = location.pathname.startsWith('/admin');
@@ -123,6 +129,27 @@ const Header = ({ user, setUser, onLogout }) => {
     }
   };
 
+  // Function to remove Vietnamese diacritics for search
+  const removeVietnameseDiacritics = (str) => {
+    if (!str) return '';
+    
+    return str
+      .normalize('NFD') // Decompose characters
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+      .toLowerCase();
+  };
+
+  // Function to check if text contains search query (case-insensitive, diacritic-insensitive)
+  const containsSearchQuery = (text, query) => {
+    if (!text || !query) return false;
+    
+    const normalizedText = removeVietnameseDiacritics(text);
+    const normalizedQuery = removeVietnameseDiacritics(query);
+    
+    return normalizedText.includes(normalizedQuery);
+  };
+
   const filterCinemas = (cinemaList, city, searchQuery) => {
     let filtered = cinemaList.filter(cinema => 
       cinema.city === city
@@ -130,8 +157,9 @@ const Header = ({ user, setUser, onLogout }) => {
     
     if (searchQuery.trim()) {
       filtered = filtered.filter(cinema =>
-        cinema.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        cinema.address.toLowerCase().includes(searchQuery.toLowerCase())
+        containsSearchQuery(cinema.name, searchQuery) ||
+        containsSearchQuery(cinema.address, searchQuery) ||
+        containsSearchQuery(cinema.cinemaName, searchQuery)
       );
     }
     setFilteredCinemas(filtered);
@@ -185,6 +213,47 @@ const Header = ({ user, setUser, onLogout }) => {
     }
   }, [user]);
 
+  // Fetch unread notification count
+  useEffect(() => {
+    const fetchNotificationCount = async () => {
+      if (user?.id) {
+        try {
+          const count = await getUnreadNotificationCount(user.id);
+          setUnreadNotificationCount(count || 0);
+        } catch (error) {
+          console.error('Error fetching notification count:', error);
+        }
+      } else {
+        setUnreadNotificationCount(0);
+      }
+    };
+
+    fetchNotificationCount();
+    
+    // Refresh notification count every 30 seconds
+    const interval = setInterval(fetchNotificationCount, 30000);
+    return () => clearInterval(interval);
+  }, [user?.id]);
+
+  // Fetch notifications when dropdown opens
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (showNotifications && user?.id) {
+        try {
+          setNotificationLoading(true);
+          const data = await getNotificationsByUser(user.id);
+          setNotifications(data || []);
+        } catch (error) {
+          console.error('Error fetching notifications:', error);
+        } finally {
+          setNotificationLoading(false);
+        }
+      }
+    };
+
+    fetchNotifications();
+  }, [showNotifications, user?.id]);
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -196,6 +265,9 @@ const Header = ({ user, setUser, onLogout }) => {
       }
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsSearchDropdownOpen(false);
+      }
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setShowNotifications(false);
       }
     };
 
@@ -227,11 +299,129 @@ const Header = ({ user, setUser, onLogout }) => {
     }
   };
 
+  // Refresh notification count
+  const refreshNotificationCount = async () => {
+    if (user?.id) {
+      try {
+        const count = await getUnreadNotificationCount(user.id);
+        setUnreadNotificationCount(count || 0);
+      } catch (error) {
+        console.error('Error refreshing notification count:', error);
+      }
+    }
+  };
+
+  // Notification handlers
+  const handleMarkAsRead = async (notificationId) => {
+    console.log('handleMarkAsRead called with ID:', notificationId);
+    try {
+      const result = await markNotificationAsRead(notificationId);
+      console.log('markNotificationAsRead result:', result);
+      
+      // Update local state immediately
+      setNotifications(prev => 
+        prev.map(notif => 
+          (notif.id === notificationId || notif._id === notificationId)
+            ? { ...notif, isRead: true, readAt: new Date().toISOString() }
+            : notif
+        )
+      );
+      setUnreadNotificationCount(prev => Math.max(0, prev - 1));
+      
+      // Refresh notifications from server to ensure sync
+      if (user && user.id) {
+        const updatedNotifications = await getNotificationsByUser(user.id);
+        setNotifications(updatedNotifications);
+        await refreshNotificationCount();
+      }
+      
+      console.log('Notification marked as read:', notificationId);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+      alert('Lỗi khi đánh dấu thông báo đã đọc: ' + error.message);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    console.log('handleMarkAllAsRead called for user:', user.id);
+    try {
+      const result = await markAllNotificationsAsRead(user.id);
+      console.log('markAllNotificationsAsRead result:', result);
+      
+      // Update local state immediately
+      setNotifications(prev => 
+        prev.map(notif => ({ 
+          ...notif, 
+          isRead: true, 
+          readAt: new Date().toISOString() 
+        }))
+      );
+      setUnreadNotificationCount(0);
+      
+      // Refresh notifications from server to ensure sync
+      if (user && user.id) {
+        const updatedNotifications = await getNotificationsByUser(user.id);
+        setNotifications(updatedNotifications);
+        await refreshNotificationCount();
+      }
+      
+      console.log('All notifications marked as read');
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+      alert('Lỗi khi đánh dấu tất cả thông báo đã đọc: ' + error.message);
+    }
+  };
+
+  const handleDeleteNotification = async (notificationId) => {
+    try {
+      await deleteNotification(notificationId);
+      setNotifications(prev => prev.filter(notif => notif.id !== notificationId));
+
+      const deletedNotif = notifications.find(notif => notif.id === notificationId);
+      if (deletedNotif && !deletedNotif.isRead) {
+        setUnreadNotificationCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (error) {
+      console.error('Error deleting notification:', error);
+    }
+  };
+
+  const getNotificationIcon = (type) => {
+    switch (type) {
+      case 'booking_success':
+        return '✓';
+      case 'ticket_approved':
+        return '✓';
+      case 'ticket_cancelled':
+        return '✕';
+      default:
+        return 'ℹ';
+    }
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Vừa xong';
+    if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} giờ trước`;
+    if (diffInMinutes < 10080) return `${Math.floor(diffInMinutes / 1440)} ngày trước`;
+    
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   // Handle admin logout
   const handleAdminLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
-    // Xóa thông tin user để tránh xung đột
     localStorage.removeItem('currentUser');
     localStorage.removeItem('authToken');
     window.location.href = '/';
@@ -521,7 +711,115 @@ const Header = ({ user, setUser, onLogout }) => {
 
         <div className="header-right">
           {user ? (
-            <div className="user-dropdown" ref={userDropdownRef}>
+            <>
+              {/* Notification Dropdown */}
+              <div className="notification-dropdown" ref={notificationRef}>
+                <button 
+                  className="notification-btn"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  title="Thông báo"
+                >
+                  <Bell size={20} />
+                  {unreadNotificationCount > 0 && (
+                    <span className="notification-badge">{unreadNotificationCount}</span>
+                  )}
+                </button>
+                
+                {showNotifications && (
+                  <div className="notification-dropdown-content">
+                    <div className="notification-header">
+                      <h3>Thông báo</h3>
+                      {(() => {
+                        const hasUnread = notifications.length > 0 && notifications.some(notif => 
+                          notif.isRead === false || notif.isRead === undefined || !notif.isRead
+                        );
+                        
+                        const shouldShowButton = hasUnread && unreadNotificationCount > 0;
+                        
+                        console.log('Notification check:', {
+                          notificationsCount: notifications.length,
+                          hasUnread,
+                          unreadNotificationCount,
+                          shouldShowButton,
+                          notifications: notifications.map(n => ({ id: n.id || n._id, isRead: n.isRead }))
+                        });
+                        
+                        return shouldShowButton && (
+                          <button 
+                            className="mark-all-read-btn"
+                            onClick={handleMarkAllAsRead}
+                          >
+                            Đánh dấu tất cả đã đọc
+                          </button>
+                        );
+                      })()}
+                    </div>
+                    
+                    <div className="notification-list">
+                      {notificationLoading ? (
+                        <div className="notification-loading">
+                          <div className="loading-spinner"></div>
+                          <p>Đang tải thông báo...</p>
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="no-notifications">
+                          <Bell size={32} />
+                          <p>Không có thông báo nào</p>
+                        </div>
+                      ) : (
+                        notifications.slice(0, 5).map(notification => (
+                          <div 
+                            key={notification.id} 
+                            className={`notification-item ${!notification.isRead ? 'unread' : ''}`}
+                          >
+                            <div className="notification-content">
+                              <div className="notification-icon">
+                                {getNotificationIcon(notification.type)}
+                              </div>
+                              <div className="notification-details">
+                                <h4 className="notification-title">
+                                  {notification.title}
+                                </h4>
+                                <p className="notification-message">
+                                  {notification.message}
+                                </p>
+                                <span className="notification-time">
+                                  {formatDate(notification.createdAt)}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="notification-actions">
+                              <button 
+                                className="delete-btn"
+                                onClick={() => handleDeleteNotification(notification.id)}
+                                title="Xóa thông báo"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                    
+                    {notifications.length > 5 && (
+                      <div className="notification-footer">
+                        <button 
+                          className="view-all-btn"
+                          onClick={() => {
+                            // Có thể mở modal đầy đủ hoặc chuyển đến trang thông báo
+                            setShowNotifications(false);
+                          }}
+                        >
+                          Xem tất cả thông báo
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div className="user-dropdown" ref={userDropdownRef}>
               <button 
                 className="user-profile-btn"
                 onClick={() => setIsUserDropdownOpen(!isUserDropdownOpen)}
@@ -587,7 +885,8 @@ const Header = ({ user, setUser, onLogout }) => {
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            </>
           ) : (
             <button 
               className="user-icon-btn"
@@ -619,6 +918,7 @@ const Header = ({ user, setUser, onLogout }) => {
         onAvatarChange={handleAvatarChange}
       />
     )}
+
     </>
   );
 };

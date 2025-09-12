@@ -31,16 +31,26 @@ export const getTicketById = async (ticketId) => {
 // Đặt vé mới
 export const bookTicket = async (ticketData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/tickets`, {
+    const response = await fetch(`${API_BASE_URL}/tickets/book`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(ticketData)
     });
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      let errorMessage = `HTTP error! status: ${response.status}`;
+      try {
+        const errorData = await response.text();
+        console.error('Error response:', errorData);
+        errorMessage = errorData || errorMessage;
+      } catch (e) {
+        console.error('Could not parse error response');
+      }
+      throw new Error(errorMessage);
     }
+    
     return await response.json();
   } catch (error) {
     console.error('Error booking ticket:', error);

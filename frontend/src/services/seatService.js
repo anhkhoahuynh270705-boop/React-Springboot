@@ -19,13 +19,12 @@ export async function checkApiConnection() {
 // Lấy tất cả ghế theo showtimeId
 export async function getSeatsByShowtime(showtimeId) {
   try {
-    const response = await fetch(`${API_BASE_URL}/seats?showtimeId=${showtimeId}`);
+    const response = await fetch(`${API_BASE_URL}/seats/showtime/${showtimeId}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     return await response.json();
   } catch (error) {
-    console.error('Error fetching seats by showtime:', error);
     throw error;
   }
 }
@@ -164,12 +163,13 @@ export async function unbookSeat(seatId, userId) {
 
 export async function deleteSeatsByShowtime(showtimeId) {
   try {
-    const seats = await getSeatsByShowtime(showtimeId);
-    if (seats && seats.length > 0) {
-      const deletePromises = seats.map(seat => deleteSeat(seat.id));
-      await Promise.all(deletePromises);
-      console.log(`Deleted ${seats.length} seats for showtime ${showtimeId}`);
+    const response = await fetch(`${API_BASE_URL}/seats/showtime/${showtimeId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+    console.log(`Deleted all seats for showtime ${showtimeId}`);
     return true;
   } catch (error) {
     console.error('Error deleting seats by showtime:', error);

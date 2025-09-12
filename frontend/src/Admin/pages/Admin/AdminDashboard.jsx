@@ -33,11 +33,13 @@ import {
 } from '../../../services/adminService';
 import { getAllNews, createNews, updateNews, deleteNews } from '../../../services/newsService';
 import { getShowtimes } from '../../../services/showtimeService';
+import { createNotification, createTicketApprovedNotification, createTicketCancelledNotification } from '../../../services/notificationService';
 import CreateNews from '../../components/CreateNews/CreateNews';
 import NewsDetailModal from '../../components/NewsDetailModal/NewsDetailModal';
 import EditNewsModal from '../../components/EditNewsModal/EditNewsModal';
 import EditUserForm from '../../components/EditUserForm/EditUserForm';
 import SeatManager from '../../SeatManager/SeatManager';
+import ComboManagement from '../../components/ComboManagement/ComboManagement';
 import styles from './AdminDashboard.module.css';
 
 const AdminDashboard = () => {
@@ -125,6 +127,34 @@ const AdminDashboard = () => {
   const handleStatusUpdate = async (ticketId, newStatus) => {
     try {
       await updateTicketStatus(ticketId, newStatus);
+      
+      // Tạo thông báo cho user
+      const ticket = tickets.find(t => t.id === ticketId);
+      if (ticket) {
+        try {
+          let notificationData;
+          if (newStatus === 'confirmed') {
+            notificationData = createTicketApprovedNotification(
+              ticket.userId,
+              ticket.movieTitle,
+              ticket.ticketNumber || ticket.id
+            );
+          } else if (newStatus === 'cancelled') {
+            notificationData = createTicketCancelledNotification(
+              ticket.userId,
+              ticket.movieTitle,
+              ticket.ticketNumber || ticket.id
+            );
+          }
+          
+          if (notificationData) {
+            await createNotification(notificationData);
+          }
+        } catch (notificationError) {
+          console.error('Error creating notification:', notificationError);
+        }
+      }
+      
       await fetchData(); 
       alert(`Cập nhật trạng thái vé thành công!`);
     } catch (error) {
@@ -137,6 +167,34 @@ const AdminDashboard = () => {
     try {
       const promises = ticketIds.map(id => updateTicketStatus(id, newStatus));
       await Promise.all(promises);
+      
+      // Tạo thông báo cho tất cả user
+      const updatedTickets = tickets.filter(t => ticketIds.includes(t.id));
+      for (const ticket of updatedTickets) {
+        try {
+          let notificationData;
+          if (newStatus === 'confirmed') {
+            notificationData = createTicketApprovedNotification(
+              ticket.userId,
+              ticket.movieTitle,
+              ticket.ticketNumber || ticket.id
+            );
+          } else if (newStatus === 'cancelled') {
+            notificationData = createTicketCancelledNotification(
+              ticket.userId,
+              ticket.movieTitle,
+              ticket.ticketNumber || ticket.id
+            );
+          }
+          
+          if (notificationData) {
+            await createNotification(notificationData);
+          }
+        } catch (notificationError) {
+          console.error('Error creating notification for ticket', ticket.id, ':', notificationError);
+        }
+      }
+      
       await fetchData();
       setSelectedTickets([]);
       alert(`Cập nhật ${ticketIds.length} vé thành công!`);
@@ -275,15 +333,36 @@ const AdminDashboard = () => {
     }
   };
 
+  // Function to remove Vietnamese diacritics for search
+  const removeVietnameseDiacritics = (str) => {
+    if (!str) return '';
+    
+    return str
+      .normalize('NFD') // Decompose characters
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+      .toLowerCase();
+  };
+
+  // Function to check if text contains search query (case-insensitive, diacritic-insensitive)
+  const containsSearchQuery = (text, query) => {
+    if (!text || !query) return false;
+    
+    const normalizedText = removeVietnameseDiacritics(text);
+    const normalizedQuery = removeVietnameseDiacritics(query);
+    
+    return normalizedText.includes(normalizedQuery);
+  };
+
   const getFilteredUsers = () => {
     let filtered = users;
     
     // Filter by search term
     if (userSearchTerm) {
       filtered = filtered.filter(user => 
-        user.username?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-        user.fullName?.toLowerCase().includes(userSearchTerm.toLowerCase()) ||
-        user.email?.toLowerCase().includes(userSearchTerm.toLowerCase())
+        containsSearchQuery(user.username, userSearchTerm) ||
+        containsSearchQuery(user.fullName, userSearchTerm) ||
+        containsSearchQuery(user.email, userSearchTerm)
       );
     }
     
@@ -311,11 +390,11 @@ const AdminDashboard = () => {
       filtered = filtered.filter(ticket => {
         const user = users.find(u => u.id === ticket.userId);
         const userName = user ? (user.fullName || user.username) : '';
-        return ticket.movieTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               ticket.cinemaName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               ticket.ticketNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               ticket.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-               userName.toLowerCase().includes(searchTerm.toLowerCase());
+        return containsSearchQuery(ticket.movieTitle, searchTerm) ||
+               containsSearchQuery(ticket.cinemaName, searchTerm) ||
+               containsSearchQuery(ticket.ticketNumber, searchTerm) ||
+               containsSearchQuery(ticket.id, searchTerm) ||
+               containsSearchQuery(userName, searchTerm);
       });
     }
     
@@ -472,6 +551,13 @@ const AdminDashboard = () => {
             Quản lý tin tức
           </button>
           <button
+            className={`${styles['admin-nav-button']} ${activeTab === 'combos' ? styles['admin-nav-active'] : ''}`}
+            onClick={() => setActiveTab('combos')}
+          >
+            <Plus size={20} />
+            Quản lý combo
+          </button>
+          <button
             className={`${styles['admin-nav-button']} ${activeTab === 'seats' ? styles['admin-nav-active'] : ''}`}
             onClick={() => setActiveTab('seats')}
           >
@@ -495,6 +581,7 @@ const AdminDashboard = () => {
             {activeTab === 'tickets' && 'Quản lý vé'}
             {activeTab === 'users' && 'Quản lý người dùng'}
             {activeTab === 'news' && 'Quản lý tin tức'}
+            {activeTab === 'combos' && 'Quản lý combo'}
             {activeTab === 'seats' && 'Quản lý ghế'}
           </h1>
         </div>
@@ -955,6 +1042,11 @@ const AdminDashboard = () => {
             </div>
           )}
 
+          {/* Combos Tab */}
+          {activeTab === 'combos' && (
+            <ComboManagement />
+          )}
+
           {/* Seats Tab */}
           {activeTab === 'seats' && (
             <div className={`${styles['admin-seats-content']}`}>
@@ -989,8 +1081,6 @@ const AdminDashboard = () => {
                       <h4>{showtime.movieName || showtime.movieTitle || 'Phim'}</h4>
                       <p><strong>Thời gian:</strong> {new Date(showtime.startTime || showtime.time).toLocaleString('vi-VN')}</p>
                       <p><strong>Phòng:</strong> {showtime.room || 'N/A'}</p>
-                      <p><strong>Rạp:</strong> {showtime.cinemaName || 'N/A'}</p>
-                      <p><strong>Giá vé:</strong> {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(showtime.price || 0)}</p>
                     </div>
                     <div className={`${styles['admin-showtime-actions']}`}>
                       <button 
@@ -1011,8 +1101,6 @@ const AdminDashboard = () => {
               </div>
 
               {(() => {
-                console.log('Rendering check - selectedShowtimeId:', selectedShowtimeId, 'selectedShowtime:', selectedShowtime);
-                console.log('Condition result:', selectedShowtimeId && selectedShowtime);
                 return selectedShowtimeId && selectedShowtime;
               })() && (
                 <div className={`${styles['admin-seat-manager-section']}`}>

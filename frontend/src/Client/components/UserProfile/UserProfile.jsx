@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getCurrentUserSync, generateAvatarForCurrentUser, updateUserProfile, getUserProfile } from '../../../services/userService';
 import { generateAvatarWithStyle } from '../../../services/avatarService';
-import { User, Settings, Bell, Crown, Gift, Star, Ticket, Calendar, CreditCard, Award, TrendingUp, Shield, Upload, X } from 'lucide-react';
+import { User, Settings, Crown, Gift, Star, Ticket, Calendar, CreditCard, Award, TrendingUp, Shield, Upload, X } from 'lucide-react';
 import './UserProfile.css';
 
 const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
@@ -38,15 +38,9 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
   // Handle popup animation
   useEffect(() => {
     if (isPopup && popupRef.current) {
-      console.log('Adding show class to popup element');
-      console.log('Element classes before:', popupRef.current.className);
       const timer = setTimeout(() => {
         if (popupRef.current) {
           popupRef.current.classList.add('show');
-          // Also update inline style for background
-          popupRef.current.style.background = 'rgba(0, 0, 0, 0.7)';
-          popupRef.current.style.backdropFilter = 'blur(5px)';
-          popupRef.current.style.WebkitBackdropFilter = 'blur(5px)';
           console.log('Element classes after:', popupRef.current.className);
         }
       }, 10);
@@ -59,10 +53,6 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
     if (popupRef.current) {
       popupRef.current.classList.add('closing');
       popupRef.current.classList.remove('show');
-      // Reset inline style
-      popupRef.current.style.background = 'rgba(0, 0, 0, 0)';
-      popupRef.current.style.backdropFilter = 'blur(0px)';
-      popupRef.current.style.WebkitBackdropFilter = 'blur(0px)';
       setTimeout(() => {
         if (onClose) onClose();
       }, 300);
@@ -340,23 +330,6 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
     <div 
       ref={popupRef}
       className={`user-profile ${isPopup ? 'popup' : ''}`} 
-      style={isPopup ? {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: '100vw',
-        height: '100vh',
-        background: 'rgba(0, 0, 0, 0)',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'stretch',
-        justifyContent: 'flex-end',
-        transition: 'background-color 0.3s ease-out, backdrop-filter 0.3s ease-out',
-        backdropFilter: 'blur(0px)',
-        WebkitBackdropFilter: 'blur(0px)'
-      } : {}}
       onClick={isPopup ? (e) => {
         if (e.target === e.currentTarget) {
           handleCloseClick();
@@ -556,7 +529,7 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
             <div className="progress-bar">
               <div 
                 className="progress-fill" 
-                style={{ width: `${(userStats.points / (userStats.points + userStats.nextLevelPoints)) * 100}%` }}
+                data-width={`${(userStats.points / (userStats.points + userStats.nextLevelPoints)) * 100}%`}
               ></div>
             </div>
           </div>
@@ -568,7 +541,10 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
           <div className="benefits-grid">
             {benefits.map((benefit, index) => (
               <div key={index} className="benefit-card">
-                <div className="benefit-icon" style={{ backgroundColor: benefit.color }}>
+                <div 
+                  className="benefit-icon" 
+                  data-color={benefit.color}
+                >
                   <benefit.icon size={20} />
                 </div>
                 <div className="benefit-content">
@@ -589,11 +565,6 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
                 <span>Chỉnh sửa thông tin</span>
               </button>
               
-              <button className="action-btn notifications">
-                <Bell size={18} />
-                <span>Thông báo</span>
-                <div className="notification-badge">NEW</div>
-              </button>
             </>
           ) : (
             <div className="edit-actions">

@@ -9,6 +9,7 @@ import CinemasPage from './Client/pages/CinemasPage/CinemasPage';
 import TicketListPage from './Client/pages/TicketListPage/TicketListPage';
 import ProfilePage from './Client/pages/ProfilePage/ProfilePage';
 import SeatMapPage from './Client/pages/SeatMap/SeatMapPage';
+import ComboSelectionPage from './Client/pages/ComboSelectionPage/ComboSelectionPage';
 import NewsPage from './Client/pages/NewsPage/NewsPage';
 import NewsDetailPage from './Client/pages/NewsDetailPage/NewsDetailPage';
 import AdminLogin from './Admin/pages/Admin/AdminLogin';
@@ -91,6 +92,7 @@ function App() {
             <Route path="/movie/:movieId" element={<MovieDetailPage />} />
             <Route path="/tickets" element={<TicketListPage userId={user?.id} />} />
             <Route path="/seat-selection" element={<SeatMapPage />} />
+            <Route path="/combo-selection" element={<ComboSelectionPage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/news/:id" element={<NewsDetailPage />} />
             

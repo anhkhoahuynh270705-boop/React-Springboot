@@ -58,6 +58,7 @@ public class NewsController {
                 news = newsRepository.findByFeaturedTrueOrderByPublishDateDesc();
                 totalElements = news.size();
             } else {
+                @SuppressWarnings("unused")
                 Pageable pageable = PageRequest.of(page, size);
                 news = newsRepository.findAllByOrderByPublishDateDesc();
                 totalElements = news.size();

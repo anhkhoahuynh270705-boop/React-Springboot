@@ -77,32 +77,53 @@ public class TicketController {
 
     // Đặt vé
     @PostMapping("/book")
-    public Ticket bookTicket(@RequestBody Ticket ticket) {
-        if (ticket.getBookingTime() == null || ticket.getBookingTime().isEmpty()) {
-            ticket.setBookingTime(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+    public ResponseEntity<?> bookTicket(@RequestBody Ticket ticket) {
+        try {
+            // Validate required fields
+            if (ticket.getUserId() == null || ticket.getUserId().isEmpty()) {
+                return ResponseEntity.badRequest().body("User ID is required");
+            }
+            if (ticket.getShowtimeId() == null || ticket.getShowtimeId().isEmpty()) {
+                return ResponseEntity.badRequest().body("Showtime ID is required");
+            }
+            if (ticket.getMovieId() == null || ticket.getMovieId().isEmpty()) {
+                return ResponseEntity.badRequest().body("Movie ID is required");
+            }
+            if (ticket.getSeatNumber() == null || ticket.getSeatNumber().isEmpty()) {
+                return ResponseEntity.badRequest().body("Seat number is required");
+            }
+            
+            if (ticket.getBookingTime() == null || ticket.getBookingTime().isEmpty()) {
+                ticket.setBookingTime(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            }
+            
+            // Tự động tạo ticket number và QR code
+            if (ticket.getTicketNumber() == null || ticket.getTicketNumber().isEmpty()) {
+                ticket.setTicketNumber("TK" + System.currentTimeMillis());
+            }
+            if (ticket.getQrCode() == null || ticket.getQrCode().isEmpty()) {
+                ticket.setQrCode(UUID.randomUUID().toString());
+            }
+            
+            // Set default values
+            if (ticket.getStatus() == null || ticket.getStatus().isEmpty()) {
+                ticket.setStatus("confirmed");
+            }
+            if (ticket.getPaymentStatus() == null || ticket.getPaymentStatus().isEmpty()) {
+                ticket.setPaymentStatus("paid");
+            }
+            // Set default refundable status (boolean field, no null check needed)
+            if (!ticket.isRefundable()) {
+                ticket.setRefundable(true);
+            }
+            
+            Ticket savedTicket = ticketRepository.save(ticket);
+            return ResponseEntity.ok(savedTicket);
+        } catch (Exception e) {
+            System.err.println("Error creating ticket: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error creating ticket: " + e.getMessage());
         }
-        
-        // Tự động tạo ticket number và QR code
-        if (ticket.getTicketNumber() == null || ticket.getTicketNumber().isEmpty()) {
-            ticket.setTicketNumber("TK" + System.currentTimeMillis());
-        }
-        if (ticket.getQrCode() == null || ticket.getQrCode().isEmpty()) {
-            ticket.setQrCode(UUID.randomUUID().toString());
-        }
-        
-        // Set default values
-        if (ticket.getStatus() == null || ticket.getStatus().isEmpty()) {
-            ticket.setStatus("confirmed");
-        }
-        if (ticket.getPaymentStatus() == null || ticket.getPaymentStatus().isEmpty()) {
-            ticket.setPaymentStatus("paid");
-        }
-        // Set default refundable status (boolean field, no null check needed)
-        if (!ticket.isRefundable()) {
-            ticket.setRefundable(true);
-        }
-        
-        return ticketRepository.save(ticket);
     }
 
     @PutMapping("/{id}")

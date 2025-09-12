@@ -15,6 +15,6 @@ public class Seat {
     private String row;
     private int column;
     private boolean booked;
-    private String bookedBy; // ID của user đã đặt ghế
-    private String bookedAt; // Thời gian đặt ghế
+    private String bookedBy;
+    private String bookedAt;
 }

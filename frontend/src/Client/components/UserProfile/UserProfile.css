@@ -7,7 +7,7 @@
   bottom: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background: rgba(0, 0, 0, 0) !important;
+  background: rgba(0, 0, 0, 0.7) !important;
   z-index: 9999 !important;
   display: flex !important;
   align-items: stretch !important;
@@ -19,41 +19,17 @@
   box-shadow: none !important;
   opacity: 1 !important;
   visibility: visible !important;
-  transition: background-color 0.3s ease-out, backdrop-filter 0.3s ease-out !important;
-  backdrop-filter: blur(0px) !important;
-  -webkit-backdrop-filter: blur(0px) !important;
+  transition: background-color 0.3s ease-out !important;
+  cursor: pointer !important;
 }
 
-/* Force higher specificity for background overlay */
 body .user-profile.popup {
-  background: rgba(0, 0, 0, 0) !important;
-  backdrop-filter: blur(0px) !important;
-  -webkit-backdrop-filter: blur(0px) !important;
-}
-
-.user-profile.popup.show {
   background: rgba(0, 0, 0, 0.7) !important;
-  backdrop-filter: blur(5px) !important;
-  -webkit-backdrop-filter: blur(5px) !important;
-}
-
-/* Force higher specificity for show state */
-body .user-profile.popup.show {
-  background: rgba(0, 0, 0, 0.7) !important;
-  backdrop-filter: blur(5px) !important;
-  -webkit-backdrop-filter: blur(5px) !important;
-}
-
-/* Maximum specificity override */
-html body .user-profile.popup.show {
-  background: rgba(0, 0, 0, 0.7) !important;
-  backdrop-filter: blur(5px) !important;
-  -webkit-backdrop-filter: blur(5px) !important;
 }
 
 .user-profile.popup > div {
   position: relative !important;
-  transform: translateX(-2%) !important;
+  transform: translateX(-2px) !important;
   transition: transform 0.3s ease-in-out !important;
   max-width: 450px !important;
   width: 100% !important;
@@ -67,6 +43,7 @@ html body .user-profile.popup.show {
   box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3) !important;
   opacity: 1 !important;
   visibility: visible !important;
+  cursor: default !important;
 }
 
 .user-profile.popup.show > div {
@@ -444,6 +421,11 @@ html body .user-profile.popup.show {
   transition: width 0.3s ease;
 }
 
+/* Dynamic width for progress bar */
+.progress-fill[data-width] {
+  width: attr(data-width);
+}
+
 /* Benefits Section */
 .benefits-section {
   background: #f8fafc;
@@ -490,6 +472,10 @@ html body .user-profile.popup.show {
   justify-content: center;
   color: white;
   flex-shrink: 0;
+}
+
+.benefit-icon[data-color] {
+  background-color: attr(data-color);
 }
 
 .benefit-content {

@@ -46,6 +46,27 @@ const NewsPage = () => {
     }
   };
 
+  // Function to remove Vietnamese diacritics for search
+  const removeVietnameseDiacritics = (str) => {
+    if (!str) return '';
+    
+    return str
+      .normalize('NFD') // Decompose characters
+      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+      .toLowerCase();
+  };
+
+  // Function to check if text contains search query (case-insensitive, diacritic-insensitive)
+  const containsSearchQuery = (text, query) => {
+    if (!text || !query) return false;
+    
+    const normalizedText = removeVietnameseDiacritics(text);
+    const normalizedQuery = removeVietnameseDiacritics(query);
+    
+    return normalizedText.includes(normalizedQuery);
+  };
+
   const filterAndSortArticles = () => {
     let filtered = [...articles];
 
@@ -56,11 +77,11 @@ const NewsPage = () => {
 
     // Filter by search query
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(article =>
-        article.title.toLowerCase().includes(query) ||
-        article.summary.toLowerCase().includes(query) ||
-        article.tags.some(tag => tag.toLowerCase().includes(query))
+        containsSearchQuery(article.title, searchQuery) ||
+        containsSearchQuery(article.summary, searchQuery) ||
+        containsSearchQuery(article.content, searchQuery) ||
+        article.tags.some(tag => containsSearchQuery(tag, searchQuery))
       );
     }
 

@@ -21,6 +21,27 @@ export async function getMovieById(id) {
   }
 }
 
+// Function to remove Vietnamese diacritics for search
+function removeVietnameseDiacritics(str) {
+  if (!str) return '';
+  
+  return str
+    .normalize('NFD') // Decompose characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+    .toLowerCase();
+}
+
+// Function to check if text contains search query (case-insensitive, diacritic-insensitive)
+function containsSearchQuery(text, query) {
+  if (!text || !query) return false;
+  
+  const normalizedText = removeVietnameseDiacritics(text);
+  const normalizedQuery = removeVietnameseDiacritics(query);
+  
+  return normalizedText.includes(normalizedQuery);
+}
+
 export async function searchMovies(query) {
   if (!query || query.trim().length < 2) {
     console.log('Query too short, skipping API call');
@@ -58,11 +79,13 @@ export async function searchMovies(query) {
     try {
       const allMovies = await getMovies();
       const filteredMovies = allMovies.filter(movie => 
-        movie.title?.toLowerCase().includes(query.toLowerCase()) ||
-        movie.genre?.toLowerCase().includes(query.toLowerCase()) ||
-        movie.director?.toLowerCase().includes(query.toLowerCase()) ||
-        movie.movieName?.toLowerCase().includes(query.toLowerCase()) ||
-        movie.name?.toLowerCase().includes(query.toLowerCase())
+        containsSearchQuery(movie.title, query) ||
+        containsSearchQuery(movie.genre, query) ||
+        containsSearchQuery(movie.director, query) ||
+        containsSearchQuery(movie.movieName, query) ||
+        containsSearchQuery(movie.name, query) ||
+        containsSearchQuery(movie.description, query) ||
+        containsSearchQuery(movie.cast, query)
       );
       
       console.log(`Fallback search found ${filteredMovies.length} movies`);

@@ -99,12 +99,32 @@ const TicketListPage = ({ userId }) => {
 
   useEffect(() => {
     let filtered = tickets;
+    const removeVietnameseDiacritics = (str) => {
+      if (!str) return '';
+      
+      return str
+        .normalize('NFD') 
+        .replace(/[\u0300-\u036f]/g, '') 
+        .replace(/đ/g, 'd').replace(/Đ/g, 'D') 
+        .toLowerCase();
+    };
+
+    // Function to check if text contains search query (case-insensitive, diacritic-insensitive)
+    const containsSearchQuery = (text, query) => {
+      if (!text || !query) return false;
+      
+      const normalizedText = removeVietnameseDiacritics(text);
+      const normalizedQuery = removeVietnameseDiacritics(query);
+      
+      return normalizedText.includes(normalizedQuery);
+    };
+
     if (searchQuery.trim()) {
       filtered = filtered.filter(ticket => {
         const movieTitle = movieTitles[ticket.id] || ticket.movieTitle || 'Tên phim';
-        return movieTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-               ticket.cinemaName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-               ticket.showtimeId?.toLowerCase().includes(searchQuery.toLowerCase());
+        return containsSearchQuery(movieTitle, searchQuery) ||
+               containsSearchQuery(ticket.cinemaName, searchQuery) ||
+               containsSearchQuery(ticket.showtimeId, searchQuery);
       });
     }
 
@@ -573,7 +593,7 @@ const TicketListPage = ({ userId }) => {
                     <Download size={16} />
                     {actionLoading[ticket.id] ? '...' : 'Tải'}
                   </button>
-                  {ticket.status === 'confirmed' && (
+                  {(ticket.status === 'confirmed' || ticket.status === 'pending') && (
                     <button
                       onClick={() => handleCancelTicket(ticket.id)}
                       className={`${styles['action-btn']} ${styles['cancel-btn']}`}
@@ -614,7 +634,7 @@ const TicketListPage = ({ userId }) => {
             <p>
               Hiển thị {filteredTickets.length} vé 
               {searchQuery && ` cho "${searchQuery}"`}
-              {statusFilter !== 'all' && ` - Trạng thái: ${statusFilter}`}
+              {statusFilter !== 'all' && ` - Trạng thái: ${getStatusBadge(statusFilter).text}`}
             </p>
           </div>
         )}

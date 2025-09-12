@@ -4,6 +4,7 @@ import { CreditCard, CheckCircle, ArrowLeft } from 'lucide-react';
 import { getSeatsByShowtime, bookSeat } from '../../../services/seatService';
 import { bookTicket } from '../../../services/ticketService';
 import { getCurrentUser } from '../../../services/userService';
+import { createNotification, createBookingSuccessNotification } from '../../../services/notificationService';
 import './SeatMapPage.css';    
 
 const SeatMapPage = ({ showtimeId, userId }) => {
@@ -18,6 +19,7 @@ const SeatMapPage = ({ showtimeId, userId }) => {
   const [user, setUser] = useState(null);
   const [showtime, setShowtime] = useState(null);
   const [movie, setMovie] = useState(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('cash');
   const generateMockSeats = () => {
     const seats = [];
     const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
@@ -79,7 +81,7 @@ const SeatMapPage = ({ showtimeId, userId }) => {
   }, [showtimeId, location.state]);
 
   const handleSeatClick = (seat) => {
-    if (seat.booked) return;
+    if (seat.booked && seat.bookedBy && seat.bookedBy.trim() !== '') return;
 
     setSelectedSeats(prev => {
       const isSelected = prev.find(s => s.seatNumber === seat.seatNumber);
@@ -145,13 +147,28 @@ const SeatMapPage = ({ showtimeId, userId }) => {
         showTime: showTime,
         price: totalPrice,
         status: 'pending',
-        paymentMethod: 'online', 
-        paymentStatus: 'paid',
+        paymentMethod: selectedPaymentMethod, 
+        paymentStatus: selectedPaymentMethod === 'cash' ? 'pending' : 'paid',
         isRefundable: true
       };
 
       console.log('SeatMapPage: Creating single ticket for multiple seats:', ticketData);
       await bookTicket(ticketData);
+      
+      // Tạo thông báo đặt vé thành công
+      try {
+        const notificationData = createBookingSuccessNotification(
+          user?.id || userId,
+          movie?.title || movie?.name || 'Phim',
+          seatNumbers,
+          showTime
+        );
+        await createNotification(notificationData);
+      } catch (notificationError) {
+        console.error('Error creating notification:', notificationError);
+        // Không cần hiển thị lỗi cho user vì đặt vé đã thành công
+      }
+      
       setStep(3);
       setMessage('Đặt vé thành công!');
     } catch (error) {
@@ -224,6 +241,23 @@ const SeatMapPage = ({ showtimeId, userId }) => {
     );
   }
 
+  if (!user) {
+    return (
+      <div className="error-container">
+        <h2>Đăng nhập để đặt vé nhé!😘</h2>
+        <p>Bạn cần đăng nhập để có thể chọn ghế và đặt vé.</p>
+        <div className="auth-buttons">
+          <button onClick={() => navigate('/login')} className="btn-primary">
+            Đăng nhập
+          </button>
+          <button onClick={() => navigate('/')} className="btn-secondary">
+            Về trang chủ
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="seat-map-page">
       <div className="seat-map-container">
@@ -257,23 +291,26 @@ const SeatMapPage = ({ showtimeId, userId }) => {
                 </div>
               ) : (
                 <div className="seats-grid">
-                  {seats.map(seat => (
-                    <button
-                      key={seat.id || seat.seatNumber}
-                      className={`seat ${seat.booked ? 'booked' : ''} ${
-                        selectedSeats.find(s => s.seatNumber === seat.seatNumber) ? 'selected' : ''
-                      }`}
-                      disabled={seat.booked}
-                      onClick={() => handleSeatClick(seat)}
-                      title={seat.booked ? `Đã được đặt bởi ${seat.bookedBy || 'người khác'}` : ''}
-                    >
-                      {seat.booked ? (
-                        <span style={{ color: '#ef4444', fontSize: '14px', fontWeight: 'bold' }}>✕</span>
-                      ) : (
-                        seat.seatNumber
-                      )}
-                    </button>
-                  ))}
+                  {seats.map(seat => {
+                    const isActuallyBooked = seat.booked && seat.bookedBy && seat.bookedBy.trim() !== '';
+                    return (
+                      <button
+                        key={seat.id || seat.seatNumber}
+                        className={`seat ${isActuallyBooked ? 'booked' : ''} ${
+                          selectedSeats.find(s => s.seatNumber === seat.seatNumber) ? 'selected' : ''
+                        }`}
+                        disabled={isActuallyBooked}
+                        onClick={() => handleSeatClick(seat)}
+                        title={isActuallyBooked ? `Đã được đặt bởi ${seat.bookedBy || 'người khác'}` : ''}
+                      >
+                        {isActuallyBooked ? (
+                          <span style={{ color: '#ef4444', fontSize: '14px', fontWeight: 'bold' }}>✕</span>
+                        ) : (
+                          seat.seatNumber
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -303,10 +340,17 @@ const SeatMapPage = ({ showtimeId, userId }) => {
                   <div className="booking-actions">
                     <button 
                       className="book-now-btn"
-                      onClick={() => setStep(2)}
+                      onClick={() => navigate('/combo-selection', { 
+                        state: { 
+                          showtime, 
+                          movie, 
+                          selectedSeats, 
+                          user 
+                        } 
+                      })}
                     >
                       <CreditCard size={20} />
-                      Đặt vé ngay
+                      Đặt vé
                     </button>
                   </div>
                 </>
@@ -322,7 +366,8 @@ const SeatMapPage = ({ showtimeId, userId }) => {
           </div>
         )}
 
-        {step === 2 && (
+        {/* Payment step removed - now handled in ComboSelectionPage */}
+        {false && (
           <div className="payment-content">
             <div className="payment-header">
               <h3>Thông tin thanh toán</h3>
@@ -365,9 +410,17 @@ const SeatMapPage = ({ showtimeId, userId }) => {
               <h4>Phương thức thanh toán</h4>
               <div className="payment-options">
                 <label className="payment-option">
-                  <input type="radio" name="payment" value="cash" defaultChecked />
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="cash" 
+                    checked={selectedPaymentMethod === 'cash'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
                   <div className="payment-option-content">
-                    <div className="payment-icon">💰</div>
+                    <div className="payment-icon">
+                      <img src="/payment-icons/cash-icon.png" alt="Cash" className="payment-icon-img" />
+                    </div>
                     <div className="payment-details">
                       <span className="payment-title">Thanh toán tại quầy</span>
                       <span className="payment-desc">Thanh toán khi đến rạp</span>
@@ -375,12 +428,56 @@ const SeatMapPage = ({ showtimeId, userId }) => {
                   </div>
                 </label>
                 <label className="payment-option">
-                  <input type="radio" name="payment" value="card" />
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="vietqr" 
+                    checked={selectedPaymentMethod === 'vietqr'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
                   <div className="payment-option-content">
-                    <div className="payment-icon">💳</div>
+                    <div className="payment-icon">
+                      <img src="https://play-lh.googleusercontent.com/22cJzF0otG-EmmQgILMRTWFPnx0wTCSDY9aFaAmOhHs30oNHxi63KcGwUwmbR76Msko" alt="VietQR" className="payment-icon-img" />
+                    </div>
                     <div className="payment-details">
-                      <span className="payment-title">Thẻ tín dụng</span>
-                      <span className="payment-desc">Visa, Mastercard, JCB</span>
+                      <span className="payment-title">VietQR</span>
+                      <span className="payment-desc">Quét mã QR để thanh toán</span>
+                    </div>
+                  </div>
+                </label>
+                <label className="payment-option">
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="momo" 
+                    checked={selectedPaymentMethod === 'momo'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
+                  <div className="payment-option-content">
+                    <div className="payment-icon">
+                      <img src="https://play-lh.googleusercontent.com/uCtnppeJ9ENYdJaSL5av-ZL1ZM1f3b35u9k8EOEjK3ZdyG509_2osbXGH5qzXVmoFv0" alt="MoMo" className="payment-icon-img" />
+                    </div>
+                    <div className="payment-details">
+                      <span className="payment-title">Ví MoMo</span>
+                      <span className="payment-desc">Thanh toán qua ứng dụng MoMo</span>
+                    </div>
+                  </div>
+                </label>
+                <label className="payment-option">
+                  <input 
+                    type="radio" 
+                    name="payment" 
+                    value="zalopay" 
+                    checked={selectedPaymentMethod === 'zalopay'}
+                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                  />
+                  <div className="payment-option-content">
+                    <div className="payment-icon">
+                      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQTlp4qW2M8xPofmuZHwEfGi9mNMWUG0zs53A&s" alt="ZaloPay" className="payment-icon-img" />
+                    </div>
+                    <div className="payment-details">
+                      <span className="payment-title">ZaloPay</span>
+                      <span className="payment-desc">Thanh toán qua ZaloPay</span>
                     </div>
                   </div>
                 </label>
@@ -418,7 +515,8 @@ const SeatMapPage = ({ showtimeId, userId }) => {
           </div>
         )}
 
-        {step === 3 && (
+        {/* Success step removed - now handled in ComboSelectionPage */}
+        {false && (
           <div className="success-content">
             <div className="success-icon">
               <CheckCircle size={64} color="#10b981" />

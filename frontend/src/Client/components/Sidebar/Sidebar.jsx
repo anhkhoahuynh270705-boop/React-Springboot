@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Filter, Star, Clock, Plus } from 'lucide-react';
-import styles from './Sidebar.module.css';
+import './Sidebar.css';
 
 const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -42,30 +42,30 @@ const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
   };
 
   return (
-    <aside className={`${styles['sidebar']} ${isExpanded ? 'expanded' : ''}`}>
-      <div className={`${styles['sidebar-section']}`}> 
-        <h3 className={`${styles['sidebar-title']}`}>
+    <aside className={`${'sidebar'} ${isExpanded ? 'expanded' : ''}`}>
+      <div className={`${'sidebar-section'}`}> 
+        <h3 className={`${'sidebar-title'}`}>
           <Filter size={24} />
           Bộ lọc
         </h3>
       </div>
 
       {/* Genre Filter */}
-      <div className={`${styles['sidebar-section']}`}>
-        <div className={`${styles['genre-header']}`}>
-          <h4 className={`${styles['sidebar-title']}`}>
+      <div className={`${'sidebar-section'}`}>
+        <div className={`${'genre-header'}`}>
+          <h4 className={`${'sidebar-title'}`}>
             Thể loại ({selectedGenres.length})
           </h4>
-          <button className={`${styles['add-genre-btn']}`}>
+          <button className={`${'add-genre-btn'}`}>
             <Plus size={16} />
           </button>
         </div>
         
-        <div className={`${styles['genre-tags']}`}>
+        <div className={`${'genre-tags'}`}>
           {['Comedy', 'Drama', 'Action', 'Thriller', 'Animation', 'Fantasy', 'Cartoon'].map((genre) => (
             <span
               key={genre}
-              className={`${styles['genre-tag']} ${selectedGenres.includes(genre) ? 'selected' : ''}`}
+              className={`${'genre-tag'} ${selectedGenres.includes(genre) ? 'selected' : ''}`}
               onClick={() => handleGenreToggle(genre)}
             >
               {genre}
@@ -73,11 +73,11 @@ const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
           ))}
         </div>
 
-        <div className={`${styles['genre-filters']}`}>
+        <div className={`${'genre-filters'}`}>
           {genres.map((genre) => (
             <div
               key={genre}
-              className={`${styles['genre-item']} ${selectedGenre === genre ? 'active' : ''}`}
+              className={`${'genre-item'} ${selectedGenre === genre ? 'active' : ''}`}
               onClick={() => handleGenreClick(genre)}
             >
               <input
@@ -86,23 +86,23 @@ const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
                 onChange={() => {}}
               />
               <label>{genre}</label>
-              <span className={`${styles['genre-count']}`}>12</span>
+              <span className={`${'genre-count'}`}>12</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* Rating Filter */}
-      <div className={`${styles['sidebar-section']}`}>
-        <h4 className={`${styles['sidebar-title']}`}>
+      <div className={`${'sidebar-section'}`}>
+        <h4 className={`${'sidebar-title'}`}> 
           <Star size={20} />
           Đánh giá
         </h4>
-        <div className={`${styles['rating-options']}`}>
+        <div className={`${'rating-options'}`}>
           {[5, 4, 3, 2, 1].map((star) => (
             <div
               key={star}
-              className={`${styles['rating-option']} ${rating >= star ? 'active' : ''}`}
+              className={`${'rating-option'} ${rating >= star ? 'active' : ''}`}
               onClick={() => handleRatingChange(star)}
             >
               <input
@@ -112,7 +112,7 @@ const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
                 onChange={() => {}}
               />
               <label>
-                <div className={`${styles['rating-stars']}`}>
+                <div className={`${'rating-stars'}`}>
                   {[...Array(star)].map((_, i) => (
                     <Star key={i} size={16} />
                   ))}
@@ -125,11 +125,11 @@ const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
       </div>
 
       {/* Price Range Filter */}
-      <div className={`${styles['sidebar-section']}`}>
-        <div className={`${styles['price-range']}`}>
-          <div className={`${styles['price-range-header']}`}>
-            <h4 className={styles['price-range-title']}>Khoảng giá</h4>
-            <div className={`${styles['price-range-values']}`}>
+      <div className={`${'sidebar-section'}`}>
+        <div className={`${'price-range'}`}>
+          <div className={`${'price-range-header'}`}>
+            <h4 className={`${'price-range-title'}`}>Khoảng giá</h4>
+            <div className={`${'price-range-values'}`}>
               {priceRange[0]} - {priceRange[1]}
             </div>
           </div>
@@ -139,27 +139,27 @@ const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
             max="500"
             value={priceRange[1]}
             onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-            className={`${styles['price-slider']}`}
+            className={`${'price-slider'}`}
           />
         </div>
       </div>
 
       {/* Duration Filter */}
-      <div className={`${styles['sidebar-section']}`}>
-        <h4 className={`${styles['sidebar-title']}`}>
+      <div className={`${'sidebar-section'}`}>
+        <h4 className={`${'sidebar-title'}`}>
           <Clock size={20} />
           Thời lượng
         </h4>
-        <div className={`${styles['year-filters']}`}>
-          <div className={`${styles['year-item']}`}>
+        <div className={`${'year-filters'}`}>
+          <div className={`${'year-item'}`}>
             <input type="checkbox" id="duration-1" />
             <label htmlFor="duration-1">Dưới 90 phút</label>
           </div>
-          <div className={`${styles['year-item']}`}>
+          <div className={`${'year-item'}`}>
             <input type="checkbox" id="duration-2" />
             <label htmlFor="duration-2">90-120 phút</label>
           </div>
-          <div className={`${styles['year-item']}`}>
+          <div className={`${'year-item'}`}>
             <input type="checkbox" id="duration-3" />
             <label htmlFor="duration-3">Trên 120 phút</label>
           </div>
@@ -167,11 +167,11 @@ const Sidebar = ({ onSelectGenre, genres, selectedGenre }) => {
       </div>
 
       {/* Action Buttons */}
-      <div className={`${styles['action-buttons']}`}>
-        <button className={`${styles['clear-filters']}`} onClick={clearAllFilters}>
+      <div className={`${'action-buttons'}`}>
+        <button className={`${'clear-filters'}`} onClick={clearAllFilters}>
           Xóa tất cả bộ lọc
         </button>
-        <button className={`${styles['apply-filters']}`} onClick={applyFilters}>
+        <button className={`${'apply-filters'}`} onClick={applyFilters}>
           Áp dụng
         </button>
       </div>
