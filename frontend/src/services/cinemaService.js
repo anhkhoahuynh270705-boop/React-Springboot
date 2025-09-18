@@ -1,162 +1,188 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
-// Function to remove Vietnamese diacritics for search
-const removeVietnameseDiacritics = (str) => {
-  if (!str) return '';
-  
-  return str
-    .normalize('NFD') // Decompose characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-    .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
-    .toLowerCase();
-};
-
-export const getCinemaLogo = (cinemaName) => {
-  if (!cinemaName) return null;
-  
-  const name = removeVietnameseDiacritics(cinemaName);
-  
-  // Beta Cinemas
-  if (name.includes('beta')) {
-    return {
-      type: 'beta',
-      color: '#0066cc',
-      text: 'BETA',
-      bgColor: '#0066cc'
-    };
-  }
-  
-  // Cinestar
-  if (name.includes('cinestar')) {
-    return {
-      type: 'cinestar',
-      color: '#8b5cf6',
-      text: 'CINESTAR',
-      bgColor: '#8b5cf6'
-    };
-  }
-  
-  // DCINE
-  if (name.includes('dcine')) {
-    return {
-      type: 'dcine',
-      color: '#dc2626',
-      text: 'DCINE',
-      bgColor: '#dc2626'
-    };
-  }
-  
-  // Đống Đa
-  if (name.includes('dong da') || name.includes('đống đa')) {
-    return {
-      type: 'dongda',
-      color: '#ea580c',
-      text: 'DDC',
-      bgColor: '#ea580c'
-    };
-  }
-  
-  // Mega GS
-  if (name.includes('mega gs') || name.includes('mega')) {
-    return {
-      type: 'megags',
-      color: '#eab308',
-      text: 'MEGA',
-      bgColor: '#eab308'
-    };
-  }
-  
-  // Galaxy
-  if (name.includes('galaxy')) {
-    return {
-      type: 'galaxy',
-      color: '#059669',
-      text: 'GALAXY',
-      bgColor: '#059669'
-    };
-  }
-  
-  // CGV
-  if (name.includes('cgv')) {
-    return {
-      type: 'cgv',
-      color: '#7c3aed',
-      text: 'CGV',
-      bgColor: '#7c3aed'
-    };
-  }
-  
-  // Lotte Cinema
-  if (name.includes('lotte')) {
-    return {
-      type: 'lotte',
-      color: '#be185d',
-      text: 'LOTTE',
-      bgColor: '#be185d'
-    };
-  }
-  
-  // Default logo
-  return {
-    type: 'default',
-    color: '#6b7280',
-    text: 'CINE',
-    bgColor: '#6b7280'
-  };
-};
-
-// Lấy tất cả rạp chiếu
-export const getCinemas = async () => {
+// Get all cinemas
+export const getAllCinemas = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/cinemas`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error fetching cinemas:', error);
     throw error;
   }
 };
 
-// Lấy rạp chiếu theo thành phố
-export const getCinemasByCity = async (city) => {
+// Get cinema by ID
+export const getCinemaById = async (cinemaId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cinemas/city/${city}`);
+    const response = await fetch(`${API_BASE_URL}/cinemas/${cinemaId}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error fetching cinemas by city:', error);
+    console.error('Error fetching cinema:', error);
     throw error;
   }
 };
 
-// Tìm kiếm rạp chiếu
-export const searchCinemas = async (query) => {
+// Search cinemas
+export const searchCinemas = async (searchParams) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cinemas/search?name=${encodeURIComponent(query)}`);
+    const queryParams = new URLSearchParams();
+    if (searchParams.name) queryParams.append('name', searchParams.name);
+    if (searchParams.city) queryParams.append('city', searchParams.city);
+    if (searchParams.status) queryParams.append('status', searchParams.status);
+    
+    const response = await fetch(`${API_BASE_URL}/cinemas/search?${queryParams}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     console.error('Error searching cinemas:', error);
     throw error;
   }
 };
 
-// Lấy chi tiết rạp chiếu
-export const getCinemaById = async (id) => {
+// Get active cinemas
+export const getActiveCinemas = async () => {
   try {
-    const response = await fetch(`${API_BASE_URL}/cinemas/${id}`);
+    const response = await fetch(`${API_BASE_URL}/cinemas/active`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error fetching cinema details:', error);
+    console.error('Error fetching active cinemas:', error);
+    throw error;
+  }
+};
+
+// Get cinemas by movie
+export const getCinemasByMovie = async (movieId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/cinemas/movie/${movieId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching cinemas by movie:', error);
+    throw error;
+  }
+};
+
+// Create new cinema
+export const createCinema = async (cinemaData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/cinemas`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(cinemaData),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error creating cinema:', error);
+    throw error;
+  }
+};
+
+// Update cinema
+export const updateCinema = async (cinemaId, cinemaData) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/cinemas/${cinemaId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(cinemaData),
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error updating cinema:', error);
+    throw error;
+  }
+};
+
+// Delete cinema
+export const deleteCinema = async (cinemaId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/cinemas/${cinemaId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return true;
+  } catch (error) {
+    console.error('Error deleting cinema:', error);
+    throw error;
+  }
+};
+
+// Add movie to cinema
+export const addMovieToCinema = async (cinemaId, movieId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/cinemas/${cinemaId}/movies/${movieId}`, {
+      method: 'POST',
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error adding movie to cinema:', error);
+    throw error;
+  }
+};
+
+// Remove movie from cinema
+export const removeMovieFromCinema = async (cinemaId, movieId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/cinemas/${cinemaId}/movies/${movieId}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error removing movie from cinema:', error);
+    throw error;
+  }
+};
+
+// Get movie counts for all cinemas
+export const getCinemaMovieCounts = async () => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/cinemas/movie-counts`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching cinema movie counts:', error);
     throw error;
   }
 };

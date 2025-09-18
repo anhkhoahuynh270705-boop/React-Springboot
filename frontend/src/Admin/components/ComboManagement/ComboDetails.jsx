@@ -11,23 +11,25 @@ const ComboDetails = ({ combo, onClose }) => {
   };
 
   const formatDate = (dateValue) => {
-    if (!dateValue) return 'Chưa cập nhật';
+    // Check if dateValue is null, undefined, empty string, or empty array
+    if (!dateValue || dateValue === '' || (Array.isArray(dateValue) && dateValue.length === 0)) {
+      return 'Chưa cập nhật';
+    }
     
     try {
       let date;
-      
-      // Handle different date formats from backend
+
       if (typeof dateValue === 'string') {
-        // Handle ISO string format from Spring Boot
         if (dateValue.includes('T')) {
-          // ISO format: 2024-01-15T10:30:00
+          date = new Date(dateValue);
+        } else if (dateValue.includes('-')) {
           date = new Date(dateValue);
         } else {
-          // Other string formats
           date = new Date(dateValue);
         }
       } else if (dateValue && typeof dateValue === 'object') {
         if (dateValue.year && dateValue.month && dateValue.day) {
+          // LocalDateTime object format
           date = new Date(
             dateValue.year,
             dateValue.month - 1, 
@@ -39,6 +41,9 @@ const ComboDetails = ({ combo, onClose }) => {
         } else {
           date = new Date(dateValue.toString());
         }
+      } else if (typeof dateValue === 'number') {
+        // Timestamp
+        date = new Date(dateValue);
       } else {
         date = new Date(dateValue);
       }

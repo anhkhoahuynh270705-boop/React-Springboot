@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Eye, Search, Filter } from 'lucide-react';
-import { getAllCombos, createCombo, updateCombo, deleteCombo } from '../../../services/comboService';
+import { getAllCombosAdmin, createCombo, updateCombo, deleteCombo } from '../../../services/comboService';
 import ComboForm from './ComboForm';
 import ComboDetails from './ComboDetails';
+import useToast from '../../hooks/useToast';
+import ToastContainer from '../Toast/ToastContainer';
 import './ComboManagement.css';
 
 const ComboManagement = () => {
   const [combos, setCombos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { toasts, showSuccess, showError, showWarning, showInfo, removeToast } = useToast();
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [editingCombo, setEditingCombo] = useState(null);
@@ -24,11 +27,12 @@ const ComboManagement = () => {
     try {
       setLoading(true);
       setError(null);
-      const combosData = await getAllCombos();
+      const combosData = await getAllCombosAdmin();
       setCombos(combosData);
     } catch (error) {
       console.error('Error fetching combos:', error);
       setError('Không thể tải danh sách combo');
+      showError('Không thể tải danh sách combo');
     } finally {
       setLoading(false);
     }
@@ -50,14 +54,13 @@ const ComboManagement = () => {
   };
 
   const handleDeleteCombo = async (comboId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa combo này?')) {
-      try {
-        await deleteCombo(comboId);
-        setCombos(combos.filter(combo => combo.id !== comboId));
-      } catch (error) {
-        console.error('Error deleting combo:', error);
-        alert('Không thể xóa combo. Vui lòng thử lại.');
-      }
+    try {
+      await deleteCombo(comboId);
+      setCombos(combos.filter(combo => combo.id !== comboId));
+      showSuccess('Xóa combo thành công!');
+    } catch (error) {
+      console.error('Error deleting combo:', error);
+      showError('Không thể xóa combo. Vui lòng thử lại.');
     }
   };
 
@@ -69,16 +72,18 @@ const ComboManagement = () => {
         setCombos(combos.map(combo => 
           combo.id === editingCombo.id ? updatedCombo : combo
         ));
+        showSuccess('Cập nhật combo thành công!');
       } else {
         // Create new combo
         const newCombo = await createCombo(comboData);
         setCombos([...combos, newCombo]);
+        showSuccess('Tạo combo thành công!');
       }
       setShowForm(false);
       setEditingCombo(null);
     } catch (error) {
       console.error('Error saving combo:', error);
-      alert('Không thể lưu combo. Vui lòng thử lại.');
+      showError('Không thể lưu combo. Vui lòng thử lại.');
     }
   };
 
@@ -97,13 +102,12 @@ const ComboManagement = () => {
     if (!str) return '';
     
     return str
-      .normalize('NFD') // Decompose characters
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-      .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+      .normalize('NFD') 
+      .replace(/[\u0300-\u036f]/g, '') 
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D') 
       .toLowerCase();
   };
 
-  // Function to check if text contains search query (case-insensitive, diacritic-insensitive)
   const containsSearchQuery = (text, query) => {
     if (!text || !query) return false;
     
@@ -115,17 +119,22 @@ const ComboManagement = () => {
 
   // Filter and search combos
   const filteredCombos = combos.filter(combo => {
-    const matchesSearch = containsSearchQuery(combo.name, searchTerm) ||
+    // Check search term match
+    const matchesSearch = searchTerm === '' || 
+                         containsSearchQuery(combo.name, searchTerm) ||
                          containsSearchQuery(combo.description, searchTerm);
     
+    // Check filter status
     if (filterActive === 'active') {
-      return matchesSearch && combo.isActive;
+      return matchesSearch && combo.isActive === true;
     } else if (filterActive === 'inactive') {
-      return matchesSearch && !combo.isActive;
+      return matchesSearch && combo.isActive === false;
     }
     
+    // Show all if no filter selected
     return matchesSearch;
   });
+
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -135,18 +144,19 @@ const ComboManagement = () => {
   };
 
   const formatDate = (dateValue) => {
-    if (!dateValue) return '';
+    if (!dateValue || dateValue === '' || (Array.isArray(dateValue) && dateValue.length === 0)) {
+      return 'Chưa cập nhật';
+    }
     
     try {
       let date;
-      
+
       if (typeof dateValue === 'string') {
-        // Handle ISO string format from Spring Boot
         if (dateValue.includes('T')) {
-          // ISO format: 2024-01-15T10:30:00
+          date = new Date(dateValue);
+        } else if (dateValue.includes('-')) {
           date = new Date(dateValue);
         } else {
-          // Other string formats
           date = new Date(dateValue);
         }
       } else if (dateValue && typeof dateValue === 'object') {
@@ -160,18 +170,19 @@ const ComboManagement = () => {
             dateValue.second || 0
           );
         } else {
-          // Try to parse as ISO string
           date = new Date(dateValue.toString());
         }
+      } else if (typeof dateValue === 'number') {
+        // Timestamp
+        date = new Date(dateValue);
       } else {
-        // Fallback
         date = new Date(dateValue);
       }
       
       // Check if date is valid
       if (isNaN(date.getTime())) {
         console.warn('Invalid date value:', dateValue);
-        return '';
+        return 'Chưa cập nhật';
       }
       
       return date.toLocaleDateString('vi-VN', {
@@ -183,7 +194,7 @@ const ComboManagement = () => {
       });
     } catch (error) {
       console.error('Error formatting date:', error, dateValue);
-      return '';
+      return 'Chưa cập nhật';
     }
   };
 
@@ -200,8 +211,6 @@ const ComboManagement = () => {
 
   return (
     <div className="combo-management">
-      <div className="combo-header">
-        <h1>Quản lý Combo</h1>
          <button 
            className="create-btn"
            onClick={handleCreateCombo}
@@ -209,8 +218,7 @@ const ComboManagement = () => {
            <Plus size={22} />
            Thêm Combo
          </button>
-      </div>
-
+      <br/>
       <div className="combo-filters">
          <div className="search-box">
            <Search size={22} />
@@ -254,9 +262,13 @@ const ComboManagement = () => {
       )}
 
       <div className="combo-list">
-        {filteredCombos.length === 0 ? (
+        {combos.length === 0 ? (
           <div className="no-combos">
-            <p>Không tìm thấy combo nào</p>
+            <p>Không có combo nào trong database</p>
+          </div>
+        ) : filteredCombos.length === 0 ? (
+          <div className="no-combos">
+            <p>Không tìm thấy combo nào phù hợp với bộ lọc</p>
           </div>
         ) : (
           <div className="combo-grid">
@@ -315,7 +327,7 @@ const ComboManagement = () => {
                      <Edit size={20} />
                    </button>
                    <button
-                     className="action-btn delete-btn"
+                     className="action-btn btn-delete"
                      onClick={() => handleDeleteCombo(combo.id)}
                      title="Xóa"
                    >
@@ -342,6 +354,9 @@ const ComboManagement = () => {
           onClose={handleDetailsClose}
         />
       )}
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>
   );
 };

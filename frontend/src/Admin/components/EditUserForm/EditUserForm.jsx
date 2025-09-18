@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X } from 'lucide-react';
+import { Save, X, Key, Eye, EyeOff } from 'lucide-react';
+import { adminResetPassword } from '../../../services/userService';
 import styles from './EditUserForm.module.css';
 
 const EditUserForm = ({ user, onSave, onCancel }) => {
@@ -13,6 +14,15 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
 
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [passwordData, setPasswordData] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [isPasswordLoading, setIsPasswordLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -39,6 +49,64 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
         ...prev,
         [name]: ''
       }));
+    }
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear password error when user starts typing
+    if (passwordErrors[name]) {
+      setPasswordErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validatePassword = () => {
+    const newErrors = {};
+
+    if (!passwordData.newPassword.trim()) {
+      newErrors.newPassword = 'Mật khẩu mới không được để trống';
+    } else if (passwordData.newPassword.length < 6) {
+      newErrors.newPassword = 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
+
+    if (!passwordData.confirmPassword.trim()) {
+      newErrors.confirmPassword = 'Xác nhận mật khẩu không được để trống';
+    } else if (passwordData.newPassword !== passwordData.confirmPassword) {
+      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+    }
+
+    setPasswordErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validatePassword()) {
+      return;
+    }
+
+    setIsPasswordLoading(true);
+    try {
+      await adminResetPassword(user.id, passwordData.newPassword);
+      setPasswordData({ newPassword: '', confirmPassword: '' });
+      setShowPasswordSection(false);
+      setPasswordErrors({});
+      // You might want to show a success message here
+      alert('Đặt lại mật khẩu thành công!');
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      setPasswordErrors({ submit: 'Lỗi khi đặt lại mật khẩu: ' + error.message });
+    } finally {
+      setIsPasswordLoading(false);
     }
   };
 
@@ -161,6 +229,98 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
           />
         </div>
 
+      </div>
+
+      {/* Password Reset Section */}
+      <div className={`${styles['password-section']}`}>
+        <div className={`${styles['password-section-header']}`}>
+          <h4>Đổi mật khẩu</h4>
+          <button
+            type="button"
+            className={`${styles['toggle-password-btn']}`}
+            onClick={() => setShowPasswordSection(!showPasswordSection)}
+          >
+            <Key size={16} />
+            {showPasswordSection ? 'Ẩn' : 'Hiện'} đổi mật khẩu
+          </button>
+        </div>
+
+        {showPasswordSection && (
+          <form onSubmit={handlePasswordSubmit} className={`${styles['password-form']}`}>
+            <div className={`${styles['form-grid']}`}>
+              <div className={`${styles['form-group']}`}>
+                <label htmlFor="newPassword" className={`${styles['form-label']}`}>
+                  Mật khẩu mới <span className={styles['required']}>*</span>
+                </label>
+                <div className={`${styles['password-input-wrapper']}`}>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="newPassword"
+                    name="newPassword"
+                    value={passwordData.newPassword}
+                    onChange={handlePasswordChange}
+                    className={`${styles['form-input']} ${passwordErrors.newPassword ? styles['error'] : ''}`}
+                    placeholder="Nhập mật khẩu mới"
+                  />
+                  <button
+                    type="button"
+                    className={`${styles['password-toggle-btn']}`}
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {passwordErrors.newPassword && (
+                  <span className={`${styles['error-message']}`}>{passwordErrors.newPassword}</span>
+                )}
+              </div>
+
+              <div className={`${styles['form-group']}`}>
+                <label htmlFor="confirmPassword" className={`${styles['form-label']}`}>
+                  Xác nhận mật khẩu <span className={styles['required']}>*</span>
+                </label>
+                <div className={`${styles['password-input-wrapper']}`}>
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    value={passwordData.confirmPassword}
+                    onChange={handlePasswordChange}
+                    className={`${styles['form-input']} ${passwordErrors.confirmPassword ? styles['error'] : ''}`}
+                    placeholder="Nhập lại mật khẩu mới"
+                  />
+                  <button
+                    type="button"
+                    className={`${styles['password-toggle-btn']}`}
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+                {passwordErrors.confirmPassword && (
+                  <span className={`${styles['error-message']}`}>{passwordErrors.confirmPassword}</span>
+                )}
+              </div>
+            </div>
+
+            {passwordErrors.submit && (
+              <div className={`${styles['error-message']} ${styles['submit-error']}`}>
+                {passwordErrors.submit}
+              </div>
+            )}
+
+            <div className={`${styles['password-actions']}`}>
+              <button
+                type="submit"
+                className={`${styles['btn']} ${styles['btn-warning']}`}
+                disabled={isPasswordLoading}
+              >
+                <Key size={16} />
+                {isPasswordLoading ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
 
       <div className={`${styles['form-actions']}`}>

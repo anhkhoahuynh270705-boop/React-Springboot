@@ -1,7 +1,7 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
 // Get all showtimes
-export const getShowtimes = async () => {
+export const getAllShowtimes = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/showtimes`);
     if (!response.ok) {
@@ -15,44 +15,6 @@ export const getShowtimes = async () => {
   }
 };
 
-export const getShowtimesByMovie = async (movieId) => {
-  try {
-    const response = await fetch(`${API_BASE_URL}/showtimes?movieId=${movieId}`);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-
-    if (Array.isArray(data)) {
-      const filteredData = data.filter(showtime => 
-        showtime.movieId === movieId || showtime.movieId === movieId.toString()
-      );
-      return filteredData;
-    }
-    
-    return data;
-  } catch (error) {
-    try {
-      const response = await fetch(`${API_BASE_URL}/showtimes/movie/${movieId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-
-      if (Array.isArray(data)) {
-        const filteredData = data.filter(showtime => 
-          showtime.movieId === movieId || showtime.movieId === movieId.toString()
-        );
-        return filteredData;
-      }
-      
-      return data;
-    } catch (fallbackError) {
-      return [];
-    }
-  }
-};
-
 // Get showtime by ID
 export const getShowtimeById = async (showtimeId) => {
   try {
@@ -63,6 +25,67 @@ export const getShowtimeById = async (showtimeId) => {
     const data = await response.json();
     return data;
   } catch (error) {
+    console.error('Error fetching showtime:', error);
+    throw error;
+  }
+};
+
+// Get showtimes by movie ID
+export const getShowtimesByMovie = async (movieId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/showtimes/movie/${movieId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching showtimes by movie:', error);
+    throw error;
+  }
+};
+
+// Get showtimes by cinema ID
+export const getShowtimesByCinema = async (cinemaId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/showtimes/cinema/${cinemaId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching showtimes by cinema:', error);
+    throw error;
+  }
+};
+
+// Get showtimes by cinema and movie
+export const getShowtimesByCinemaAndMovie = async (cinemaId, movieId) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/showtimes/cinema/${cinemaId}/movie/${movieId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching showtimes by cinema and movie:', error);
+    throw error;
+  }
+};
+
+// Get showtimes by date and cinema
+export const getShowtimesByDateAndCinema = async (cinemaId, date) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/showtimes/cinema/${cinemaId}/date/${date}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching showtimes by date and cinema:', error);
     throw error;
   }
 };
@@ -123,4 +146,50 @@ export const deleteShowtime = async (showtimeId) => {
     console.error('Error deleting showtime:', error);
     throw error;
   }
+};
+
+// Helper function to format date for API
+export const formatDateForAPI = (date) => {
+  if (date instanceof Date) {
+    return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+  }
+  return date;
+};
+
+// Helper function to format datetime for API (LocalDateTime format)
+export const formatDateTimeForAPI = (dateTime) => {
+  if (dateTime instanceof Date) {
+    return dateTime.toISOString().replace('Z', '').replace(/\.\d{3}$/, ''); // YYYY-MM-DDTHH:mm:ss
+  }
+  return dateTime;
+};
+
+// Helper function to format time for display
+export const formatTimeForDisplay = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  return date.toLocaleTimeString('vi-VN', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+};
+
+// Helper function to format date for display
+export const formatDateForDisplay = (dateTimeString) => {
+  if (!dateTimeString) return '';
+  const date = new Date(dateTimeString);
+  return date.toLocaleDateString('vi-VN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
+
+// Helper function to check if showtime is in the past
+export const isShowtimeInPast = (dateTimeString) => {
+  if (!dateTimeString) return true;
+  const showtimeDate = new Date(dateTimeString);
+  const now = new Date();
+  return showtimeDate < now;
 };

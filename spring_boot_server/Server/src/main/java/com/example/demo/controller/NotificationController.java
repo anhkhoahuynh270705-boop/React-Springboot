@@ -1,5 +1,6 @@
 package com.example.demo.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,125 +23,132 @@ import com.example.demo.repository.NotificationRepository;
 @RequestMapping("/api/notifications")
 @CrossOrigin(origins = "*")
 public class NotificationController {
+    
     @Autowired
     private NotificationRepository notificationRepository;
 
+    // Lấy tất cả thông báo
     @GetMapping
     public List<Notification> getAllNotifications() {
-        System.out.println("Getting all notifications for debugging");
-        List<Notification> allNotifications = notificationRepository.findAll();
-        System.out.println("Total notifications in database: " + allNotifications.size());
-        for (Notification n : allNotifications) {
-            System.out.println("Notification ID: " + n.getId() + ", User ID: " + n.getUserId() + ", Read: " + n.isRead());
-        }
-        return allNotifications;
+        return notificationRepository.findAll();
     }
 
+    // Lấy thông báo theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getNotificationById(@PathVariable String id) {
-        System.out.println("Getting notification by ID: " + id);
-        Optional<Notification> notification = notificationRepository.findById(id);
-        if (notification.isPresent()) {
-            System.out.println("Found notification: " + notification.get());
-            return ResponseEntity.ok(notification.get());
-        } else {
-            System.out.println("Notification not found with ID: " + id);
-            return ResponseEntity.notFound().build();
-        }
+    public Optional<Notification> getNotificationById(@PathVariable String id) {
+        return notificationRepository.findById(id);
     }
 
-    @GetMapping("/test")
-    public ResponseEntity<?> testEndpoint() {
-        System.out.println("Test endpoint called");
-        try {
-            long count = notificationRepository.count();
-            System.out.println("Total notifications in database: " + count);
-            return ResponseEntity.ok().body("Database connection OK. Total notifications: " + count);
-        } catch (Exception e) {
-            System.err.println("Database error: " + e.getMessage());
-            return ResponseEntity.status(500).body("Database error: " + e.getMessage());
-        }
-    }
-
+    // Lấy thông báo của user
     @GetMapping("/user/{userId}")
     public List<Notification> getNotificationsByUser(@PathVariable String userId) {
-        System.out.println("Getting notifications for user: " + userId);
-        List<Notification> notifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
-        System.out.println("Found " + notifications.size() + " notifications for user: " + userId);
-        return notifications;
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
     }
 
+    // Lấy thông báo chưa đọc của user
     @GetMapping("/user/{userId}/unread")
     public List<Notification> getUnreadNotificationsByUser(@PathVariable String userId) {
-        return notificationRepository.findByUserIdAndIsReadOrderByCreatedAtDesc(userId, false);
+        return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
     }
 
+    // Lấy số lượng thông báo chưa đọc
     @GetMapping("/user/{userId}/count")
-    public long getUnreadNotificationCount(@PathVariable String userId) {
-        return notificationRepository.countByUserIdAndIsRead(userId, false);
+    public ResponseEntity<Long> getUnreadNotificationCount(@PathVariable String userId) {
+        Long count = notificationRepository.countByUserIdAndIsReadFalse(userId);
+        return ResponseEntity.ok(count);
     }
 
+    // Tạo thông báo mới
     @PostMapping
-    public Notification createNotification(@RequestBody Notification notification) {
-        if (notification.getCreatedAt() == null) {
-            notification.setCreatedAt(java.time.LocalDateTime.now());
+    public ResponseEntity<Notification> createNotification(@RequestBody Notification notification) {
+        try {
+            // Set default values
+            if (notification.getCreatedAt() == null) {
+                notification.setCreatedAt(LocalDateTime.now());
+            }
+            if (notification.getIsRead() == null) {
+                notification.setIsRead(false);
+            }
+            
+            Notification savedNotification = notificationRepository.save(notification);
+            return ResponseEntity.ok(savedNotification);
+        } catch (Exception e) {
+            System.err.println("Error creating notification: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         }
-        return notificationRepository.save(notification);
     }
 
+    // Đánh dấu thông báo là đã đọc
     @PutMapping("/{id}/read")
-    public ResponseEntity<?> markAsRead(@PathVariable String id) {
+    public ResponseEntity<Notification> markNotificationAsRead(@PathVariable String id) {
         try {
-            System.out.println("Marking notification as read: " + id);
             Optional<Notification> notificationOpt = notificationRepository.findById(id);
-            if (notificationOpt.isPresent()) {
-                Notification notification = notificationOpt.get();
-                System.out.println("Found notification: " + notification.getTitle() + " - Read: " + notification.isRead());
-                notification.setRead(true);
-                notification.setReadAt(java.time.LocalDateTime.now());
-                Notification saved = notificationRepository.save(notification);
-                System.out.println("Successfully marked notification as read: " + id);
-                return ResponseEntity.ok(saved);
-            } else {
-                System.out.println("Notification not found: " + id);
+            if (!notificationOpt.isPresent()) {
                 return ResponseEntity.notFound().build();
             }
+            
+            Notification notification = notificationOpt.get();
+            notification.setIsRead(true);
+            notification.setReadAt(LocalDateTime.now());
+            
+            Notification updatedNotification = notificationRepository.save(notification);
+            return ResponseEntity.ok(updatedNotification);
         } catch (Exception e) {
             System.err.println("Error marking notification as read: " + e.getMessage());
-            return ResponseEntity.status(500).body("Lỗi khi đánh dấu thông báo đã đọc: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().build();
         }
     }
 
+    // Đánh dấu tất cả thông báo của user là đã đọc
     @PutMapping("/user/{userId}/read-all")
-    public ResponseEntity<?> markAllAsRead(@PathVariable String userId) {
+    public ResponseEntity<String> markAllNotificationsAsRead(@PathVariable String userId) {
         try {
-            System.out.println("Marking all notifications as read for user: " + userId);
-            List<Notification> notifications = notificationRepository.findByUserIdAndIsReadOrderByCreatedAtDesc(userId, false);
-            System.out.println("Found " + notifications.size() + " unread notifications");
+            List<Notification> unreadNotifications = notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
             
-            for (Notification notification : notifications) {
-                notification.setRead(true);
-                notification.setReadAt(java.time.LocalDateTime.now());
+            for (Notification notification : unreadNotifications) {
+                notification.setIsRead(true);
+                notification.setReadAt(LocalDateTime.now());
             }
             
-            if (!notifications.isEmpty()) {
-                notificationRepository.saveAll(notifications);
-                System.out.println("Successfully marked " + notifications.size() + " notifications as read");
-            }
-            return ResponseEntity.ok().body("Successfully marked " + notifications.size() + " notifications as read");
+            notificationRepository.saveAll(unreadNotifications);
+            return ResponseEntity.ok("All notifications marked as read");
         } catch (Exception e) {
             System.err.println("Error marking all notifications as read: " + e.getMessage());
-            return ResponseEntity.status(500).body("Lỗi khi đánh dấu tất cả thông báo đã đọc: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error marking all notifications as read");
         }
     }
 
+    // Xóa thông báo
     @DeleteMapping("/{id}")
-    public void deleteNotification(@PathVariable String id) {
-        notificationRepository.deleteById(id);
+    public ResponseEntity<String> deleteNotification(@PathVariable String id) {
+        try {
+            if (!notificationRepository.existsById(id)) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            notificationRepository.deleteById(id);
+            return ResponseEntity.ok("Notification deleted successfully");
+        } catch (Exception e) {
+            System.err.println("Error deleting notification: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error deleting notification");
+        }
     }
 
+    // Xóa tất cả thông báo của user
     @DeleteMapping("/user/{userId}")
-    public void deleteAllNotificationsByUser(@PathVariable String userId) {
-        notificationRepository.deleteByUserId(userId);
+    public ResponseEntity<String> deleteAllNotificationsByUser(@PathVariable String userId) {
+        try {
+            List<Notification> userNotifications = notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+            notificationRepository.deleteAll(userNotifications);
+            return ResponseEntity.ok("All notifications deleted successfully");
+        } catch (Exception e) {
+            System.err.println("Error deleting all notifications: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error deleting all notifications");
+        }
     }
 }

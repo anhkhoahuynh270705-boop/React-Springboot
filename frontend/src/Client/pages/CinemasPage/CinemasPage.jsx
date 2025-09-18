@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Filter } from 'lucide-react';
 import CinemaList from '../../components/CinemaList/CinemaList';
-import { getCinemas } from '../../../services/cinemaService';
+import { getAllCinemas as getCinemas } from '../../../services/cinemaService';
 import styles from './CinemasPage.module.css';
 
 const CinemasPage = () => {

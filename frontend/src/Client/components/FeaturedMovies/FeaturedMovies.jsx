@@ -1,10 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { Star, Clock, Calendar, Play, Info } from 'lucide-react';
 import MovieCard from '../MovieCard/MovieCard';
 import styles from './FeaturedMovies.module.css';
 
-const FeaturedMovies = ({ movies, title = "Phim nổi bật", subtitle = "Khám phá những bộ phim hay nhất" }) => {
+const FeaturedMovies = ({ movies, title = "Phim đang chiếu", subtitle = "Khám phá những bộ phim hay nhất" }) => {
   if (!movies || movies.length === 0) {
     return (
       <section className={`${styles['featured-movies']}`}>
@@ -25,7 +23,6 @@ const FeaturedMovies = ({ movies, title = "Phim nổi bật", subtitle = "Khám 
     <section className={`${styles['featured-movies']}`}>
       <div className={styles['container']}>
         <div className={`${styles['info-banner']}`}>
-          <Info size={20} className={`${styles['info-icon']}`} />
           <span className={`${styles['banner-text']}`}>{title}</span>
         </div>
         

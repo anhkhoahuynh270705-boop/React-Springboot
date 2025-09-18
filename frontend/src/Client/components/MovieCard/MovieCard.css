@@ -1,10 +1,7 @@
-/* ===== MOVIE CARD COMPONENT STYLES ===== */
-/* Professional Movie Card with Enhanced Design */
-
+/* Movie Card */
 .movie-card {
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: row;
@@ -14,6 +11,7 @@
   max-width: 800px;
   margin: 0 auto;
   padding: 0;
+  border: 1px solid rgba(12, 12, 12, 0.274);
 }
 
 .movie-card-image {
@@ -79,8 +77,8 @@
 }
 
 .format-text {
-  color: #6b7280;
-  font-size: 0.85rem;
+  color: #3d3f44;
+  font-size: 1rem;
 }
 
 .movie-card .movie-meta {

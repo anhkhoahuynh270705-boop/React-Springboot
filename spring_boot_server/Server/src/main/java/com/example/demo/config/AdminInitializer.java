@@ -15,9 +15,7 @@ public class AdminInitializer implements CommandLineRunner {
     
     @Override
     public void run(String... args) throws Exception {
-        // Kiểm tra xem đã có admin chưa
         if (adminRepository.count() == 0) {
-            // Tạo admin mặc định
             Admin defaultAdmin = new Admin();
             defaultAdmin.setUsername("admin");
             defaultAdmin.setPassword("admin123");

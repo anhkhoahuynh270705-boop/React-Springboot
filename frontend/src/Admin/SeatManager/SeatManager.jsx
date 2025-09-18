@@ -314,10 +314,6 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
               />
               Đã đặt
             </label>
-            <button onClick={addSeat} className="btn-add">
-              <Plus size={16} />
-              Thêm
-            </button>
             <button 
               onClick={addAndSaveSeat} 
               className="btn-save-immediate"
@@ -403,7 +399,7 @@ const SeatManager = ({ onSeatsChange, showtimeId }) => {
                     </button>
                     <button 
                       onClick={() => deleteSeatHandler(seat.id)}
-                      className="btn-delete" 
+                      className="delete-btn" 
                       title="Xóa ghế"
                     >
                       <Trash2 size={14} />

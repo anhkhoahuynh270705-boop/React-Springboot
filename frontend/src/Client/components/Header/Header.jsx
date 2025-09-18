@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, MapPin, ChevronDown, User, LogOut, Settings, Ticket, Building2, Shield, Bell } from 'lucide-react';
-import { getCinemas, getCinemasByCity, searchCinemas, getCinemaLogo } from '../../../services/cinemaService';
+import { getAllCinemas as getCinemas, searchCinemas } from '../../../services/cinemaService';
 import { logoutUser } from '../../../services/userService';
 import { searchMovies } from '../../../services/movieService';
 import { getUnreadNotificationCount, getNotificationsByUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification } from '../../../services/notificationService';
@@ -12,6 +12,7 @@ import './Header.css';
 
 const Header = ({ user, setUser, onLogout }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCinemaDropdownOpen, setIsCinemaDropdownOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState('Tp. Hồ Chí Minh');
@@ -32,6 +33,11 @@ const Header = ({ user, setUser, onLogout }) => {
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [notificationLoading, setNotificationLoading] = useState(false);
+  const cityOptions = React.useMemo(() => {
+    const set = new Set();
+    cinemas.forEach(c => { if (c.city) set.add(c.city); });
+    return Array.from(set).sort();
+  }, [cinemas]);
   
   const dropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
@@ -120,7 +126,14 @@ const Header = ({ user, setUser, onLogout }) => {
     try {
       const data = await getCinemas();
       setCinemas(data);
-      filterCinemas(data, selectedCity, cinemaSearchQuery);
+      let savedCity = null;
+      try { savedCity = localStorage.getItem('selectedCity'); } catch {}
+      const hasSaved = savedCity !== null; 
+      const initialCity = hasSaved ? savedCity : selectedCity;
+      if (hasSaved && initialCity !== selectedCity) {
+        setSelectedCity(initialCity);
+      }
+      filterCinemas(data, initialCity, cinemaSearchQuery);
     } catch (err) {
       setError('Không thể tải danh sách rạp chiếu');
       console.error('Error fetching cinemas:', err);
@@ -129,18 +142,17 @@ const Header = ({ user, setUser, onLogout }) => {
     }
   };
 
-  // Function to remove Vietnamese diacritics for search
   const removeVietnameseDiacritics = (str) => {
     if (!str) return '';
     
     return str
-      .normalize('NFD') // Decompose characters
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-      .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+      .normalize('NFD') 
+      .replace(/[\u0300-\u036f]/g, '') 
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
       .toLowerCase();
   };
 
-  // Function to check if text contains search query (case-insensitive, diacritic-insensitive)
+  // Function to check if text contains search query 
   const containsSearchQuery = (text, query) => {
     if (!text || !query) return false;
     
@@ -151,9 +163,7 @@ const Header = ({ user, setUser, onLogout }) => {
   };
 
   const filterCinemas = (cinemaList, city, searchQuery) => {
-    let filtered = cinemaList.filter(cinema => 
-      cinema.city === city
-    );
+    let filtered = city ? cinemaList.filter(cinema => cinema.city === city) : cinemaList;
     
     if (searchQuery.trim()) {
       filtered = filtered.filter(cinema =>
@@ -169,6 +179,13 @@ const Header = ({ user, setUser, onLogout }) => {
   const handleCityChange = (newCity) => {
     setSelectedCity(newCity);
     filterCinemas(cinemas, newCity, cinemaSearchQuery);
+    try { localStorage.setItem('selectedCity', newCity); } catch {}
+  };
+
+  // Handle cinema click
+  const handleCinemaClick = (cinemaId) => {
+    setIsCinemaDropdownOpen(false);
+    navigate(`/cinema/${cinemaId}`);
   };
 
   // Handle cinema search
@@ -190,7 +207,6 @@ const Header = ({ user, setUser, onLogout }) => {
         setIsCustomAvatar(true);
         console.log('Custom avatar loaded for header:', user.avatarUrl);
       } else {
-        // Tạo initials từ tên người dùng
         const generateInitials = (name) => {
           if (!name) return 'U';
           const displayName = user.fullName || user.username;
@@ -227,15 +243,12 @@ const Header = ({ user, setUser, onLogout }) => {
         setUnreadNotificationCount(0);
       }
     };
-
     fetchNotificationCount();
-    
-    // Refresh notification count every 30 seconds
+
     const interval = setInterval(fetchNotificationCount, 30000);
     return () => clearInterval(interval);
   }, [user?.id]);
 
-  // Fetch notifications when dropdown opens
   useEffect(() => {
     const fetchNotifications = async () => {
       if (showNotifications && user?.id) {
@@ -316,9 +329,6 @@ const Header = ({ user, setUser, onLogout }) => {
     console.log('handleMarkAsRead called with ID:', notificationId);
     try {
       const result = await markNotificationAsRead(notificationId);
-      console.log('markNotificationAsRead result:', result);
-      
-      // Update local state immediately
       setNotifications(prev => 
         prev.map(notif => 
           (notif.id === notificationId || notif._id === notificationId)
@@ -327,8 +337,6 @@ const Header = ({ user, setUser, onLogout }) => {
         )
       );
       setUnreadNotificationCount(prev => Math.max(0, prev - 1));
-      
-      // Refresh notifications from server to ensure sync
       if (user && user.id) {
         const updatedNotifications = await getNotificationsByUser(user.id);
         setNotifications(updatedNotifications);
@@ -389,13 +397,13 @@ const Header = ({ user, setUser, onLogout }) => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'booking_success':
-        return '✓';
+        return '🎫';
       case 'ticket_approved':
-        return '✓';
+        return '✅';
       case 'ticket_cancelled':
-        return '✕';
+        return '❌';
       default:
-        return 'ℹ';
+        return 'ℹ️';
     }
   };
 
@@ -461,6 +469,10 @@ const Header = ({ user, setUser, onLogout }) => {
 
   // Handle avatar change from UserProfile
   const handleAvatarChange = (newAvatarUrl, updatedUser) => {
+    if (!updatedUser) {
+      return;
+    }
+    
     if (updatedUser.customAvatar) {
       setUserAvatar(newAvatarUrl);
       setIsCustomAvatar(true);
@@ -501,14 +513,6 @@ const Header = ({ user, setUser, onLogout }) => {
             {isAdminLoggedIn ? (
               <div className="admin-user-info">
                 <span className="admin-welcome">Xin chào, Admin!</span>
-                <button 
-                  className="admin-logout-btn"
-                  onClick={handleAdminLogout}
-                  title="Đăng xuất Admin"
-                >
-                  <LogOut size={16} />
-                  Đăng xuất
-                </button>
               </div>
             ) : (
               <button 
@@ -642,10 +646,12 @@ const Header = ({ user, setUser, onLogout }) => {
                           onChange={(e) => handleCityChange(e.target.value)}
                           className="city-select"
                         >
-                          <option value="Tp. Hồ Chí Minh">Tp. Hồ Chí Minh</option>
-                          <option value="Bắc Giang">Bắc Giang</option>
-                          <option value="Hà Nội">Hà Nội</option>
-                          <option value="Đà Nẵng">Đà Nẵng</option>
+                          <option value="">Tất cả thành phố</option>
+                          {cityOptions.length === 0 ? null : (
+                            cityOptions.map(city => (
+                              <option key={city} value={city}>{city}</option>
+                            ))
+                          )}
                         </select>
                       </div>
                     </div>
@@ -661,9 +667,13 @@ const Header = ({ user, setUser, onLogout }) => {
                       </div>
                     ) : (
                       filteredCinemas.map(cinema => {
-                        const fallbackLogo = getCinemaLogo(cinema.name);
+                        const fallbackLogo = `https://via.placeholder.com/40x40/3b82f6/ffffff?text=${cinema.name.charAt(0)}`;
                         return (
-                          <div key={cinema.id} className="cinema-item">
+                          <div 
+                            key={cinema.id} 
+                            className="cinema-item"
+                            onClick={() => handleCinemaClick(cinema.id)}
+                          >
                             <div className="cinema-logo">
                               {cinema.imageUrl ? (
                                 <img 

@@ -293,7 +293,7 @@ public class UserController {
         }
     }
     
-    // Thay đổi mật khẩu
+    // Thay đổi mật khẩu (cho user tự đổi)
     @PostMapping("/change-password/{userId}")
     public ResponseEntity<User> changePassword(@PathVariable String userId, @RequestBody Map<String, String> passwordData) {
         try {
@@ -314,6 +314,32 @@ public class UserController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             
+            user.setPassword(newPassword);
+            User updatedUser = userRepository.save(user);
+            updatedUser.setPassword(null);
+            return ResponseEntity.ok(updatedUser);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Admin đổi mật khẩu cho user (không cần mật khẩu hiện tại)
+    @PostMapping("/admin/reset-password/{userId}")
+    public ResponseEntity<User> adminResetPassword(@PathVariable String userId, @RequestBody Map<String, String> passwordData) {
+        try {
+            String newPassword = passwordData.get("newPassword");
+            
+            if (newPassword == null || newPassword.trim().isEmpty()) {
+                return ResponseEntity.badRequest().build();
+            }
+            
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (!userOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            User user = userOpt.get();
             user.setPassword(newPassword);
             User updatedUser = userRepository.save(user);
             updatedUser.setPassword(null);

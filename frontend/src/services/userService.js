@@ -328,3 +328,33 @@ export async function checkEmail(email) {
     throw error;
   }
 }
+
+// Admin reset password cho user
+export async function adminResetPassword(userId, newPassword) {
+  try {
+    const res = await fetch(`${API_BASE_URL}/users/admin/reset-password/${userId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        newPassword: newPassword
+      })
+    });
+
+    if (!res.ok) {
+      if (res.status === 404) {
+        throw new Error('Không tìm thấy người dùng');
+      }
+      if (res.status === 400) {
+        throw new Error('Mật khẩu mới không hợp lệ');
+      }
+      throw new Error(`Đặt lại mật khẩu thất bại: ${res.status}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error('Admin reset password error:', error);
+    throw new Error(error.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
+  }
+}

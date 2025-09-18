@@ -275,7 +275,7 @@
   color: #ef4444;
 }
 
-.btn-delete {
+.delete-btn {
   background: #fef2f2;
   color: #ef4444;
   border: 1px solid #fecaca;
@@ -290,9 +290,10 @@
   justify-content: center;
 }
 
-.btn-delete:hover {
+.delete-btn:hover {
   background: #fee2e2;
   border-color: #fca5a5;
+  
 }
 
 /* Pending seats styles */

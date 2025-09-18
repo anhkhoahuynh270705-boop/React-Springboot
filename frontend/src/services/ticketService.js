@@ -51,7 +51,42 @@ export const bookTicket = async (ticketData) => {
       throw new Error(errorMessage);
     }
     
-    return await response.json();
+    const result = await response.json();
+    
+    // Lưu vé vào localStorage sau khi đặt vé thành công
+    try {
+      const existingTickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
+      const newTicket = {
+        ...ticketData,
+        id: result.id || result._id || Date.now().toString(), // Sử dụng ID từ BE hoặc tạo ID tạm
+        ticketNumber: result.ticketNumber || ticketData.ticketNumber,
+        qrCode: result.qrCode || ticketData.qrCode,
+        status: result.status || ticketData.status,
+        paymentStatus: result.paymentStatus || ticketData.paymentStatus,
+        bookingTime: result.bookingTime || new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      const updatedTickets = [...existingTickets, newTicket];
+      localStorage.setItem('userTickets', JSON.stringify(updatedTickets));
+      
+      // Dispatch custom event để các component khác có thể lắng nghe
+      window.dispatchEvent(new CustomEvent('userTicketsUpdated', {
+        detail: {
+          key: 'userTickets',
+          newValue: JSON.stringify(updatedTickets),
+          oldValue: JSON.stringify(existingTickets)
+        }
+      }));
+      
+      console.log('Ticket saved to localStorage:', newTicket);
+    } catch (localStorageError) {
+      console.error('Error saving ticket to localStorage:', localStorageError);
+      // Không throw error vì đặt vé đã thành công
+    }
+    
+    return result;
   } catch (error) {
     console.error('Error booking ticket:', error);
     throw error;
@@ -360,4 +395,26 @@ export const downloadFile = (blob, filename) => {
   link.click();
   document.body.removeChild(link);
   window.URL.revokeObjectURL(url);
+};
+
+// Duyệt vé (admin)
+export async function approveTicket(ticketId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}/approve`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error approving ticket:', error);
+    throw error;
+  }
 };

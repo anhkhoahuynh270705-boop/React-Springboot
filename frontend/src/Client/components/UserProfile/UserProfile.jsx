@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getCurrentUserSync, generateAvatarForCurrentUser, updateUserProfile, getUserProfile } from '../../../services/userService';
 import { generateAvatarWithStyle } from '../../../services/avatarService';
-import { User, Settings, Crown, Gift, Star, Ticket, Calendar, CreditCard, Award, TrendingUp, Shield, Upload, X } from 'lucide-react';
+import { User, Settings, Crown, Gift, Star, Ticket, Calendar, CreditCard, Award, TrendingUp, Shield, Upload, X, Home, Info, Store, Gift as GiftIcon } from 'lucide-react';
 import './UserProfile.css';
 
 const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
@@ -15,6 +15,11 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadedAvatar, setUploadedAvatar] = useState(null);
   const fileInputRef = useRef(null);
+  const [userSpending, setUserSpending] = useState({
+    totalSpent: 0,
+    totalPoints: 0
+  });
+  
   const userStats = {
     totalMovies: 47,
     totalTickets: 89,
@@ -25,15 +30,116 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
   };
   
   const benefits = [
-    { icon: Gift, title: 'Giảm giá 10%', description: 'Áp dụng cho tất cả vé phim', color: '#ff6b6b' },
-    { icon: Star, title: 'Ưu tiên đặt vé', description: 'Đặt vé trước 24h', color: '#ffd93d' },
-    { icon: Ticket, title: 'Vé miễn phí', description: '1 vé miễn phí mỗi tháng', color: '#6bcf7f' },
-    { icon: Calendar, title: 'Sự kiện đặc biệt', description: 'Tham gia preview phim', color: '#4d96ff' }
+    { icon: Home, title: 'Trang Chủ', color: '#3b82f6' },
+    { icon: User, title: 'Thành viên CGV', color: '#3b82f6' },
+    { icon: Info, title: 'Rạp CGV', color: '#3b82f6' },
+    { icon: Star, title: 'Rạp Đặc Biệt', color: '#3b82f6' },
+    { icon: Gift, title: 'Tin mới & Ưu đãi', color: '#3b82f6' },
+    { icon: Ticket, title: 'Vé của tôi', color: '#3b82f6' },
+    { icon: Store, title: 'CGV Store', color: '#3b82f6' },
+    { icon: GiftIcon, title: 'CGV eGift', color: '#3b82f6', isNew: true },
+    { icon: Award, title: 'Đổi ưu đãi', color: '#3b82f6' }
   ];
 
   useEffect(() => {
     loadUserProfile();
+    calculateUserSpending();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      calculateUserSpending();
+    }
+  }, [user]);
+
+  // Lắng nghe thay đổi trong localStorage
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'userTickets') {
+        calculateUserSpending();
+      }
+    };
+    
+    const handleCustomEvent = (e) => {
+      if (e.detail && e.detail.key === 'userTickets') {
+        calculateUserSpending();
+      }
+    };
+    
+    // Lắng nghe storage event từ các tab khác
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Lắng nghe custom event từ cùng tab
+    window.addEventListener('userTicketsUpdated', handleCustomEvent);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('userTicketsUpdated', handleCustomEvent);
+    };
+  }, []);
+
+  const calculateUserSpending = () => {
+    try {
+      // Lấy user hiện tại
+      const currentUser = getCurrentUserSync();
+      if (!currentUser) {
+        setUserSpending({
+          totalSpent: 0,
+          totalPoints: 0
+        });
+        return;
+      }
+
+      // Lấy danh sách vé từ localStorage
+      const tickets = JSON.parse(localStorage.getItem('userTickets') || '[]');
+      
+      // Lọc vé của user hiện tại
+      const userTickets = tickets.filter(ticket => 
+        ticket.userId === currentUser.id || 
+        ticket.userId === currentUser.username ||
+        ticket.userId === currentUser.email
+      );
+      
+      // Tính tổng chi tiêu
+      const totalSpent = userTickets.reduce((sum, ticket) => {
+        return sum + (ticket.price || 0);
+      }, 0);
+      
+      // Tính điểm thưởng (1 điểm = 1000 VND)
+      const totalPoints = Math.floor(totalSpent / 1000);
+      
+      setUserSpending({
+        totalSpent,
+        totalPoints
+      });
+    } catch (error) {
+      console.error('Error calculating user spending:', error);
+      setUserSpending({
+        totalSpent: 0,
+        totalPoints: 0
+      });
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND'
+    }).format(amount);
+  };
+
+  // Function để refresh dữ liệu chi tiêu
+  const refreshSpendingData = () => {
+    calculateUserSpending();
+  };
+
+  // Notify parent (Header) about avatar/user changes with consistent signature
+  React.useEffect(() => {
+    if (onAvatarChange) {
+      onAvatarChange(avatarUrl, user);
+    }
+  }, [onAvatarChange, avatarUrl, user]);
 
   // Handle popup animation
   useEffect(() => {
@@ -491,32 +597,16 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
           <h4>Thống kê tài khoản</h4>
           <div className="stats-grid">
             <div className="stat-item">
-              <div className="stat-icon">
-                <Ticket size={20} />
-              </div>
               <div className="stat-info">
-                <span className="stat-number">{userStats.totalTickets}</span>
-                <span className="stat-label">Vé đã mua</span>
+                <span className="stat-label">Tổng Chi Tiêu 2025</span>
+                <span className="stat-number">{formatCurrency(userSpending.totalSpent)}</span>
               </div>
             </div>
             
             <div className="stat-item">
-              <div className="stat-icon">
-                <TrendingUp size={20} />
-              </div>
               <div className="stat-info">
-                <span className="stat-number">{userStats.totalMovies}</span>
-                <span className="stat-label">Phim đã xem</span>    
-              </div>
-            </div>
-            
-            <div className="stat-item">
-              <div className="stat-icon">
-                <Award size={20} />
-              </div>
-              <div className="stat-info">
-                <span className="stat-number">{userStats.points}</span>
-                <span className="stat-label">Điểm tích lũy</span>
+                <span className="stat-label">Điểm Thưởng</span>
+                <span className="stat-number">{userSpending.totalPoints}</span>
               </div>
             </div>
           </div>
@@ -541,15 +631,19 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
           <div className="benefits-grid">
             {benefits.map((benefit, index) => (
               <div key={index} className="benefit-card">
-                <div 
-                  className="benefit-icon" 
-                  data-color={benefit.color}
-                >
-                  <benefit.icon size={20} />
+                <div className="benefit-icon-container">
+                  <div 
+                    className="benefit-icon" 
+                    style={{ backgroundColor: benefit.color }}
+                  >
+                    <benefit.icon size={24} />
+                  </div>
+                  {benefit.isNew && (
+                    <div className="new-badge">NEW</div>
+                  )}
                 </div>
                 <div className="benefit-content">
                   <h5>{benefit.title}</h5>
-                  <p>{benefit.description}</p>
                 </div>
               </div>
             ))}
@@ -560,7 +654,7 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
         <div className="profile-actions">
           {!isEditing ? (
             <>
-              <button className="action-btn edit" onClick={handleEdit}>
+              <button className="action-btn edit-profile" onClick={handleEdit}>
                 <Settings size={18} />
                 <span>Chỉnh sửa thông tin</span>
               </button>

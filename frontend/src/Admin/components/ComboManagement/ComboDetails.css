@@ -51,6 +51,7 @@
 .close-btn:hover {
   background: #f3f4f6;
   color: #374151;
+  transform: translateY(-2px);
 }
 
 .details-content {

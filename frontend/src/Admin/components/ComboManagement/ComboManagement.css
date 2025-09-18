@@ -1,6 +1,6 @@
 .combo-management {
   padding: 24px;
-  background: #f8fafc;
+  background: white;
   min-height: 100vh;
 }
 
@@ -38,7 +38,6 @@
 .create-btn:hover {
   background: #059669;
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .combo-filters {
@@ -310,9 +309,9 @@
   transform: scale(1.1);
 }
 
-.delete-btn {
-  background: rgba(239, 68, 68, 0.9);
-  color: white;
+.btn-delete {
+  background: rgba(239, 68, 68, 0.9) !important;
+  color: white !important;
 }
 
 .delete-btn:hover {

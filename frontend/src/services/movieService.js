@@ -96,3 +96,139 @@ export async function searchMovies(query) {
     }
   }
 }
+
+// CRUD operations for admin
+export async function getAllMovies() {
+  try {
+    const res = await fetch('http://localhost:8080/api/movies');
+    if (!res.ok) throw new Error('Không thể lấy danh sách phim');
+    return await res.json();
+  } catch (error) {
+    console.error('Error fetching all movies:', error);
+    throw new Error('Không thể kết nối đến server');
+  }
+}
+
+export async function createMovie(movieData) {
+  try {
+    const res = await fetch('http://localhost:8080/api/movies', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(movieData)
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Không thể tạo phim');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('Error creating movie:', error);
+    throw error;
+  }
+}
+
+export async function updateMovie(movieId, movieData) {
+  try {
+    const res = await fetch(`http://localhost:8080/api/movies/${movieId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(movieData)
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Không thể cập nhật phim');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('Error updating movie:', error);
+    throw error;
+  }
+}
+
+export async function deleteMovie(movieId) {
+  try {
+    const res = await fetch(`http://localhost:8080/api/movies/${movieId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Không thể xóa phim');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error deleting movie:', error);
+    throw error;
+  }
+}
+
+// Lấy danh sách phim theo rạp chiếu
+export async function getMoviesByCinema(cinemaId) {
+  try {
+    const res = await fetch(`http://localhost:8080/api/movies/cinema/${cinemaId}`);
+    if (!res.ok) {
+      throw new Error(`HTTP error! status: ${res.status}`);
+    }
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching movies by cinema:', error);
+    throw error;
+  }
+}
+
+// Thêm phim vào rạp chiếu
+export async function addMovieToCinema(movieId, cinemaId) {
+  try {
+    const res = await fetch(`http://localhost:8080/api/movies/${movieId}/cinemas/${cinemaId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Không thể thêm phim vào rạp chiếu');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('Error adding movie to cinema:', error);
+    throw error;
+  }
+}
+
+// Xóa phim khỏi rạp chiếu
+export async function removeMovieFromCinema(movieId, cinemaId) {
+  try {
+    const res = await fetch(`http://localhost:8080/api/movies/${movieId}/cinemas/${cinemaId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Không thể xóa phim khỏi rạp chiếu');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('Error removing movie from cinema:', error);
+    throw error;
+  }
+}

@@ -6,13 +6,13 @@ import ScrollToTop from './Client/components/ScrollToTop';
 import Homepage from './Client/pages/Homepage/Homepage';
 import MovieDetailPage from './Client/pages/MovieDetailPage/MovieDetailPage';
 import CinemasPage from './Client/pages/CinemasPage/CinemasPage';
+import CinemaDetailPage from './Client/pages/CinemaDetailPage/CinemaDetailPage';
 import TicketListPage from './Client/pages/TicketListPage/TicketListPage';
 import ProfilePage from './Client/pages/ProfilePage/ProfilePage';
 import SeatMapPage from './Client/pages/SeatMap/SeatMapPage';
 import ComboSelectionPage from './Client/pages/ComboSelectionPage/ComboSelectionPage';
 import NewsPage from './Client/pages/NewsPage/NewsPage';
 import NewsDetailPage from './Client/pages/NewsDetailPage/NewsDetailPage';
-import AdminLogin from './Admin/pages/Admin/AdminLogin';
 import AdminDashboard from './Admin/pages/Admin/AdminDashboard';
 import AdminRoute from './Admin/components/Admin/AdminRoute';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -89,6 +89,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Homepage />} />
             <Route path="/cinemas" element={<CinemasPage />} />
+            <Route path="/cinema/:cinemaId" element={<CinemaDetailPage />} />
             <Route path="/movie/:movieId" element={<MovieDetailPage />} />
             <Route path="/tickets" element={<TicketListPage userId={user?.id} />} />
             <Route path="/seat-selection" element={<SeatMapPage />} />
@@ -107,7 +108,6 @@ function App() {
             />
             
             {/* Admin routes */}
-            <Route path="/admin/login" element={<AdminLogin />} />
             <Route 
               path="/admin/dashboard" 
               element={

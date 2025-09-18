@@ -15,38 +15,35 @@ public class ComboService {
     
     @Autowired
     private ComboRepository comboRepository;
-    
-    // Lấy tất cả combo đang hoạt động
+
     public List<Combo> getAllActiveCombos() {
         return comboRepository.findByIsActiveTrue();
     }
-    
-    // Lấy combo theo ID
+
+    public List<Combo> getAllCombos() {
+        return comboRepository.findAll();
+    }
+
     public Optional<Combo> getComboById(String id) {
         return comboRepository.findById(id);
     }
-    
-    // Tìm kiếm combo theo tên
+
     public List<Combo> searchCombosByName(String name) {
         return comboRepository.findByNameContainingIgnoreCaseAndIsActiveTrue(name);
     }
-    
-    // Tìm combo theo khoảng giá
+
     public List<Combo> getCombosByPriceRange(BigDecimal minPrice, BigDecimal maxPrice) {
         return comboRepository.findByPriceRangeAndIsActiveTrue(minPrice, maxPrice);
     }
-    
-    // Tìm combo theo giá tối đa
+
     public List<Combo> getCombosByMaxPrice(BigDecimal maxPrice) {
         return comboRepository.findByMaxPriceAndIsActiveTrue(maxPrice);
     }
-    
-    // Tạo combo mới (Admin)
+
     public Combo createCombo(Combo combo) {
         return comboRepository.save(combo);
     }
-    
-    // Cập nhật combo (Admin)
+
     public Combo updateCombo(String id, Combo comboDetails) {
         Optional<Combo> optionalCombo = comboRepository.findById(id);
         if (optionalCombo.isPresent()) {
@@ -61,8 +58,7 @@ public class ComboService {
         }
         return null;
     }
-    
-    // Xóa combo (Admin)
+
     public boolean deleteCombo(String id) {
         Optional<Combo> optionalCombo = comboRepository.findById(id);
         if (optionalCombo.isPresent()) {

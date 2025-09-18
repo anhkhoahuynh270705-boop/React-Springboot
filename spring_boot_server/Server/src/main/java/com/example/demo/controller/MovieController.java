@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Movie;
 import com.example.demo.repository.MovieRepository;
+import com.example.demo.service.MovieCinemaService;
 
 @RestController
 @RequestMapping("/api/movies")
@@ -26,6 +27,9 @@ import com.example.demo.repository.MovieRepository;
 public class MovieController {
     @Autowired
     private MovieRepository movieRepository;
+    
+    @Autowired
+    private MovieCinemaService movieCinemaService;
 
     @GetMapping
     public ResponseEntity<List<Movie>> getAllMovies() {
@@ -188,6 +192,51 @@ public class MovieController {
                 })
                 .toList();
             return ResponseEntity.ok(filteredMovies);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Thêm phim vào rạp chiếu
+    @PostMapping("/{movieId}/cinemas/{cinemaId}")
+    public ResponseEntity<Movie> addMovieToCinema(@PathVariable String movieId, @PathVariable String cinemaId) {
+        try {
+            boolean success = movieCinemaService.addMovieToCinema(movieId, cinemaId);
+            if (success) {
+                Optional<Movie> movieOpt = movieRepository.findById(movieId);
+                if (movieOpt.isPresent()) {
+                    return ResponseEntity.ok(movieOpt.get());
+                }
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Xóa phim khỏi rạp chiếu
+    @DeleteMapping("/{movieId}/cinemas/{cinemaId}")
+    public ResponseEntity<Movie> removeMovieFromCinema(@PathVariable String movieId, @PathVariable String cinemaId) {
+        try {
+            boolean success = movieCinemaService.removeMovieFromCinema(movieId, cinemaId);
+            if (success) {
+                Optional<Movie> movieOpt = movieRepository.findById(movieId);
+                if (movieOpt.isPresent()) {
+                    return ResponseEntity.ok(movieOpt.get());
+                }
+            }
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Lấy danh sách phim theo rạp chiếu
+    @GetMapping("/cinema/{cinemaId}")
+    public ResponseEntity<List<Movie>> getMoviesByCinema(@PathVariable String cinemaId) {
+        try {
+            List<Movie> cinemaMovies = movieCinemaService.getMoviesByCinema(cinemaId);
+            return ResponseEntity.ok(cinemaMovies);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }

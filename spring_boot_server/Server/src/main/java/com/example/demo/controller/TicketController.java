@@ -21,7 +21,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.model.Notification;
 import com.example.demo.model.Ticket;
+import com.example.demo.repository.NotificationRepository;
 import com.example.demo.repository.TicketRepository;
 
 @RestController
@@ -30,6 +32,9 @@ import com.example.demo.repository.TicketRepository;
 public class TicketController {
     @Autowired
     private TicketRepository ticketRepository;
+    
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @GetMapping
     public List<Ticket> getAllTickets() {
@@ -121,7 +126,6 @@ public class TicketController {
             return ResponseEntity.ok(savedTicket);
         } catch (Exception e) {
             System.err.println("Error creating ticket: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error creating ticket: " + e.getMessage());
         }
     }
@@ -470,5 +474,47 @@ public class TicketController {
             pdf.append("---\n\n");
         }
         return pdf.toString().getBytes();
+    }
+
+    // Duyệt vé (chuyển từ pending sang confirmed)
+    @PutMapping("/{id}/approve")
+    public ResponseEntity<?> approveTicket(@PathVariable String id) {
+        try {
+            Optional<Ticket> ticketOpt = ticketRepository.findById(id);
+            if (!ticketOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Ticket ticket = ticketOpt.get();
+            if (!"pending".equals(ticket.getStatus())) {
+                return ResponseEntity.badRequest().body("Chỉ có thể duyệt vé đang chờ xác nhận");
+            }
+            
+            // Cập nhật trạng thái vé
+            ticket.setStatus("confirmed");
+            ticket.setPaymentStatus("paid");
+            Ticket updatedTicket = ticketRepository.save(ticket);
+            try {
+                Notification notification = new Notification();
+                notification.setUserId(ticket.getUserId());
+                notification.setTitle("Vé đã được duyệt");
+                notification.setMessage("Vé " + (ticket.getTicketNumber() != null ? ticket.getTicketNumber() : ticket.getId()) + 
+                    " cho phim \"" + ticket.getMovieTitle() + "\" đã được admin duyệt và sẵn sàng sử dụng");
+                notification.setType("ticket_approved");
+                notification.setRelatedType("ticket");
+                notification.setIsRead(false);
+                notification.setCreatedAt(LocalDateTime.now());
+                
+                notificationRepository.save(notification);
+                System.out.println("Notification created for ticket approval: " + ticket.getId());
+            } catch (Exception notificationError) {
+                System.err.println("Error creating notification: " + notificationError.getMessage());
+            }
+            
+            return ResponseEntity.ok(updatedTicket);
+        } catch (Exception e) {
+            System.err.println("Error approving ticket: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error approving ticket: " + e.getMessage());
+        }
     }
 }

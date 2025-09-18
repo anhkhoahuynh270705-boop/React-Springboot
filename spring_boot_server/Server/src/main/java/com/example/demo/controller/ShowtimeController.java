@@ -19,6 +19,7 @@ import com.example.demo.model.Showtime;
 import com.example.demo.model.Movie;
 import com.example.demo.repository.ShowtimeRepository;
 import com.example.demo.repository.MovieRepository;
+import com.example.demo.service.ShowtimeService;
 
 @RestController
 @RequestMapping("/api/showtimes")
@@ -29,12 +30,14 @@ public class ShowtimeController {
     
     @Autowired
     private MovieRepository movieRepository;
+    
+    @Autowired
+    private ShowtimeService showtimeService;
 
     @GetMapping
     public List<Showtime> getAllShowtimes() {
         List<Showtime> showtimes = showtimeRepository.findAll();
         
-        // Populate movieName for each showtime
         for (Showtime showtime : showtimes) {
             if (showtime.getMovieId() != null) {
                 Optional<Movie> movie = movieRepository.findById(showtime.getMovieId());
@@ -53,6 +56,14 @@ public class ShowtimeController {
             } else {
                 showtime.setMovieName("No Movie ID");
             }
+            
+            // Set default cinema info if not present
+            if (showtime.getCinemaName() == null || showtime.getCinemaName().trim().isEmpty()) {
+                showtime.setCinemaName("Galaxy Studio");
+            }
+            if (showtime.getCinemaAddress() == null || showtime.getCinemaAddress().trim().isEmpty()) {
+                showtime.setCinemaAddress("123 Đường ABC, Quận 1, TP.HCM");
+            }
         }
         
         return showtimes;
@@ -69,6 +80,45 @@ public class ShowtimeController {
     public List<Showtime> getShowtimesByMovieIdParam(@RequestParam String movieId) {
         return showtimeRepository.findByMovieId(movieId);
     }
+    
+    // Lấy showtimes theo rạp chiếu
+    @GetMapping("/cinema/{cinemaId}")
+    public List<Showtime> getShowtimesByCinemaId(@PathVariable String cinemaId) {
+        List<Showtime> showtimes = showtimeRepository.findByCinemaId(cinemaId);
+        
+        for (Showtime showtime : showtimes) {
+            if (showtime.getMovieId() != null) {
+                Optional<Movie> movie = movieRepository.findById(showtime.getMovieId());
+                if (movie.isPresent()) {
+                    Movie movieData = movie.get();
+                    String movieName = movieData.getTitle() != null ? movieData.getTitle() :
+                                     movieData.getName() != null ? movieData.getName() :
+                                     movieData.getMovieName() != null ? movieData.getMovieName() :
+                                     movieData.getEnglishTitle() != null ? movieData.getEnglishTitle() :
+                                     "Unknown Movie";
+                    showtime.setMovieName(movieName);
+                } else {
+                    showtime.setMovieName("Movie Not Found");
+                }
+            } else {
+                showtime.setMovieName("No Movie ID");
+            }
+        }
+        
+        return showtimes;
+    }
+    
+    // Lấy showtimes theo rạp và phim
+    @GetMapping("/cinema/{cinemaId}/movie/{movieId}")
+    public List<Showtime> getShowtimesByCinemaAndMovie(@PathVariable String cinemaId, @PathVariable String movieId) {
+        return showtimeService.getShowtimesByCinemaAndMovie(cinemaId, movieId);
+    }
+    
+    // Lấy showtimes theo ngày và rạp chiếu
+    @GetMapping("/cinema/{cinemaId}/date/{date}")
+    public List<Showtime> getShowtimesByDateAndCinema(@PathVariable String cinemaId, @PathVariable String date) {
+        return showtimeService.getShowtimesByDateAndCinema(cinemaId, date);
+    }
 
     @GetMapping("/{id}")
     public Optional<Showtime> getShowtimeById(@PathVariable String id) {
@@ -77,17 +127,16 @@ public class ShowtimeController {
 
     @PostMapping
     public Showtime createShowtime(@RequestBody Showtime showtime) {
-        return showtimeRepository.save(showtime);
+        return showtimeService.createShowtime(showtime);
     }
 
     @PutMapping("/{id}")
     public Showtime updateShowtime(@PathVariable String id, @RequestBody Showtime showtime) {
-        showtime.setId(id);
-        return showtimeRepository.save(showtime);
+        return showtimeService.updateShowtime(id, showtime);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteShowtime(@PathVariable String id) {
-        showtimeRepository.deleteById(id);
+    public boolean deleteShowtime(@PathVariable String id) {
+        return showtimeService.deleteShowtime(id);
     }
 }

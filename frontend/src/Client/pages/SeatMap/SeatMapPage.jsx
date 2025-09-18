@@ -243,7 +243,7 @@ const SeatMapPage = ({ showtimeId, userId }) => {
 
   if (!user) {
     return (
-      <div className="error-container">
+      <div className="container-error">
         <h2>Đăng nhập để đặt vé nhé!😘</h2>
         <p>Bạn cần đăng nhập để có thể chọn ghế và đặt vé.</p>
         <div className="auth-buttons">

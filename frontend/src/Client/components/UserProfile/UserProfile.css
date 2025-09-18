@@ -348,7 +348,7 @@ body .user-profile.popup {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
@@ -367,7 +367,7 @@ body .user-profile.popup {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #667eea;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -378,19 +378,21 @@ body .user-profile.popup {
 .stat-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-}
-
-.stat-number {
-  color: #1f2937;
-  font-size: 0.875rem;
-  font-weight: 700;
+  gap: 4px;
+  width: 100%;
 }
 
 .stat-label {
   color: #6b7280;
   font-size: 0.75rem;
   font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.stat-number {
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 700;
 }
 
 .level-progress {
@@ -443,19 +445,21 @@ body .user-profile.popup {
 
 .benefits-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
 }
 
 .benefit-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
+  gap: 0.5rem;
+  padding: 1rem 0.5rem;
   background: white;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #e2e8f0;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  text-align: center;
 }
 
 .benefit-card:hover {
@@ -463,9 +467,16 @@ body .user-profile.popup {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.benefit-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .benefit-icon {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -474,28 +485,36 @@ body .user-profile.popup {
   flex-shrink: 0;
 }
 
-.benefit-icon[data-color] {
-  background-color: attr(data-color);
+.new-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc2626;
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  line-height: 1;
+}
+
+.benefit-icon {
+  background-color: #3b82f6;
 }
 
 .benefit-content {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  width: 100%;
 }
 
 .benefit-content h5 {
   color: #1f2937;
   margin: 0;
-  font-size: 0.875rem;
-  font-weight: 600;
-}
-
-.benefit-content p {
-  color: #6b7280;
-  margin: 0;
   font-size: 0.75rem;
-  line-height: 1.3;
+  font-weight: 600;
+  text-align: center;
 }
 
 /* Profile Actions */
@@ -525,6 +544,29 @@ body .user-profile.popup {
 .action-btn:hover {
   background: #e5e7eb;
   transform: translateY(-1px);
+}
+
+.action-btn.edit-profile {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+  border-radius: 8px;
+  padding: 12px 24px;
+  min-width: 200px;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.action-btn.edit-profile:hover {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.action-btn.edit-profile:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .notifications {

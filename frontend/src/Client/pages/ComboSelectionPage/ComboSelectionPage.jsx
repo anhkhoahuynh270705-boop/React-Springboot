@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, CreditCard, CheckCircle } from 'lucide-react';
 import { bookTicket } from '../../../services/ticketService';
 import { getAllCombos } from '../../../services/comboService';
+import { createNotification, createBookingSuccessNotification } from '../../../services/notificationService';
 import './ComboSelectionPage.css';
 
 const ComboSelectionPage = () => {
@@ -223,12 +224,23 @@ const ComboSelectionPage = () => {
         throw new Error('Seat number is required');
       }
 
-      // Gọi bookTicket
-      await bookTicket(ticketData);
+      const bookingResult = await bookTicket(ticketData);
+      
+      try {
+        const notificationData = createBookingSuccessNotification(
+          user.id,
+          movie?.title || movie?.name || 'Tên phim không xác định',
+          seatNumbers,
+          showTime
+        );
+        await createNotification(notificationData);
+        console.log('Booking success notification created');
+      } catch (notificationError) {
+        console.error('Error creating notification:', notificationError);
+      }
       
       setMessage('Đặt vé thành công!');
       
-      // Chuyển đến trang thành công hoặc trang vé
       setTimeout(() => {
         navigate('/tickets');
       }, 2000);
@@ -460,7 +472,6 @@ const ComboSelectionPage = () => {
               </>
             ) : (
               <>
-                <CheckCircle size={20} />
                 Xác nhận đặt vé
               </>
             )}

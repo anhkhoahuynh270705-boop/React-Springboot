@@ -25,6 +25,13 @@ public class ComboController {
         return ResponseEntity.ok(combos);
     }
     
+    // Lấy tất cả combo (Admin)
+    @GetMapping("/all")
+    public ResponseEntity<List<Combo>> getAllCombos() {
+        List<Combo> combos = comboService.getAllCombos();
+        return ResponseEntity.ok(combos);
+    }
+    
     // Lấy combo theo ID
     @GetMapping("/{id}")
     public ResponseEntity<Combo> getComboById(@PathVariable String id) {

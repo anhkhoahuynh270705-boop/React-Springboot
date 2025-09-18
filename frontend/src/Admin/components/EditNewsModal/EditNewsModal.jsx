@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { updateNews } from '../../../services/newsService';
+import useToast from '../../hooks/useToast';
+import ToastContainer from '../Toast/ToastContainer';
 import styles from './EditNewsModal.module.css';
 
 const EditNewsModal = ({ news, onClose, onNewsUpdated }) => {
+  const { showSuccess, showError, toasts, removeToast } = useToast();
   const [formData, setFormData] = useState({
     title: '',
     summary: '',
@@ -58,13 +61,17 @@ const EditNewsModal = ({ news, onClose, onNewsUpdated }) => {
 
       const updatedNews = await updateNews(news.id, newsData);
       
+      showSuccess('Cập nhật tin tức thành công!');
+      
       if (onNewsUpdated) {
         onNewsUpdated(updatedNews);
       }
       
       onClose();
     } catch (error) {
-      setError(error.message || 'Có lỗi xảy ra khi cập nhật tin tức');
+      const errorMessage = error.message || 'Có lỗi xảy ra khi cập nhật tin tức';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -74,6 +81,7 @@ const EditNewsModal = ({ news, onClose, onNewsUpdated }) => {
 
   return (
     <div className={`${styles['edit-news-overlay']}`}>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
       <div className={`${styles['edit-news-modal']}`}>
         <div className={`${styles['edit-news-header']}`}>
           <h2>Chỉnh sửa tin tức</h2>

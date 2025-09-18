@@ -198,8 +198,17 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
         });
         
         if (user && user.id) {
-          if (onLogin) onLogin(user);
+        setMessage({
+          type: 'success',
+          text: 'Đăng nhập thành công!'
+        });
+        
+        if (onLogin) onLogin(user);
+        
+        setTimeout(() => {
           onClose();
+          navigate('/');
+        }, 1000);
         } else {
           setMessage({
             type: 'error',

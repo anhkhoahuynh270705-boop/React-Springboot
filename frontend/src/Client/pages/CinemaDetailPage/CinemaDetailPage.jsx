@@ -1,0 +1,315 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { MapPin, Phone, Mail, Clock, Users, Star, Film, ArrowLeft, Calendar, Play, Building2, Globe, List } from 'lucide-react';
+import { getAllCinemas } from '../../../services/cinemaService';
+import { getMoviesByCinema } from '../../../services/movieService';
+import MovieCard from '../../components/MovieCard/MovieCard';
+import './CinemaDetailPage.css';
+
+const CinemaDetailPage = () => {
+  const { cinemaId } = useParams();
+  const navigate = useNavigate();
+  const [cinema, setCinema] = useState(null);
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(() => {
+    try {
+      const url = new URL(window.location.href);
+      const d = url.searchParams.get('date');
+      return d || new Date().toISOString().slice(0, 10);
+    } catch {
+      return new Date().toISOString().slice(0, 10);
+    }
+  });
+
+  // Generate 7 days starting from today
+  const weekDates = useMemo(() => {
+    const today = new Date();
+    return Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+      return date;
+    });
+  }, []);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchCinemaData();
+  }, [cinemaId]);
+
+  const fetchCinemaData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Lấy danh sách tất cả rạp và tìm rạp theo ID
+      const allCinemas = await getAllCinemas();
+      const foundCinema = allCinemas.find(c => c.id === cinemaId);
+      
+      if (!foundCinema) {
+        setError('Không tìm thấy rạp chiếu');
+        return;
+      }
+
+      const cinemaData = {
+        id: foundCinema.id,
+        name: foundCinema.name || 'Tên rạp không xác định',
+        address: foundCinema.address || 'Địa chỉ chưa cập nhật',
+        city: foundCinema.city || 'Thành phố chưa cập nhật',
+        phone: foundCinema.phone || null,
+        email: foundCinema.email || null,
+        imageUrl: foundCinema.imageUrl || null,
+        status: foundCinema.status || 'bán vé',
+        description: foundCinema.description || null,
+        totalSeats: foundCinema.totalSeats || 0,
+        totalRooms: foundCinema.totalRooms || 0,
+        movieIds: foundCinema.movieIds || []
+      };
+      
+      setCinema(cinemaData);
+      
+      // Lấy danh sách phim theo rạp chiếu
+      try {
+        const cinemaMovies = await getMoviesByCinema(cinemaId);
+        setMovies(cinemaMovies);
+      } catch (movieErr) {
+        console.error('Error fetching movies by cinema:', movieErr);
+        setMovies([]);
+      }
+      
+    } catch (err) {
+      console.error('Error fetching cinema data:', err);
+      setError('Không thể tải thông tin rạp chiếu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Chưa cập nhật';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('vi-VN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Chưa cập nhật';
+    }
+  };
+
+  const handleMovieClick = (movieId) => {
+    navigate(`/movie/${movieId}`);
+  };
+
+  const handleDateChange = (dateString) => {
+    setSelectedDate(dateString);
+    try {
+      const url = new URL(window.location.href);
+      if (dateString) {
+        url.searchParams.set('date', dateString);
+      } else {
+        url.searchParams.delete('date');
+      }
+      window.history.replaceState({}, '', url.toString());
+    } catch {}
+  };
+
+  const formatDateForDisplay = (date) => {
+    const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+    const day = dayNames[date.getDay()];
+    const dayNum = date.getDate();
+    const month = date.getMonth() + 1;
+    return { day, dateStr: `${dayNum}/${month}` };
+  };
+
+  if (loading) {
+    return (
+      <div className="cinema-detail-loading">
+        <div className="loading-spinner"></div>
+        <p>Đang tải thông tin rạp chiếu...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="cinema-detail-error">
+        <div className="error-content">
+          <h2>Không thể tải thông tin rạp chiếu</h2>
+          <p>{error}</p>
+          <button onClick={() => navigate('/')} className="back-button">
+            <ArrowLeft size={20} />
+            Về trang chủ
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!cinema) {
+    return (
+      <div className="cinema-detail-error">
+        <div className="error-content">
+          <h2>Không tìm thấy rạp chiếu</h2>
+          <p>Rạp chiếu bạn tìm kiếm không tồn tại hoặc đã bị xóa.</p>
+          <button onClick={() => navigate('/')} className="back-button">
+            <ArrowLeft size={20} />
+            Về trang chủ
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="cinema-detail-page">     
+      {/* Header */}
+      <div className="cinema-detail-header">
+        <button onClick={() => navigate(-1)} className="back-button">
+          <ArrowLeft size={20} />
+          Quay lại
+        </button>
+        <h1>Thông tin rạp chiếu</h1>
+      </div>
+
+      {/* Cinema Info */}
+      <div className="cinema-info-section">
+        <div className="cinema-info-card">
+          <div className="cinema-header">
+            <div className="cinema-logo">
+              {cinema.imageUrl ? (
+                <img 
+                  src={cinema.imageUrl} 
+                  alt={cinema.name}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div 
+                className="cinema-placeholder"
+                style={{ display: cinema.imageUrl ? 'none' : 'flex' }}
+              >
+                <Building2 size={32} />
+              </div>
+            </div>
+
+            <div className="cinema-info">
+              <h2 className="cinema-name">{cinema.name}</h2>
+              <p className="cinema-address">{cinema.address}</p>
+              
+              <div className="cinema-links">
+                <div className="cinema-link">
+                  <MapPin size={16} />
+                  <span>Bản đồ</span>
+                </div>
+                <div className="cinema-link">
+                  <Globe size={16} />
+                  <span>{cinema.city}</span>
+                </div>
+                <div className="cinema-link">
+                  <List size={16} />
+                  <span>CGV Cinemas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="cinema-description">
+            {cinema.description ? (
+              <p>{cinema.description}</p>
+            ) : (
+              <div className="no-description">
+                <p>Chưa có mô tả cho rạp chiếu này.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Movies Section */}
+      <div className="movies-section">
+        <div className="section-header">
+          <h2>Phim đang chiếu</h2>
+          <span className="movie-count">{movies.length} phim</span>
+        </div>
+
+        {/* 7-Day Date Selector */}
+        <div className="date-selector" style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          marginBottom: '20px', 
+          overflowX: 'auto',
+          padding: '8px 0'
+        }}>
+          {weekDates.map((date) => {
+            const dateString = date.toISOString().slice(0, 10);
+            const { day, dateStr } = formatDateForDisplay(date);
+            const isSelected = selectedDate === dateString;
+            
+            return (
+              <button
+                key={dateString}
+                onClick={() => handleDateChange(dateString)}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  padding: '8px 12px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  backgroundColor: isSelected ? '#3b82f6' : '#ffffff',
+                  color: isSelected ? '#ffffff' : '#374151',
+                  cursor: 'pointer',
+                  minWidth: '60px',
+                  transition: 'all 0.2s',
+                  fontSize: '12px',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) {
+                    e.target.style.backgroundColor = '#f3f4f6';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isSelected) {
+                    e.target.style.backgroundColor = '#ffffff';
+                  }
+                }}
+              >
+                <span style={{ fontSize: '11px', marginBottom: '2px' }}>{day}</span>
+                <span style={{ fontSize: '14px', fontWeight: '600' }}>{dateStr}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {movies.length === 0 ? (
+          <div className="no-movies">
+            <Film size={64} />
+            <h3>Chưa có phim nào</h3>
+            <p>Rạp chiếu này chưa có phim nào được thêm vào.</p>
+          </div>
+        ) : (
+          <div className="movies-grid">
+            {movies.map((movie) => (
+              <div key={movie.id} className="movie-card-wrapper">
+                <MovieCard 
+                  movie={movie}
+                  cinemaId={cinemaId}
+                  selectedDate={selectedDate}
+                  onClick={() => handleMovieClick(movie.id)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CinemaDetailPage;

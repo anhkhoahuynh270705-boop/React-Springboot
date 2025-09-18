@@ -57,8 +57,6 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
         imageUrl: '',
         featured: false
       });
-      
-      alert('Tạo tin tức thành công!');
     } catch (error) {
       setError(error.message || 'Có lỗi xảy ra khi tạo tin tức');
     } finally {

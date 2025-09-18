@@ -195,14 +195,19 @@
 }
 
 .btn-cancel {
-  background: #f5f5f5;
-  color: #666;
-  border: 2px solid #e0e0e0;
+  background: none;
+  border: 1px solid #00000050;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
 }
 
 .btn-cancel:hover {
-  background: #e0e0e0;
-  color: #333;
+  background: #f3f4f6;
+  color: #374151;
+  transform: translateY(-2px);
 }
 
 .btn-submit {
@@ -212,7 +217,6 @@
 
 .btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
 }
 
 .btn-submit:disabled {

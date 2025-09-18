@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import HeroSection from '../../components/HeroSection/HeroSection';
 import FeaturedMovies from '../../components/FeaturedMovies/FeaturedMovies';
-import DateSelector from '../../components/DateSelector/DateSelector';
 import { getMovies } from '../../../services/movieService';
 import './Homepage.css';
 
@@ -9,7 +8,8 @@ const Homepage = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('nowShowing');
+  const today = new Date();
 
   useEffect(() => {
     const fetchMovies = async () => {
@@ -25,13 +25,24 @@ const Homepage = () => {
         setLoading(false);
       }
     };
-
     fetchMovies();
   }, []);
 
-  const handleDateChange = (date) => {
-    setSelectedDate(date);
-  };
+  const nowShowingMovies = movies.filter(
+    (movie) => movie.releaseDate && new Date(movie.releaseDate) <= today
+  );
+  const comingSoonMovies = movies.filter(
+    (movie) => movie.releaseDate && new Date(movie.releaseDate) > today
+  );
+  const featuredMovies = movies.filter(
+    (movie) => movie.featured === true
+  );
+
+  const tabs = [
+    { key: 'nowShowing', label: 'Phim đang chiếu', movies: nowShowingMovies },
+    { key: 'featured', label: 'Phim đặc biệt', movies: featuredMovies },
+    { key: 'comingSoon', label: 'Phim sắp chiếu', movies: comingSoonMovies },
+  ];
 
   if (loading) {
     return (
@@ -49,7 +60,7 @@ const Homepage = () => {
       <div className="homepage">
         <div className="error-container">
           <p>{error}</p>
-          <button onClick={() => window.location.reload()}>Hãy kết nối API và thử lại</button>
+          <button onClick={() => window.location.reload()}>Reload Server</button>
         </div>
       </div>
     );
@@ -57,22 +68,24 @@ const Homepage = () => {
 
   return (
     <div className="homepage">
-      <main className="main-content"> 
+      <main className="main-content">
         <HeroSection />
-        <div className="content-wrapper"> 
-          {/* Date Selector */}
-          <DateSelector 
-            selectedDate={selectedDate}
-            onDateChange={handleDateChange}
-          />
-          
-          {/* Single Movies Section - Display all movies */}
-          <div className="movies-section">
-            <FeaturedMovies 
-              movies={movies} 
-              title="Nhấn vào suất chiếu để tiến hành mua vé"
-            />
+        <div className="content-wrapper" style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div className="movie-tabs">
+            {tabs.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setSelectedTab(tab.key)}
+                className={`movie-tab-btn${selectedTab === tab.key ? ' active' : ''}`}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
+          <FeaturedMovies
+            movies={tabs.find(tab => tab.key === selectedTab).movies}
+            title={tabs.find(tab => tab.key === selectedTab).label}
+          />
         </div>
       </main>
     </div>

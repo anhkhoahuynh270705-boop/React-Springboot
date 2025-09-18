@@ -90,3 +90,32 @@
     padding: 0.5rem;
   }
 }
+
+.movie-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.movie-tab-btn {
+  padding: 12px 32px;
+  border-radius: 8px;
+  border: none;
+  background: #fff;
+  color: #333333b0;
+  font-weight: 700;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 4px #eee;
+}
+
+.movie-tab-btn.active {
+  background: #8ec1eb;
+  color: #000000;
+}
+
+.movie-tab-btn:hover {
+  transform: translateY(-2px);
+}

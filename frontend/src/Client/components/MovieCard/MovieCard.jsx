@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Clock, Calendar } from 'lucide-react';
-import { getShowtimesByMovie } from '../../../services/showtimeService';
+import { getShowtimesByMovie, getShowtimesByCinemaAndMovie, getShowtimesByDateAndCinema } from '../../../services/showtimeService';
 import './MovieCard.css';
 
-const MovieCard = ({ movie }) => {
+const MovieCard = ({ movie, cinemaId, selectedDate }) => {
   const [showtimes, setShowtimes] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -46,16 +46,26 @@ const MovieCard = ({ movie }) => {
     return movie.releaseYear || movie.year || 'Chưa có thông tin';
   };
 
-  // Fetch showtimes from API
+  // Fetch showtimes from API (hidden on homepage; still used on cinema page)
   useEffect(() => {
     const fetchShowtimes = async () => {
       try {
         setLoading(true);     
-        const data = await getShowtimesByMovie(movie.id);    
+        let data = [];
+        if (cinemaId && selectedDate) {
+          const byDate = await getShowtimesByDateAndCinema(cinemaId, selectedDate);
+          data = Array.isArray(byDate) ? byDate.filter(s => (s.movieId === movie.id || s.movieId === movie._id)) : [];
+        } else if (cinemaId) {
+          data = await getShowtimesByCinemaAndMovie(cinemaId, movie.id);
+        } else {
+          data = await getShowtimesByMovie(movie.id);
+        }
         if (Array.isArray(data)) {
-          const filteredShowtimes = data.filter(showtime => 
-            showtime.movieId === movie.id || showtime.movieId === movie._id
-          );
+          const filteredShowtimes = data.filter(showtime => {
+            const matchesMovie = showtime.movieId === movie.id || showtime.movieId === movie._id;
+            const matchesCinema = cinemaId ? (showtime.cinemaId === cinemaId || showtime.cinema?.id === cinemaId) : true;
+            return matchesMovie && matchesCinema;
+          });
           setShowtimes(filteredShowtimes);
         } else {
           setShowtimes([]);
@@ -72,19 +82,69 @@ const MovieCard = ({ movie }) => {
     } else {
       console.log('MovieCard: No movie ID found:', movie);
     }
-  }, [movie.id, movie._id]);
+  }, [movie.id, movie._id, cinemaId, selectedDate, movie]);
+
+  // Listen for showtime updates
+  useEffect(() => {
+    const handleShowtimeUpdate = () => {
+      const fetchShowtimes = async () => {
+        try {
+          let data = [];
+          if (cinemaId && selectedDate) {
+            const byDate = await getShowtimesByDateAndCinema(cinemaId, selectedDate);
+            data = Array.isArray(byDate) ? byDate.filter(s => (s.movieId === movie.id || s.movieId === movie._id)) : [];
+          } else if (cinemaId) {
+            data = await getShowtimesByCinemaAndMovie(cinemaId, movie.id);
+          } else {
+            data = await getShowtimesByMovie(movie.id);
+          }
+          if (Array.isArray(data)) {
+            const filteredShowtimes = data.filter(showtime => {
+              const matchesMovie = showtime.movieId === movie.id || showtime.movieId === movie._id;
+              const matchesCinema = cinemaId ? (showtime.cinemaId === cinemaId || showtime.cinema?.id === cinemaId) : true;
+              return matchesMovie && matchesCinema;
+            });
+            setShowtimes(filteredShowtimes);
+          }
+        } catch (error) {
+          console.error('Error refreshing showtimes:', error);
+        }
+      };
+
+      if (movie.id || movie._id) {
+        fetchShowtimes();
+      }
+    };
+
+    // Listen for custom event when showtimes are updated
+    window.addEventListener('showtimesUpdated', handleShowtimeUpdate);
+    
+    return () => {
+      window.removeEventListener('showtimesUpdated', handleShowtimeUpdate);
+    };
+  }, [movie.id, movie._id, cinemaId, selectedDate]);
 
   // Format time for display
   const formatTime = (timeString) => {
     if (!timeString) return '';
     try {
+
+      if (timeString.match(/^\d{2}:\d{2}$/)) {
+        return timeString;
+      }
       const date = new Date(timeString);
+      if (isNaN(date.getTime())) {
+        return timeString;
+      }
+      
       return date.toLocaleTimeString('vi-VN', {
         hour: '2-digit',
         minute: '2-digit',
-        hour12: false
+        hour12: false,
+        timeZone: 'Asia/Ho_Chi_Minh' 
       });
     } catch (error) {
+      console.error('Error formatting time:', error, timeString);
       return timeString;
     }
   };
@@ -116,16 +176,15 @@ const MovieCard = ({ movie }) => {
         {getEnglishTitle(movie) && (
           <p className="movie-english-title">{getEnglishTitle(movie)}</p>
         )}
-        
         <div className="movie-rating-format">
-          <span className="rating-badge">{getAgeRating(movie)}</span>
-          <span className="format-text">{getFormat(movie)}</span>
+        <span className="rating-badge">{getAgeRating(movie)}</span>
         </div>
+  
         
         <div className="movie-meta">
           <div className="meta-item">
             <Clock size={16} />
-            <span>{getDuration(movie)}</span>
+            <span>{getDuration(movie)} phút</span>
           </div>
           <div className="meta-item">
             <Calendar size={16} />
@@ -138,28 +197,29 @@ const MovieCard = ({ movie }) => {
         <div className="trailer-link">
           <Link to={`/movie/${movie.id}?tab=info`} className="btn-trailer">Trailer</Link>
         </div>
-        
-        {/* Showtimes Section */}
-        <div className="showtimes-section">
-          <h4 className="showtimes-title">Giờ chiếu</h4>
-          {loading ? (
-            <div className="showtimes-loading">Đang tải...</div> 
-          ) : showtimes.length > 0 ? (
-            <div className="showtimes-grid">
-              {showtimes.slice(0, 4).map((showtime, index) => (
-                <button 
-                  key={index} 
-                  className="showtime-btn"
-                  onClick={() => handleShowtimeClick(showtime)}
-                >
-                  {formatTime(showtime.startTime || showtime.time || showtime.showTime)}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <div className="no-showtimes">Chưa có lịch chiếu</div>
-          )}
-        </div>
+
+        {/* Showtimes hidden on homepage; still visible on cinema page via props */}
+        {cinemaId ? (
+          <div className="showtimes-section">
+            {loading ? (
+              <div className="showtimes-loading">Đang tải...</div> 
+            ) : showtimes.length > 0 ? (
+              <div className="showtimes-grid">
+                {showtimes.slice(0, 4).map((showtime, index) => (
+                  <button 
+                    key={index} 
+                    className="showtime-btn"
+                    onClick={() => handleShowtimeClick(showtime)}
+                  >
+                    {formatTime(showtime.startTime || showtime.time || showtime.showTime)}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="no-showtimes">Chưa có lịch chiếu</div>
+            )}
+          </div>
+        ) : null}
       </div>
     </div>
   );
