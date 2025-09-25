@@ -5,8 +5,11 @@ import { getMovieById } from '../../../services/movieService';
 import { getArticlesByMovieId } from '../../../services/articleService';
 import { getReviewsByMovieId, likeReview, dislikeReview } from '../../../services/reviewService';
 import { getCachedAvatar } from '../../../services/avatarService';
+import { getAllNews, getNewsByCategory } from '../../../services/newsService';
 import ReviewForm from '../../components/ReviewForm/ReviewForm';
+import ShowtimeSchedule from '../../components/ShowtimeSchedule/ShowtimeSchedule';
 import styles from './MovieDetailPage.module.css';
+import newsStyles from './NewsSection.module.css';
 
 const MovieDetailPage = () => {
   const { movieId } = useParams();
@@ -23,6 +26,10 @@ const MovieDetailPage = () => {
   const [communityReviews, setCommunityReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState(null);
+  const [newsArticles, setNewsArticles] = useState([]);
+  const [newsLoading, setNewsLoading] = useState(false);
+  const [newsError, setNewsError] = useState(null);
+  const [selectedNewsCategory, setSelectedNewsCategory] = useState('all');
 
   // Format time ago for reviews
   const formatTimeAgo = (dateString) => {
@@ -67,6 +74,28 @@ const MovieDetailPage = () => {
       setReviewsError('Không thể tải đánh giá từ cộng đồng');
     } finally {
       setReviewsLoading(false);
+    }
+  };
+
+  // Fetch news articles
+  const fetchNewsArticles = async (category = 'all') => {
+    try {
+      setNewsLoading(true);
+      setNewsError(null);
+      
+      let news;
+      if (category === 'all') {
+        news = await getAllNews(0, 20); // Get first 20 news articles
+      } else {
+        news = await getNewsByCategory(category);
+      }
+      
+      setNewsArticles(news);
+    } catch (error) {
+      console.error('Error fetching news articles:', error);
+      setNewsError('Không thể tải tin tức');
+    } finally {
+      setNewsLoading(false);
     }
   };
 
@@ -120,6 +149,7 @@ const MovieDetailPage = () => {
 
     fetchRelatedArticles();
     fetchCommunityReviews();
+    fetchNewsArticles();
   }, [movieId]);
 
   const tabs = [
@@ -364,24 +394,10 @@ const MovieDetailPage = () => {
       {/* Tab Content */}
       <div className={`${styles['tab-content']}`}>
         {activeTab === 'showtimes' && (
-          <div className={`${styles['showtimes-section']}`}>
-            <h2>Lịch chiếu</h2>
-            <p className={`${styles['instruction']}`}>
-              Chọn khu vực bạn muốn xem lịch chiếu cho phim {getTitle(movie)}.
-            </p>
-            <div className={`${styles['city-selection']}`}>
-              <input
-                type="text"
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                placeholder="Chọn thành phố"
-                className={`${styles['city-input']}`}
-              />
-              <button className={`${styles['view-showtimes-btn']}`}>
-                Xem lịch chiếu
-              </button>
-            </div>
-          </div>
+          <ShowtimeSchedule 
+            movieId={movieId} 
+            movieTitle={getTitle(movie)} 
+          />
         )}
 
         {activeTab === 'trailer' && (
@@ -665,6 +681,134 @@ const MovieDetailPage = () => {
               )}
             </div>
           </div>
+        )}
+
+        {activeTab === 'news' && (
+          <div className={newsStyles['news-section']}>
+            <div className={newsStyles['news-header']}>
+              <h2>Tin tức điện ảnh</h2>
+              <div className={newsStyles['news-filters']}>
+                <button 
+                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'all' ? newsStyles['active'] : ''}`}
+                  onClick={() => {
+                    setSelectedNewsCategory('all');
+                    fetchNewsArticles('all');
+                  }}
+                >
+                  Tất cả
+                </button>
+                <button 
+                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'phim' ? newsStyles['active'] : ''}`}
+                  onClick={() => {
+                    setSelectedNewsCategory('phim');
+                    fetchNewsArticles('phim');
+                  }}
+                >
+                  Phim
+                </button>
+                <button 
+                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'rap' ? newsStyles['active'] : ''}`}
+                  onClick={() => {
+                    setSelectedNewsCategory('rap');
+                    fetchNewsArticles('rap');
+                  }}
+                >
+                  Rạp chiếu
+                </button>
+                <button 
+                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'su-kien' ? newsStyles['active'] : ''}`}
+                  onClick={() => {
+                    setSelectedNewsCategory('su-kien');
+                    fetchNewsArticles('su-kien');
+                  }}
+                >
+                  Sự kiện
+                </button>
+              </div>
+            </div>
+
+            {/* Loading State */}
+            {newsLoading && (
+              <div className={styles['loading-message']}>
+                <div className={styles['loading-spinner']}></div>
+                <p>Đang tải tin tức...</p>
+              </div>
+            )}
+
+            {/* Error State */}
+            {newsError && (
+              <div className={styles['error-message']}>
+                <p>{newsError}</p>
+                <button onClick={() => fetchNewsArticles(selectedNewsCategory)} className={styles['retry-btn']}>
+                  Thử lại
+                </button>
+              </div>
+            )}
+
+            {/* News Grid */}
+            {!newsLoading && !newsError && (
+              <div className={newsStyles['news-grid']}>
+                {newsArticles.length === 0 ? (
+                  <div className={newsStyles['no-news-message']}>
+                    <p>Chưa có tin tức nào trong danh mục này</p>
+                  </div>
+                ) : (
+                  newsArticles.map((article) => (
+                    <div className={newsStyles['news-card']} key={article.id}>
+                      <div className={newsStyles['news-image']}>
+                        <img 
+                          src={article.imageUrl || article.image || '/placeholder-news.jpg'} 
+                          alt={article.title}
+                          onError={(e) => {
+                            e.target.src = '/placeholder-news.jpg';
+                          }}
+                        />
+                        {article.featured && (
+                          <div className={newsStyles['featured-badge']}>Nổi bật</div>
+                        )}
+                      </div>
+                      <div className={newsStyles['news-content']}>
+                        <div className={newsStyles['news-meta']}>
+                          <span className={newsStyles['news-category']}>{article.category || 'Tin tức'}</span>
+                          <span className={newsStyles['news-date']}>
+                            {article.createdAt ? formatTimeAgo(article.createdAt) : 'Không có ngày'}
+                          </span>
+                        </div>
+                        <h3 className={newsStyles['news-title']}>{article.title}</h3>
+                        <p className={newsStyles['news-excerpt']}>
+                          {article.excerpt || article.summary || article.content?.substring(0, 150) + '...' || 'Không có mô tả'}
+                        </p>
+                        <div className={newsStyles['news-footer']}>
+                          <span className={newsStyles['news-author']}>
+                            {article.author || 'Biên tập viên'}
+                          </span>
+                          <button className={newsStyles['read-more-btn']}>
+                            Đọc thêm
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+
+            {/* Load More Button */}
+            {!newsLoading && !newsError && newsArticles.length > 0 && (
+              <div className={newsStyles['load-more-section']}>
+                <button className={newsStyles['load-more-btn']}>
+                  Xem thêm tin tức
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'booking' && (
+          <ShowtimeSchedule 
+            movieId={movieId} 
+            movieTitle={getTitle(movie)} 
+          />
         )}
       </div>
 

@@ -4,7 +4,7 @@ import { generateAvatarWithStyle } from '../../../services/avatarService';
 import { User, Settings, Crown, Gift, Star, Ticket, Calendar, CreditCard, Award, TrendingUp, Shield, Upload, X, Home, Info, Store, Gift as GiftIcon } from 'lucide-react';
 import './UserProfile.css';
 
-const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
+const UserProfile = ({ onClose, isPopup = false, onAvatarChange, initialOpenSettings = false }) => {
   const [user, setUser] = useState(null);
   const [avatarUrl, setAvatarUrl] = useState(null);
   const popupRef = useRef(null);
@@ -19,6 +19,10 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
     totalSpent: 0,
     totalPoints: 0
   });
+
+  useEffect(() => {
+    // initialOpenSettings no longer used (settings moved to separate modal)
+  }, [initialOpenSettings]);
   
   const userStats = {
     totalMovies: 47,
@@ -30,16 +34,17 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
   };
   
   const benefits = [
-    { icon: Home, title: 'Trang Chủ', color: '#3b82f6' },
-    { icon: User, title: 'Thành viên CGV', color: '#3b82f6' },
-    { icon: Info, title: 'Rạp CGV', color: '#3b82f6' },
-    { icon: Star, title: 'Rạp Đặc Biệt', color: '#3b82f6' },
-    { icon: Gift, title: 'Tin mới & Ưu đãi', color: '#3b82f6' },
-    { icon: Ticket, title: 'Vé của tôi', color: '#3b82f6' },
-    { icon: Store, title: 'CGV Store', color: '#3b82f6' },
-    { icon: GiftIcon, title: 'CGV eGift', color: '#3b82f6', isNew: true },
-    { icon: Award, title: 'Đổi ưu đãi', color: '#3b82f6' }
+    { key: 'home', icon: Home, title: 'Trang Chủ', color: '#3b82f6', description: 'Khám phá phim đang chiếu, lịch chiếu theo rạp và đặt vé nhanh chóng.', ctaText: 'Xem lịch chiếu', ctaHref: '/' },
+    { key: 'member', icon: User, title: 'Thành viên CGV', color: '#3b82f6', description: 'Tích điểm, lên hạng thành viên để nhận ưu đãi độc quyền và quà tặng.', ctaText: 'Tìm hiểu hạng thành viên', ctaHref: '/membership' },
+    { key: 'cinemas', icon: Info, title: 'Rạp CGV', color: '#3b82f6', description: 'Tìm rạp gần bạn, xem thông tin chi tiết và dịch vụ đi kèm.', ctaText: 'Tìm rạp', ctaHref: '/#cinemas' },
+    { key: 'special', icon: Star, title: 'Rạp Đặc Biệt', color: '#3b82f6', description: 'Trải nghiệm IMAX, 4DX, GOLD CLASS và nhiều định dạng cao cấp.', ctaText: 'Khám phá rạp đặc biệt', ctaHref: '/#special' },
+    { key: 'news', icon: Gift, title: 'Tin mới & Ưu đãi', color: '#3b82f6', description: 'Cập nhật tin tức phim ảnh và các khuyến mãi hấp dẫn mỗi ngày.', ctaText: 'Xem ưu đãi', ctaHref: '/news' },
+    { key: 'tickets', icon: Ticket, title: 'Vé của tôi', color: '#3b82f6', description: 'Quản lý vé đã mua, theo dõi lịch sử giao dịch và xuất vé điện tử.', ctaText: 'Xem vé', ctaHref: '/tickets' },
+    { key: 'store', icon: Store, title: 'CGV Store', color: '#3b82f6', description: 'Mua bắp nước, combo ưu đãi và quà lưu niệm chính hãng.', ctaText: 'Mua ngay', ctaHref: '/#store' },
+    { key: 'egift', icon: GiftIcon, title: 'CGV eGift', color: '#3b82f6', isNew: true, description: 'Gửi quà xem phim tiện lợi cho người thân và bạn bè qua eGift.', ctaText: 'Mua eGift', ctaHref: '/egift' },
+    { key: 'redeem', icon: Award, title: 'Đổi ưu đãi', color: '#3b82f6', description: 'Dùng điểm tích lũy để đổi vé, combo và quà tặng hấp dẫn.', ctaText: 'Đổi ngay', ctaHref: '/#redeem' }
   ];
+  
 
   useEffect(() => {
     loadUserProfile();
@@ -421,6 +426,8 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
     }
   };
 
+  
+
   if (!user) {
     return (
       <div className="user-profile">
@@ -630,7 +637,12 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
           <h4>Ưu đãi thành viên</h4>
           <div className="benefits-grid">
             {benefits.map((benefit, index) => (
-              <div key={index} className="benefit-card">
+              <a 
+                key={benefit.key || index}
+                className="benefit-card"
+                href={benefit.ctaHref}
+                onClick={() => { if (isPopup && onClose) onClose(); }}
+              >
                 <div className="benefit-icon-container">
                   <div 
                     className="benefit-icon" 
@@ -645,10 +657,13 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange }) => {
                 <div className="benefit-content">
                   <h5>{benefit.title}</h5>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
+          
         </div>
+
+        
 
         {/* Action Buttons */}
         <div className="profile-actions">

@@ -10,8 +10,12 @@ import {
   Package,
   Film,
   Building2,
-  Clock
+  Clock,
+  TrendingUp,
+  TrendingDown
 } from 'lucide-react';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Line, Bar } from 'react-chartjs-2';
 import { getAdminStats } from '../../../services/adminService';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../../components/Toast/ToastContainer';
@@ -24,6 +28,9 @@ import MovieManagement from '../../components/MovieManagement/MovieManagement';
 import CinemaManagement from '../../components/CinemaManagement/CinemaManagement';
 import styles from './AdminDashboard.module.css';
 
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend);
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const { toasts, showSuccess, showError, showWarning, showInfo, removeToast } = useToast();
@@ -33,10 +40,96 @@ const AdminDashboard = () => {
     totalUsers: 0,
     confirmedTickets: 0,
     cancelledTickets: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    monthlyRevenue: {},
+    weeklyTicketSales: {},
+    weeklyUserGrowth: {},
+    popularMovies: {}
   });
   
   const navigate = useNavigate();
+
+  // Chart data from API
+  const revenueData = {
+    labels: Object.keys(stats.monthlyRevenue || {}),
+    datasets: [
+      {
+        label: 'Doanh thu (VNĐ)',
+        data: Object.values(stats.monthlyRevenue || {}),
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1
+      }
+    ]
+  };
+
+  const ticketSalesData = {
+    labels: Object.keys(stats.weeklyTicketSales || {}),
+    datasets: [
+      {
+        label: 'Vé bán được',
+        data: Object.values(stats.weeklyTicketSales || {}),
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }
+    ]
+  };
+
+  const userGrowthData = {
+    labels: Object.keys(stats.weeklyUserGrowth || {}),
+    datasets: [
+      {
+        label: 'Người dùng mới',
+        data: Object.values(stats.weeklyUserGrowth || {}),
+        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Biểu đồ thống kê'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  };
+
+  const revenueChartOptions = {
+    ...chartOptions,
+    plugins: {
+      ...chartOptions.plugins,
+      title: {
+        display: true,
+        text: 'Doanh thu theo tháng'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return new Intl.NumberFormat('vi-VN', {
+              style: 'currency',
+              currency: 'VND'
+            }).format(value);
+          }
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     const adminToken = localStorage.getItem('adminToken');
@@ -88,90 +181,109 @@ const AdminDashboard = () => {
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
-          <Ticket size={24} />
-        </div>
+                  <Ticket size={24} />
+                </div>
                 <div className={styles.statInfo}>
                   <h3>Tổng vé</h3>
                   <p className={styles.statNumber}>{stats.totalTickets}</p>
-        </div>
-      </div>
+                  <div className={styles.statTrend}>
+                    <TrendingUp size={16} />
+                    <span>+12%</span>
+                  </div>
+                </div>
+              </div>
+              
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
-                    <Users size={24} />
-                  </div>
+                  <Users size={24} />
+                </div>
                 <div className={styles.statInfo}>
                   <h3>Tổng người dùng</h3>
                   <p className={styles.statNumber}>{stats.totalUsers}</p>
+                  <div className={styles.statTrend}>
+                    <TrendingUp size={16} />
+                    <span>+8%</span>
                   </div>
                 </div>
-                
+              </div>
+              
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
                   <BarChart3 size={24} />
-                  </div>
+                </div>
                 <div className={styles.statInfo}>
                   <h3>Vé đã xác nhận</h3>
                   <p className={styles.statNumber}>{stats.confirmedTickets}</p>
+                  <div className={styles.statTrend}>
+                    <TrendingUp size={16} />
+                    <span>+15%</span>
                   </div>
                 </div>
-                
+              </div>
+              
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
                   <Settings size={24} />
-                  </div>
+                </div>
                 <div className={styles.statInfo}>
                   <h3>Vé đã hủy</h3>
                   <p className={styles.statNumber}>{stats.cancelledTickets}</p>
+                  <div className={styles.statTrend}>
+                    <TrendingDown size={16} />
+                    <span>-5%</span>
+                  </div>
                 </div>
               </div>
 
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
                   <BarChart3 size={24} />
-                        </div>
+                </div>
                 <div className={styles.statInfo}>
                   <h3>Tổng doanh thu</h3>
                   <p className={styles.statNumber}>{formatCurrency(stats.totalRevenue)}</p>
-                      </div>
-                      </div>
-                    </div>
+                  <div className={styles.statTrend}>
+                    <TrendingUp size={16} />
+                    <span>+22%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
             
-            <div className={styles.welcomeSection}>
-              <h2>Chào mừng đến với Admin Panel</h2>
-              <p>Quản lý hệ thống rạp chiếu phim CGV HAK</p>
-              <div className={styles.quickActions}>
-                    <button
-                  className={styles.quickActionBtn}
-                  onClick={() => setActiveTab('users')}
-                    >
-                  <Users size={20} />
-                  Quản lý người dùng
-                    </button>
-                    <button
-                  className={styles.quickActionBtn}
-                  onClick={() => setActiveTab('tickets')}
-                    >
-                  <Ticket size={20} />
-                  Quản lý vé
-                    </button>
-                    <button
-                  className={styles.quickActionBtn}
-                  onClick={() => setActiveTab('news')}
-                    >
-                  <FileText size={20} />
-                  Quản lý tin tức
-                    </button>
-                        <button
-                  className={styles.quickActionBtn}
-                  onClick={() => setActiveTab('combos')}
-                >
-                  <Package size={20} />
-                  Quản lý combo
-                        </button>
-                                  </div>
-                                  </div>
-                                </div>
-                              );
+            {/* Charts Section */}
+            <div className={styles.chartsSection}>
+              <div className={styles.chartContainer}>
+                <h3>Doanh thu theo tháng</h3>
+                <Line data={revenueData} options={revenueChartOptions} />
+              </div>
+              
+              <div className={styles.chartContainer}>
+                <h3>Vé bán theo ngày trong tuần</h3>
+                <Bar data={ticketSalesData} options={chartOptions} />
+              </div>
+              
+              <div className={styles.chartContainer}>
+                <h3>Người dùng mới đăng ký</h3>
+                <Bar data={userGrowthData} options={chartOptions} />
+              </div>
+            </div>
+            
+            {/* Popular Movies Section */}
+            {stats.popularMovies && Object.keys(stats.popularMovies).length > 0 && (
+              <div className={styles.popularMoviesSection}>
+                <h3>Phim được xem nhiều nhất</h3>
+                <div className={styles.popularMoviesList}>
+                  {Object.entries(stats.popularMovies).map(([key, movieTitle], index) => (
+                    <div key={key} className={styles.popularMovieItem}>
+                      <div className={styles.movieRank}>#{index + 1}</div>
+                      <div className={styles.movieTitle}>{movieTitle}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
       case 'users':
         return <UserManagement />;
       case 'tickets':

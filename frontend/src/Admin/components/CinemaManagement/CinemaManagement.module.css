@@ -106,14 +106,16 @@
 
 .cinemaCard {
   background: white;
+  border: 2px solid #e2e8f0;
   border-radius: 12px;
   overflow: hidden;
   transition: all 0.3s ease;
-  border: 1px solid #e2e8f0;
+  position: relative;
 }
 
 .cinemaCard:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
+  border: #3b82f6 solid 2px;
 }
 
 .cinemaImage {

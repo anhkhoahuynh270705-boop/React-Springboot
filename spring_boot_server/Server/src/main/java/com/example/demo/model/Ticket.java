@@ -13,6 +13,8 @@ public class Ticket {
     @Id
     private String id;
     private String userId;
+    private String userName;  // Tên người dùng
+    private String userEmail; // Email người dùng
     private String showtimeId;
     private String seatId;
     private String seatNumber;

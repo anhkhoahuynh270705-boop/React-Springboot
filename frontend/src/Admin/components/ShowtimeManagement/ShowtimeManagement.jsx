@@ -281,6 +281,9 @@ const ShowtimeManagement = () => {
                 <span>{showtime.room}</span>
               </div>
               <div className={styles.infoRow}>
+                <span className={styles.formatBadge}>{showtime.format || '2D'}</span>
+              </div>
+              <div className={styles.infoRow}>
                 <span>Ghế: {showtime.availableSeats}/{showtime.totalSeats}</span>
               </div>
               <div className={styles.infoRow}>

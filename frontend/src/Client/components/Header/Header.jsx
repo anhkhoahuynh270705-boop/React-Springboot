@@ -8,6 +8,7 @@ import { getUnreadNotificationCount, getNotificationsByUser, markNotificationAsR
 
 import LoginModal from '../LoginModal/LoginModal';
 import UserProfile from '../UserProfile/UserProfile';
+import UserSettingsModal from '../UserProfile/UserSettingsModal';
 import './Header.css';
 
 const Header = ({ user, setUser, onLogout }) => {
@@ -26,6 +27,7 @@ const Header = ({ user, setUser, onLogout }) => {
   const [isUserProfileOpen, setIsUserProfileOpen] = useState(false);
   const [userAvatar, setUserAvatar] = useState(null);
   const [isCustomAvatar, setIsCustomAvatar] = useState(false);
+  const [isUserSettingsOpen, setIsUserSettingsOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -615,6 +617,7 @@ const Header = ({ user, setUser, onLogout }) => {
 
         <nav className="header-nav">
           <Link to="/" className="nav-link">Lịch chiếu phim</Link>
+          <Link to="/cinemas" className="nav-link">Hệ thống rạp</Link>
           
           <div className="cinema-dropdown" ref={dropdownRef}>
             <button 
@@ -674,12 +677,12 @@ const Header = ({ user, setUser, onLogout }) => {
                             className="cinema-item"
                             onClick={() => handleCinemaClick(cinema.id)}
                           >
-                            <div className="cinema-logo">
+                            <div className="logo-cinema">
                               {cinema.imageUrl ? (
                                 <img 
                                   src={cinema.imageUrl} 
                                   alt={cinema.name}
-                                  className="cinema-logo-image"
+                                  className="logo-cinema-image"
                                   onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'flex';
@@ -687,13 +690,13 @@ const Header = ({ user, setUser, onLogout }) => {
                                 />
                               ) : null}
                               <div 
-                                className="cinema-logo-circle"
+                                className="logo-cinema-circle"
                                 style={{ 
                                   backgroundColor: fallbackLogo.bgColor,
                                   display: cinema.imageUrl ? 'none' : 'flex'
                                 }}
                               >
-                                <span className="cinema-logo-text">{fallbackLogo.text}</span>
+                                <span className="logo-cinema-text">{fallbackLogo.text}</span>
                               </div>
                             </div>
                             <div className="cinema-info">
@@ -701,7 +704,7 @@ const Header = ({ user, setUser, onLogout }) => {
                                 <h4 className="cinema-name">
                                   {cinema.name || cinema.cinemaName || 'Tên rạp không xác định'}
                                 </h4>
-                                <span className="status-badge">{cinema.status || 'bán vé'}</span>
+                                <span className="status-badge">{cinema.status === 'ACTIVE' ? 'Bán vé' : (cinema.status || 'Bán vé')}</span>
                               </div>
                               <p className="cinema-address">{cinema.address}</p>
                             </div>
@@ -883,10 +886,13 @@ const Header = ({ user, setUser, onLogout }) => {
                       <Ticket size={16} />
                       <span>Vé của tôi</span>
                     </Link>
-                    <Link to="/settings" className="user-menu-item" onClick={() => setIsUserDropdownOpen(false)}>
+                    <button className="user-menu-item" onClick={() => {
+                      setIsUserDropdownOpen(false);
+                      setIsUserSettingsOpen(true);
+                    }}>
                       <Settings size={16} />
                       <span>Cài đặt</span>
-                    </Link>
+                    </button>
                     <hr className="user-menu-divider" />
                     <button className="user-menu-item logout-btn" onClick={handleLogout}>
                       <LogOut size={16} />
@@ -926,6 +932,13 @@ const Header = ({ user, setUser, onLogout }) => {
         isPopup={true}
         onClose={() => setIsUserProfileOpen(false)}
         onAvatarChange={handleAvatarChange}
+      />
+    )}
+
+    {isUserSettingsOpen && (
+      <UserSettingsModal 
+        isOpen={isUserSettingsOpen}
+        onClose={() => setIsUserSettingsOpen(false)}
       />
     )}
 

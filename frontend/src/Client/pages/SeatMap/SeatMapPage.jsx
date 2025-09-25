@@ -166,7 +166,6 @@ const SeatMapPage = ({ showtimeId, userId }) => {
         await createNotification(notificationData);
       } catch (notificationError) {
         console.error('Error creating notification:', notificationError);
-        // Không cần hiển thị lỗi cho user vì đặt vé đã thành công
       }
       
       setStep(3);
@@ -267,16 +266,9 @@ const SeatMapPage = ({ showtimeId, userId }) => {
               <ArrowLeft size={20} />
               Quay lại
             </button>
-          </div>
-          <div className="movie-info">
-            <h2>{movie?.title || movie?.name || 'Phim'}</h2>
-            <div className="showtime-info">
-              <span>{formatTime(showtime?.startTime || showtime?.time)}</span>
-              <span>Phòng {showtime?.room || '1'}</span>
-            </div>
+            <h1>Sơ đồ ghế ngồi</h1>
           </div>
         </div>
-
 
         {step === 1 && (
           <div className="seat-selection-content">

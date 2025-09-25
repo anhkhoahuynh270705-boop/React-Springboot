@@ -29,6 +29,13 @@
   display: flex;
   align-items: center;
   gap: 1rem;
+  width: 100%;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .searchContainer {
@@ -66,17 +73,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem;
-  background: #3b82f6;
-  color: white;
-  border: none;
+  padding: 0.75rem;
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
   border-radius: 0.5rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.2s;
 }
 
 .refreshButton:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.createButton {
+  background: #3b82f6;
+  border: 1px solid #3b82f6;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.createButton:hover {
   background: #2563eb;
+  border-color: #2563eb;
 }
 
 .tableContainer {

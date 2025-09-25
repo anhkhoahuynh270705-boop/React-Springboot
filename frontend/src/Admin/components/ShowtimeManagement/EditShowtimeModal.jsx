@@ -13,7 +13,8 @@ const EditShowtimeModal = ({ showtime, cinemas, movies, onClose, onSubmit }) => 
     room: showtime.room || '',
     totalSeats: showtime.totalSeats || 100,
     availableSeats: showtime.availableSeats || 100,
-    price: showtime.price || 80000
+    price: showtime.price || 80000,
+    format: showtime.format || '2D - Phụ đề Việt'
   });
   const [loading, setLoading] = useState(false);
   const [filteredMovies, setFilteredMovies] = useState([]);
@@ -148,6 +149,28 @@ const EditShowtimeModal = ({ showtime, cinemas, movies, onClose, onSubmit }) => 
                 Rạp chiếu này chưa có phim nào. Vui lòng thêm phim vào rạp trước.
               </p>
             )}
+          </div>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>
+              <Calendar size={16} />
+              Định dạng *
+            </label>
+            <select
+              name="format"
+              value={formData.format}
+              onChange={handleInputChange}
+              className={styles.input}
+              required
+            >
+              <option value="2D - Phụ đề Việt">2D - Phụ đề Việt</option>
+              <option value="3D - Phụ đề Việt">3D - Phụ đề Việt</option>
+              <option value="IMAX - Phụ đề Việt">IMAX - Phụ đề Việt</option>
+              <option value="4DX - Phụ đề Việt">4DX - Phụ đề Việt</option>
+              <option value="2D - Lồng tiếng Anh">2D - Lồng tiếng Anh</option>
+              <option value="3D - Lồng tiếng Anh">3D - Lồng tiếng Anh</option>
+              <option value="IMAX - Lồng tiếng Anh">IMAX - Lồng tiếng Anh</option>
+            </select>
           </div>
 
           <div className={styles.formGroup}>

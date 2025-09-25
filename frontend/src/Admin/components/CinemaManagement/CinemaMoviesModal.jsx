@@ -90,7 +90,10 @@ const CinemaMoviesModal = ({ cinema, onClose, onMoviesUpdated }) => {
       setIsShowtimeModalOpen(false);
     } catch (error) {
       console.error('Error creating showtime:', error);
-      showError('Không thể tạo suất chiếu');
+      const errorMessage = error.message.includes('400') 
+        ? 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại thông tin.'
+        : 'Không thể tạo suất chiếu. Vui lòng thử lại.';
+      showError(errorMessage);
     }
   };
 

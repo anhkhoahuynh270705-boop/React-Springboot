@@ -6,6 +6,7 @@ import styles from './CinemasPage.module.css';
 
 const CinemasPage = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('');
   const [cinemas, setCinemas] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,12 @@ const CinemasPage = () => {
 
     fetchCinemas();
   }, []);
+
+  const cities = React.useMemo(() => {
+    const set = new Set();
+    cinemas?.forEach(c => { if (c.city) set.add(c.city); });
+    return ['Tất cả thành phố', ...Array.from(set).sort()];
+  }, [cinemas]);
 
   const districts = [
     'Tất cả quận',
@@ -61,12 +68,13 @@ const CinemasPage = () => {
   };
 
   const filteredCinemas = cinemas.filter(cinema => {
+    const matchesCity = !selectedCity || selectedCity === 'Tất cả thành phố' || cinema.city === selectedCity;
     const matchesSearch = containsSearchQuery(cinema.name, searchQuery) ||
                          containsSearchQuery(cinema.address, searchQuery) ||
                          containsSearchQuery(cinema.cinemaName, searchQuery);
     const matchesDistrict = !selectedDistrict || selectedDistrict === 'Tất cả quận' ||
                            cinema.address?.includes(selectedDistrict);
-    return matchesSearch && matchesDistrict;
+    return matchesCity && matchesSearch && matchesDistrict;
   });
 
   if (loading) {
@@ -106,7 +114,7 @@ const CinemasPage = () => {
       <div className={`${styles['page-header']}`}>
         <div className={styles['header-content']}>
           <h1>Rạp chiếu phim</h1>
-          <p>Khám phá các rạp chiếu phim chất lượng cao tại TP.HCM</p>
+          <p>Khám phá các rạp chiếu phim chất lượng cao trên toàn hệ thống</p>
         </div>
       </div>
 
@@ -126,6 +134,23 @@ const CinemasPage = () => {
           </div>
 
           <div className={`${styles['filters-section']}`}>
+            <div className={`${styles['filter-group']}`}>
+              <label className={`${styles['filter-label']}`}>
+                <MapPin size={16} />
+                Thành phố
+              </label>
+              <select
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                className={`${styles['filter-select']}`}
+              >
+                {cities.map((city) => (
+                  <option key={city} value={city}>
+                    {city}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className={`${styles['filter-group']}`}>
               <label className={`${styles['filter-label']}`}> 
                 <MapPin size={16} />

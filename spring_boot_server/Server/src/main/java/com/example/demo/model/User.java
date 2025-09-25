@@ -23,6 +23,7 @@ public class User {
     private String email;
     private String phone;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime lastLoginAt;
     private String avatar;
     private String address;

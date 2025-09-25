@@ -68,7 +68,7 @@ public class CinemaController {
     
     @GetMapping("/active")
     public List<Cinema> getActiveCinemas() {
-        return cinemaRepository.findByStatusOrderByNameAsc("ACTIVE");
+        return cinemaRepository.findByStatusOrderByNameAsc("Bán Vé");
     }
     
     @GetMapping("/movie/{movieId}")
@@ -80,7 +80,7 @@ public class CinemaController {
     public Cinema createCinema(@RequestBody Cinema cinema) {
         // Set default values if not provided
         if (cinema.getStatus() == null || cinema.getStatus().trim().isEmpty()) {
-            cinema.setStatus("ACTIVE");
+            cinema.setStatus("Bán Vé");
         }
         if (cinema.getFacilities() == null) {
             cinema.setFacilities(new java.util.ArrayList<>());

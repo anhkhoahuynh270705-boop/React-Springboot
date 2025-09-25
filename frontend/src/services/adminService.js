@@ -316,6 +316,36 @@ export const getUserById = async (userId) => {
   }
 };
 
+// Create new user
+export const createUser = async (userData) => {
+  try {
+    const adminToken = localStorage.getItem('adminToken');
+    if (!adminToken) {
+      throw new Error('Không có token admin');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/users`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${adminToken}`,
+      },
+      body: JSON.stringify(userData),
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      return data.user;
+    } else {
+      throw new Error(data.message || 'Tạo người dùng thất bại');
+    }
+  } catch (error) {
+    console.error('Create user error:', error);
+    throw new Error('Không thể kết nối đến server admin');
+  }
+};
+
 // Update user information
 export const updateUser = async (userId, userData) => {
   try {

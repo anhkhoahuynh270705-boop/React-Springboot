@@ -209,20 +209,23 @@
 }
 
 .movieInfo,
-.cinemaInfo {
+.cinemaInfo,
+.userInfo {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
 }
 
 .movieTitle,
-.cinemaName {
+.cinemaName,
+.userName {
   font-weight: 500;
   color: #1f2937;
 }
 
 .movieTime,
-.cinemaAddress {
+.cinemaAddress,
+.userEmail {
   font-size: 0.75rem;
   color: #6b7280;
 }

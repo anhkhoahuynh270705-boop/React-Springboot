@@ -57,11 +57,13 @@ const TicketManagement = () => {
   };
 
   const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = 
+    const matchesSearch = searchTerm === '' ||
       ticket.ticketNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.movieTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
       ticket.cinemaName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.userId.toLowerCase().includes(searchTerm.toLowerCase());
+      ticket.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (ticket.userName && ticket.userName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (ticket.userEmail && ticket.userEmail.toLowerCase().includes(searchTerm.toLowerCase()));
     
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     
@@ -274,6 +276,7 @@ const TicketManagement = () => {
               <th>Ghế</th>
               <th>Giá vé</th>
               <th>Ngày chiếu</th>
+              <th>Tài khoản</th>
               <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
@@ -311,6 +314,12 @@ const TicketManagement = () => {
                   <td>{ticket.seatNumber}</td>
                   <td className={styles.price}>{formatCurrency(ticket.price)}</td>
                   <td>{formatDate(ticket.showDate)}</td>
+                  <td>
+                    <div className={styles.userInfo}>
+                      <div className={styles.userName}>{ticket.userName || ticket.userId || 'Khách'}</div>
+                      <div className={styles.userEmail}>{ticket.userEmail || 'Chưa có email'}</div>
+                    </div>
+                  </td>
                   <td>
                     <span className={`${styles.statusBadge} ${styles[statusBadge.class]}`}>
                       <StatusIcon size={14} />
@@ -391,10 +400,6 @@ const TicketManagement = () => {
                 <div className={styles.infoRow}>
                   <label>Rạp:</label>
                   <span>{selectedTicket.cinemaName}</span>
-                </div>
-                <div className={styles.infoRow}>
-                  <label>Địa chỉ:</label>
-                  <span>{selectedTicket.cinemaAddress}</span>
                 </div>
                 <div className={styles.infoRow}>
                   <label>Ghế:</label>

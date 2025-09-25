@@ -161,7 +161,6 @@
 .combo-card:hover {
   border-color: #3b82f6;
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .combo-image {
@@ -176,10 +175,6 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
-}
-
-.combo-card:hover .combo-image img {
-  transform: scale(1.05);
 }
 
 .combo-info {

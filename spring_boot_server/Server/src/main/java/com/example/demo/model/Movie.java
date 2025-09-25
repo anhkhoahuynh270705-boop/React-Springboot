@@ -31,7 +31,7 @@ public class Movie {
     private String rating; 
     private String score; 
     private String voteAverage; 
-    private String imdbRating; // IMDb rating
+    private String imdbRating; 
     private String format; 
     private String releaseDate; 
     private String releaseYear; 
@@ -40,11 +40,11 @@ public class Movie {
     private String ageLimit; 
     private String certification; 
     private String[] cast;
-    private String starring; // main actors
+    private String starring; 
     private String trailerUrl; 
     private String overview;
     private String summary; 
-    private String synopsis; // brief description
+    private String synopsis; 
     private String runtime; 
     private String length;
     private String name;

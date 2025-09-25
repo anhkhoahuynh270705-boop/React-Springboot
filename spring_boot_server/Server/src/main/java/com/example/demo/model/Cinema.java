@@ -36,7 +36,7 @@ public class Cinema {
     public Cinema() {
         this.facilities = new ArrayList<>();
         this.movieIds = new ArrayList<>();
-        this.status = "ACTIVE";
+        this.status = "Bán vé";
     }
 
     public void addMovie(String movieId) {

@@ -13,6 +13,8 @@ import SeatMapPage from './Client/pages/SeatMap/SeatMapPage';
 import ComboSelectionPage from './Client/pages/ComboSelectionPage/ComboSelectionPage';
 import NewsPage from './Client/pages/NewsPage/NewsPage';
 import NewsDetailPage from './Client/pages/NewsDetailPage/NewsDetailPage';
+import MembershipPage from './Client/pages/Membership/MembershipPage';
+import EGiftPage from './Client/pages/EGift/EGiftPage';
 import AdminDashboard from './Admin/pages/Admin/AdminDashboard';
 import AdminRoute from './Admin/components/Admin/AdminRoute';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -96,6 +98,8 @@ function App() {
             <Route path="/combo-selection" element={<ComboSelectionPage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/news/:id" element={<NewsDetailPage />} />
+            <Route path="/membership" element={<MembershipPage />} />
+            <Route path="/egift" element={<EGiftPage />} />
             
             {/* Protected routes - chỉ cho user đã đăng nhập */}
             <Route 

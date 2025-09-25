@@ -6,16 +6,19 @@ import {
   Trash2,
   Search,
   RefreshCw,
-  XCircle
+  XCircle,
+  UserPlus
 } from 'lucide-react';
 import { 
   getAllUsers, 
   updateUser,
   deleteUser,
   searchUsers,
-  getUserById
+  getUserById,
+  createUser
 } from '../../../services/adminService';
 import EditUserForm from '../EditUserForm/EditUserForm';
+import CreateUserModal from './CreateUserModal';
 import useToast from '../../hooks/useToast';
 import ToastContainer from '../Toast/ToastContainer';
 import styles from './UserManagement.module.css';
@@ -27,6 +30,7 @@ const UserManagement = () => {
   const [userSearchTerm, setUserSearchTerm] = useState('');
   const [showUserModal, setShowUserModal] = useState(false);
   const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
   const searchInputRef = useRef(null);
 
@@ -110,6 +114,18 @@ const UserManagement = () => {
     }
   };
 
+  const handleCreateUser = async (formData) => {
+    try {
+      await createUser(formData);
+      setShowCreateUserModal(false);
+      showSuccess('Tạo người dùng thành công!');
+      await fetchUsers();
+    } catch (error) {
+      console.error('Error creating user:', error);
+      showError('Tạo người dùng thất bại: ' + error.message);
+    }
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa cập nhật';
     try {
@@ -154,13 +170,23 @@ const UserManagement = () => {
               }}
             />
           </div>
-          <button 
-            className={styles.refreshButton} 
-            onClick={fetchUsers}
-            title="Làm mới"
-          >
-            <RefreshCw size={16} />
-          </button>
+          <div className={styles.actionButtons}>
+            <button 
+              className={styles.createButton} 
+              onClick={() => setShowCreateUserModal(true)}
+              title="Tạo người dùng mới"
+            >
+              <UserPlus size={16} />
+              Tạo người dùng
+            </button>
+            <button 
+              className={styles.refreshButton} 
+              onClick={fetchUsers}
+              title="Làm mới"
+            >
+              <RefreshCw size={16} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -174,6 +200,7 @@ const UserManagement = () => {
               <th>Email</th>
               <th>Số điện thoại</th>
               <th>Ngày tạo</th>
+              <th>Cập nhật lần cuối</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -186,6 +213,7 @@ const UserManagement = () => {
                 <td>{user.email}</td>
                 <td>{user.phone || 'Chưa cập nhật'}</td>
                 <td>{formatDate(user.createdAt)}</td>
+                <td>{formatDate(user.updatedAt)}</td>
                 <td>
                   <div className={styles.actions}>
                     <button
@@ -333,6 +361,14 @@ const UserManagement = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Create User Modal */}
+      {showCreateUserModal && (
+        <CreateUserModal
+          onSave={handleCreateUser}
+          onCancel={() => setShowCreateUserModal(false)}
+        />
       )}
     </div>
   );

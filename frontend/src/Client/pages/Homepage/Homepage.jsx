@@ -40,7 +40,6 @@ const Homepage = () => {
 
   const tabs = [
     { key: 'nowShowing', label: 'Phim đang chiếu', movies: nowShowingMovies },
-    { key: 'featured', label: 'Phim đặc biệt', movies: featuredMovies },
     { key: 'comingSoon', label: 'Phim sắp chiếu', movies: comingSoonMovies },
   ];
 

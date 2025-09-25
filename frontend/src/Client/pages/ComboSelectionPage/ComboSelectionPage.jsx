@@ -280,7 +280,6 @@ const ComboSelectionPage = () => {
 
       <div className="combo-content">
         <div className="combo-selection">
-          <h2>Combo có sẵn</h2>
           {loading ? (
             <div className="loading-container">
               <div className="loading-spinner"></div>
@@ -385,24 +384,6 @@ const ComboSelectionPage = () => {
           <div className="payment-methods">
             <h3>Phương thức thanh toán</h3>
             <div className="payment-options">
-              <label className="payment-option">
-                <input 
-                  type="radio" 
-                  name="payment" 
-                  value="cash" 
-                  checked={selectedPaymentMethod === 'cash'}
-                  onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                />
-                <div className="payment-option-content">
-                  <div className="payment-icon">
-                    <img src="/payment-icons/cash-icon.png" alt="Cash" className="payment-icon-img" />
-                  </div>
-                  <div className="payment-details">
-                    <span className="payment-title">Thanh toán tại quầy</span>
-                    <span className="payment-desc">Thanh toán khi đến rạp</span>
-                  </div>
-                </div>
-              </label>
               <label className="payment-option">
                 <input 
                   type="radio" 

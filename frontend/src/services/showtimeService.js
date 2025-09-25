@@ -1,5 +1,28 @@
 const API_BASE_URL = 'http://localhost:8080/api';
 
+// Helper function to format showtime data for API
+export const formatShowtimeForAPI = (showtimeData) => {
+  const formatted = {
+    movieId: showtimeData.movieId,
+    movieName: showtimeData.movieName || 'Unknown Movie',
+    cinemaId: showtimeData.cinemaId,
+    cinemaName: showtimeData.cinemaName || 'Unknown Cinema',
+    startTime: showtimeData.startTime,
+    room: showtimeData.room || 'Phòng 1',
+    totalSeats: Number(showtimeData.totalSeats) || 100,
+    availableSeats: Number(showtimeData.availableSeats) || 100,
+    price: Number(showtimeData.price) || 80000,
+    format: showtimeData.format || '2D'
+  };
+  
+  // Ensure startTime is in proper ISO format
+  if (formatted.startTime && !formatted.startTime.includes('T')) {
+    formatted.startTime = new Date(formatted.startTime).toISOString();
+  }
+  
+  return formatted;
+};
+
 // Get all showtimes
 export const getAllShowtimes = async () => {
   try {
@@ -93,17 +116,25 @@ export const getShowtimesByDateAndCinema = async (cinemaId, date) => {
 // Create new showtime
 export const createShowtime = async (showtimeData) => {
   try {
+    const formattedData = formatShowtimeForAPI(showtimeData);
+    console.log('Sending showtime data to server:', formattedData);
+    
     const response = await fetch(`${API_BASE_URL}/showtimes`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(showtimeData),
+      body: JSON.stringify(formattedData),
     });
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Server error response:', errorText);
+      throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
     }
+    
     const data = await response.json();
+    console.log('Showtime created successfully:', data);
     return data;
   } catch (error) {
     console.error('Error creating showtime:', error);

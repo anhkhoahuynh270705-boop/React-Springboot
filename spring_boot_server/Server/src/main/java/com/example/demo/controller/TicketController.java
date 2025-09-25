@@ -25,6 +25,7 @@ import com.example.demo.model.Notification;
 import com.example.demo.model.Ticket;
 import com.example.demo.repository.NotificationRepository;
 import com.example.demo.repository.TicketRepository;
+import com.example.demo.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/tickets")
@@ -35,6 +36,9 @@ public class TicketController {
     
     @Autowired
     private NotificationRepository notificationRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping
     public List<Ticket> getAllTickets() {
@@ -75,6 +79,16 @@ public class TicketController {
         }
         if (!ticket.isRefundable()) {
             ticket.setRefundable(true);
+        }
+        
+        // Lưu thông tin user vào ticket
+        if (ticket.getUserId() != null) {
+            Optional<com.example.demo.model.User> userOpt = userRepository.findById(ticket.getUserId());
+            if (userOpt.isPresent()) {
+                com.example.demo.model.User user = userOpt.get();
+                ticket.setUserName(user.getFullName());
+                ticket.setUserEmail(user.getEmail());
+            }
         }
         
         return ticketRepository.save(ticket);
@@ -120,6 +134,16 @@ public class TicketController {
             // Set default refundable status (boolean field, no null check needed)
             if (!ticket.isRefundable()) {
                 ticket.setRefundable(true);
+            }
+            
+            // Lưu thông tin user vào ticket
+            if (ticket.getUserId() != null) {
+                Optional<com.example.demo.model.User> userOpt = userRepository.findById(ticket.getUserId());
+                if (userOpt.isPresent()) {
+                    com.example.demo.model.User user = userOpt.get();
+                    ticket.setUserName(user.getFullName());
+                    ticket.setUserEmail(user.getEmail());
+                }
             }
             
             Ticket savedTicket = ticketRepository.save(ticket);

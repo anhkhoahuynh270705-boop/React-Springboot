@@ -204,16 +204,38 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
             {loading ? (
               <div className="showtimes-loading">Đang tải...</div> 
             ) : showtimes.length > 0 ? (
-              <div className="showtimes-grid">
-                {showtimes.slice(0, 4).map((showtime, index) => (
-                  <button 
-                    key={index} 
-                    className="showtime-btn"
-                    onClick={() => handleShowtimeClick(showtime)}
-                  >
-                    {formatTime(showtime.startTime || showtime.time || showtime.showTime)}
-                  </button>
-                ))}
+              <div className="showtimes-by-format">
+                {(() => {
+                  const groupedShowtimes = showtimes.reduce((groups, showtime) => {
+                    const format = showtime.format || '2D - Phụ đề Việt';
+                    if (!groups[format]) {
+                      groups[format] = [];
+                    }
+                    groups[format].push(showtime);
+                    return groups;
+                  }, {});
+                  
+                  // Render each format group
+                  return Object.entries(groupedShowtimes).map(([format, timesInFormat]) => (
+                    <div key={format} className="format-group">
+                      <div className="format-label">{format}</div>
+                      <div className="showtimes-grid">
+                        {timesInFormat.slice(0, 4).map((showtime, index) => (
+                          <button
+                            key={showtime.id || index}
+                            className="showtime-btn"
+                            onClick={() => handleShowtimeClick(showtime)}
+                            title={`${formatTime(showtime.startTime || showtime.time || showtime.showTime)} - ${format}`}
+                          >
+                            <div className="showtime-time">
+                              {formatTime(showtime.startTime || showtime.time || showtime.showTime)}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ));
+                })()}
               </div>
             ) : (
               <div className="no-showtimes">Chưa có lịch chiếu</div>

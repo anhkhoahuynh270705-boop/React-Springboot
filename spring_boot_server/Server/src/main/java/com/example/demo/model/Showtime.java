@@ -28,6 +28,7 @@ public class Showtime {
     private int totalSeats;
     private int availableSeats;
     private double price;
+    private String format; // 2D, 3D, IMAX, 4DX, etc.
 
     public String getShowDate() {
         if (startTime != null) {

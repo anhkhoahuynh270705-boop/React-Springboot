@@ -74,7 +74,6 @@ public class NotificationController {
             return ResponseEntity.ok(savedNotification);
         } catch (Exception e) {
             System.err.println("Error creating notification: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -96,7 +95,6 @@ public class NotificationController {
             return ResponseEntity.ok(updatedNotification);
         } catch (Exception e) {
             System.err.println("Error marking notification as read: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
@@ -116,7 +114,6 @@ public class NotificationController {
             return ResponseEntity.ok("All notifications marked as read");
         } catch (Exception e) {
             System.err.println("Error marking all notifications as read: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error marking all notifications as read");
         }
     }
@@ -133,7 +130,6 @@ public class NotificationController {
             return ResponseEntity.ok("Notification deleted successfully");
         } catch (Exception e) {
             System.err.println("Error deleting notification: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error deleting notification");
         }
     }
@@ -147,7 +143,6 @@ public class NotificationController {
             return ResponseEntity.ok("All notifications deleted successfully");
         } catch (Exception e) {
             System.err.println("Error deleting all notifications: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error deleting all notifications");
         }
     }

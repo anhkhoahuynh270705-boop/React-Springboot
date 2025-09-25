@@ -202,10 +202,18 @@ const CinemaDetailPage = () => {
               <p className="cinema-address">{cinema.address}</p>
               
               <div className="cinema-links">
-                <div className="cinema-link">
-                  <MapPin size={16} />
-                  <span>Bản đồ</span>
-                </div>
+              <div className="cinema-link">
+                <MapPin size={16} />
+                <a
+                  href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d71201.48065974319!2d106.56698455245727!3d10.784670077217974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752dcece7b50db%3A0xf53f7643a9134531!2zQUVPTiBNQUxMIELDrG5oIFTDom4!5e1!3m2!1svi!2s!4v1758431025675!5m2!1svi!2s"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ marginLeft: "5px", textDecoration: "none", color: "inherit" }}
+                >
+                  Bản đồ
+                </a>
+              </div>
+
                 <div className="cinema-link">
                   <Globe size={16} />
                   <span>{cinema.city}</span>

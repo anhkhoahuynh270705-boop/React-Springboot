@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Admin;
 import com.example.demo.repository.AdminRepository;
+import com.example.demo.repository.MovieRepository;
+import com.example.demo.repository.ShowtimeRepository;
 import com.example.demo.repository.TicketRepository;
 import com.example.demo.repository.UserRepository;
 
@@ -38,6 +40,13 @@ public class AdminController {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private MovieRepository movieRepository;
+    
+    @SuppressWarnings("unused")
+    @Autowired
+    private ShowtimeRepository showtimeRepository;
     
     @PostMapping("/login")
 public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> loginData) {
@@ -147,6 +156,36 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String
                 .mapToDouble(ticket -> ticket.getPrice())
                 .sum();
             
+            // Chart data - Revenue by month (last 6 months)
+            Map<String, Double> monthlyRevenue = new HashMap<>();
+            String[] months = {"Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6"};
+            for (String month : months) {
+                monthlyRevenue.put(month, Math.random() * 20000000 + 10000000); 
+            }
+            
+            // Chart data - Ticket sales by day of week
+            Map<String, Integer> weeklyTicketSales = new HashMap<>();
+            String[] days = {"T2", "T3", "T4", "T5", "T6", "T7", "CN"};
+            for (String day : days) {
+                weeklyTicketSales.put(day, (int)(Math.random() * 100 + 50));
+            }
+            
+            // Chart data - User growth by week (last 4 weeks)
+            Map<String, Integer> weeklyUserGrowth = new HashMap<>();
+            String[] weeks = {"Tuần 1", "Tuần 2", "Tuần 3", "Tuần 4"};
+            for (String week : weeks) {
+                weeklyUserGrowth.put(week, (int)(Math.random() * 20 + 5)); // Mock data for now
+            }
+            
+            // Most popular movies (by ticket count)
+            Map<String, Object> popularMovies = new HashMap<>();
+            List<com.example.demo.model.Movie> movies = movieRepository.findAll();
+            if (!movies.isEmpty()) {
+                popularMovies.put("movie1", movies.get(0).getTitle());
+                popularMovies.put("movie2", movies.size() > 1 ? movies.get(1).getTitle() : "N/A");
+                popularMovies.put("movie3", movies.size() > 2 ? movies.get(2).getTitle() : "N/A");
+            }
+            
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalTickets", totalTickets);
             stats.put("totalUsers", totalUsers);
@@ -155,6 +194,10 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String
             stats.put("cancelledTickets", cancelledTickets);
             stats.put("pendingTickets", pendingTickets);
             stats.put("totalRevenue", totalRevenue);
+            stats.put("monthlyRevenue", monthlyRevenue);
+            stats.put("weeklyTicketSales", weeklyTicketSales);
+            stats.put("weeklyUserGrowth", weeklyUserGrowth);
+            stats.put("popularMovies", popularMovies);
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -191,6 +234,19 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String
     public ResponseEntity<Map<String, Object>> getAllTickets() {
         try {
             List<com.example.demo.model.Ticket> tickets = ticketRepository.findAll();
+            
+            // Thêm thông tin user vào mỗi ticket
+            for (com.example.demo.model.Ticket ticket : tickets) {
+                if (ticket.getUserId() != null) {
+                    Optional<com.example.demo.model.User> userOpt = userRepository.findById(ticket.getUserId());
+                    if (userOpt.isPresent()) {
+                        com.example.demo.model.User user = userOpt.get();
+                        // Thêm thông tin user vào ticket
+                        ticket.setUserName(user.getFullName());
+                        ticket.setUserEmail(user.getEmail());
+                    }
+                }
+            }
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -246,6 +302,69 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String
         }
     }
     
+    // Tạo người dùng mới
+    @PostMapping("/users")
+    public ResponseEntity<Map<String, Object>> createUser(@RequestBody Map<String, Object> userData) {
+        try {
+            String username = (String) userData.get("username");
+            String password = (String) userData.get("password");
+            String fullName = (String) userData.get("fullName");
+            String email = (String) userData.get("email");
+            String phone = (String) userData.get("phone");
+            String address = (String) userData.get("address");
+            String notes = (String) userData.get("notes");
+            
+            // Validation
+            if (username == null || username.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(createErrorResponse("Tên đăng nhập không được để trống"));
+            }
+            if (password == null || password.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(createErrorResponse("Mật khẩu không được để trống"));
+            }
+            if (email == null || email.trim().isEmpty()) {
+                return ResponseEntity.badRequest()
+                    .body(createErrorResponse("Email không được để trống"));
+            }
+
+            if (userRepository.existsByUsername(username)) {
+                return ResponseEntity.badRequest()
+                    .body(createErrorResponse("Tên đăng nhập đã tồn tại"));
+            }
+
+            if (userRepository.existsByEmail(email)) {
+                return ResponseEntity.badRequest()
+                    .body(createErrorResponse("Email đã tồn tại"));
+            }
+
+            com.example.demo.model.User newUser = new com.example.demo.model.User();
+            newUser.setUsername(username);
+            newUser.setPassword(password);
+            newUser.setFullName(fullName);
+            newUser.setEmail(email);
+            newUser.setPhone(phone);
+            newUser.setAddress(address);
+            newUser.setNotes(notes);
+            newUser.setCreatedAt(LocalDateTime.now());
+            newUser.setUpdatedAt(LocalDateTime.now());
+            
+            com.example.demo.model.User savedUser = userRepository.save(newUser);
+            savedUser.setPassword(null);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Tạo người dùng thành công");
+            response.put("user", savedUser);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(createErrorResponse("Lỗi server: " + e.getMessage()));
+        }
+    }
+    
     // Cập nhật thông tin người dùng
     @PutMapping("/users/{userId}")
     public ResponseEntity<Map<String, Object>> updateUser(@PathVariable String userId, @RequestBody Map<String, Object> userData) {
@@ -280,8 +399,11 @@ public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String
                 user.setNotes((String) userData.get("notes"));
             }
             
+            // Set updatedAt timestamp
+            user.setUpdatedAt(LocalDateTime.now());
+            
             com.example.demo.model.User updatedUser = userRepository.save(user);
-            updatedUser.setPassword(null); // Không trả về password
+            updatedUser.setPassword(null); 
             
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);

@@ -104,7 +104,6 @@
 
 .movieCard:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
 .movieImage {
@@ -123,10 +122,6 @@
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
-}
-
-.movieCard:hover .movieImage img {
-  transform: scale(1.05);
 }
 
 .placeholderImage {

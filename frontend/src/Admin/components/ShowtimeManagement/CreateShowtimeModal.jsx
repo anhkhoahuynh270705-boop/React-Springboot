@@ -14,7 +14,7 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
     totalSeats: 100,
     availableSeats: 100,
     price: 80000,
-    format: ''
+    format: '2D'
   });
   const [loading, setLoading] = useState(false);
   const [filteredMovies, setFilteredMovies] = useState([]);
@@ -72,8 +72,9 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.movieId || !formData.cinemaId || !formData.startTime) {
-      showError('Vui lòng điền đầy đủ thông tin bắt buộc');
+    // Validation
+    if (!formData.movieId || !formData.cinemaId || !formData.startTime || !formData.format) {
+      showError('Vui lòng điền đầy đủ thông tin bắt buộc (Phim, Rạp, Thời gian, Định dạng)');
       return;
     }
 
@@ -82,20 +83,36 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
       return;
     }
 
+    // Validate start time is in the future
+    const startTime = new Date(formData.startTime);
+    const now = new Date();
+    if (startTime <= now) {
+      showError('Thời gian chiếu phải trong tương lai');
+      return;
+    }
+
     try {
       setLoading(true);
       const normalizedStart = formData.startTime && formData.startTime.length === 16
         ? `${formData.startTime}:00`
         : formData.startTime;
+      const selectedMovie = movies.find(movie => movie.id === formData.movieId);
+      const selectedCinema = cinemas.find(cinema => cinema.id === formData.cinemaId);
+      
       const payload = {
         movieId: formData.movieId,
+        movieName: selectedMovie?.title || selectedMovie?.name || selectedMovie?.movieName || 'Unknown Movie',
         cinemaId: formData.cinemaId,
+        cinemaName: selectedCinema?.name || 'Unknown Cinema',
         startTime: normalizedStart,
-        room: formData.room,
-        totalSeats: Number(formData.totalSeats) || 0,
-        availableSeats: Number(formData.availableSeats) || 0,
-        price: Number(formData.price) || 0
+        room: formData.room || `Phòng ${Math.floor(Math.random() * 10) + 1}`,
+        totalSeats: Number(formData.totalSeats) || 100,
+        availableSeats: Number(formData.availableSeats) || 100,
+        price: Number(formData.price) || 80000,
+        format: formData.format || '2D - Phụ đề Việt'
       };
+      
+      console.log('Creating showtime with payload:', payload);
       await onSubmit(payload);
     } catch (error) {
       console.error('Error creating showtime:', error);
@@ -176,19 +193,22 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
           <div className={styles.formGroup}>
             <label className={styles.label}>
               <Calendar size={16} />
-              Định dạng
+              Định dạng *
             </label>
             <select
               name="format"
               value={formData.format}
               onChange={handleInputChange}
               className={styles.input}
+              required
             >
-              <option value="">Chọn định dạng</option>
-              <option value="2D">2D</option>
-              <option value="3D">3D</option>
-              <option value="IMAX">IMAX</option>
-              <option value="4DX">4DX</option>
+              <option value="2D - Phụ đề Việt">2D - Phụ đề Việt</option>
+              <option value="3D - Phụ đề Việt">3D - Phụ đề Việt</option>
+              <option value="IMAX - Phụ đề Việt">IMAX - Phụ đề Việt</option>
+              <option value="4DX - Phụ đề Việt">4DX - Phụ đề Việt</option>
+              <option value="2D - Lồng tiếng Anh">2D - Lồng tiếng Anh</option>
+              <option value="3D - Lồng tiếng Anh">3D - Lồng tiếng Anh</option>
+              <option value="IMAX - Lồng tiếng Anh">IMAX - Lồng tiếng Anh</option>
             </select>
           </div>
 
