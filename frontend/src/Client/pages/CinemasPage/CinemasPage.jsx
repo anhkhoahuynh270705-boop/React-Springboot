@@ -51,9 +51,9 @@ const CinemasPage = () => {
     if (!str) return '';
     
     return str
-      .normalize('NFD') // Decompose characters
-      .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-      .replace(/đ/g, 'd').replace(/Đ/g, 'D') // Handle đ/Đ specifically
+      .normalize('NFD') 
+      .replace(/[\u0300-\u036f]/g, '') 
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D') 
       .toLowerCase();
   };
 
@@ -69,7 +69,7 @@ const CinemasPage = () => {
 
   const filteredCinemas = cinemas.filter(cinema => {
     const matchesCity = !selectedCity || selectedCity === 'Tất cả thành phố' || cinema.city === selectedCity;
-    const matchesSearch = containsSearchQuery(cinema.name, searchQuery) ||
+    const matchesSearch = !searchQuery || containsSearchQuery(cinema.name, searchQuery) ||
                          containsSearchQuery(cinema.address, searchQuery) ||
                          containsSearchQuery(cinema.cinemaName, searchQuery);
     const matchesDistrict = !selectedDistrict || selectedDistrict === 'Tất cả quận' ||
@@ -114,7 +114,6 @@ const CinemasPage = () => {
       <div className={`${styles['page-header']}`}>
         <div className={styles['header-content']}>
           <h1>Rạp chiếu phim</h1>
-          <p>Khám phá các rạp chiếu phim chất lượng cao trên toàn hệ thống</p>
         </div>
       </div>
 

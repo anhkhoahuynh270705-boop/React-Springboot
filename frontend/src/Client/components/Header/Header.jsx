@@ -1,7 +1,8 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Search, MapPin, ChevronDown, User, LogOut, Settings, Ticket, Building2, Shield, Bell } from 'lucide-react';
-import { getAllCinemas as getCinemas, searchCinemas } from '../../../services/cinemaService';
+import { getAllCinemas as getCinemas } from '../../../services/cinemaService';
 import { logoutUser } from '../../../services/userService';
 import { searchMovies } from '../../../services/movieService';
 import { getUnreadNotificationCount, getNotificationsByUser, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification } from '../../../services/notificationService';
@@ -129,6 +130,7 @@ const Header = ({ user, setUser, onLogout }) => {
       const data = await getCinemas();
       setCinemas(data);
       let savedCity = null;
+      // eslint-disable-next-line no-empty
       try { savedCity = localStorage.getItem('selectedCity'); } catch {}
       const hasSaved = savedCity !== null; 
       const initialCity = hasSaved ? savedCity : selectedCity;
@@ -181,6 +183,7 @@ const Header = ({ user, setUser, onLogout }) => {
   const handleCityChange = (newCity) => {
     setSelectedCity(newCity);
     filterCinemas(cinemas, newCity, cinemaSearchQuery);
+    // eslint-disable-next-line no-empty
     try { localStorage.setItem('selectedCity', newCity); } catch {}
   };
 
@@ -327,9 +330,11 @@ const Header = ({ user, setUser, onLogout }) => {
   };
 
   // Notification handlers
+  // eslint-disable-next-line no-unused-vars
   const handleMarkAsRead = async (notificationId) => {
     console.log('handleMarkAsRead called with ID:', notificationId);
     try {
+      // eslint-disable-next-line no-unused-vars
       const result = await markNotificationAsRead(notificationId);
       setNotifications(prev => 
         prev.map(notif => 
@@ -429,6 +434,7 @@ const Header = ({ user, setUser, onLogout }) => {
   };
 
   // Handle admin logout
+  // eslint-disable-next-line no-unused-vars
   const handleAdminLogout = () => {
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');

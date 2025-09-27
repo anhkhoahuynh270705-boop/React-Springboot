@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getCurrentUserSync, generateAvatarForCurrentUser, updateUserProfile, getUserProfile } from '../../../services/userService';
-import { generateAvatarWithStyle } from '../../../services/avatarService';
+import { getCurrentUserSync, updateUserProfile, getUserProfile } from '../../../services/userService';
 import { User, Settings, Crown, Gift, Star, Ticket, Calendar, CreditCard, Award, TrendingUp, Shield, Upload, X, Home, Info, Store, Gift as GiftIcon } from 'lucide-react';
 import './UserProfile.css';
 
@@ -135,6 +134,7 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange, initialOpenSett
   };
 
   // Function để refresh dữ liệu chi tiêu
+  // eslint-disable-next-line no-unused-vars
   const refreshSpendingData = () => {
     calculateUserSpending();
   };
@@ -160,6 +160,7 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange, initialOpenSett
   }, [isPopup]);
 
   // Handle closing animation
+  // eslint-disable-next-line no-unused-vars
   const handleClose = () => {
     if (popupRef.current) {
       popupRef.current.classList.add('closing');
@@ -243,6 +244,7 @@ const UserProfile = ({ onClose, isPopup = false, onAvatarChange, initialOpenSett
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const generateNewAvatar = async () => {
     if (!user?.username) return;
     
