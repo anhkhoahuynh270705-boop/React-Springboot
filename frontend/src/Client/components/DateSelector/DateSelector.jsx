@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Calendar } from 'lucide-react';
 import './DateSelector.css';
+import { useTranslation } from "react-i18next";
 
 const DateSelector = ({ selectedDate, onDateChange }) => {
   const generateDates = () => {
     const dates = [];
     const today = new Date();
-    
+    const { t } = useTranslation();
+    const { i18n } =useTranslation();
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
