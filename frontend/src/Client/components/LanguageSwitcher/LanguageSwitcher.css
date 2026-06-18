@@ -1,0 +1,46 @@
+.lang-toggle {
+    display: flex;
+    align-items: center;
+    border: 1px solid #555;
+    border-radius: 5px;
+    padding: 3px 15px;
+    background-color: #ffffff;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+
+  }
+
+  .lang-toggle:hover {
+    border-color: #777;
+    transition: all 0.3s ease;
+    background-color: #f3f3f38a;
+  }
+
+  .lang-select {
+    background: none;
+    border: none;
+    color: #080808;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 6px 12px;
+    border-radius: 20px;
+    transition: all 0.3s ease;
+    background-color: transparent;
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    position: relative;
+  }
+
+  .lang-select option {
+    background-color: #2a2a2a;
+    color: #ccc;
+    padding: 3px 15px;
+  }
+
+  .lang-select option:hover {
+    background-color: #444;
+  }
+  

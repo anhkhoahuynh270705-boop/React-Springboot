@@ -1,0 +1,393 @@
+/* About Us Page Styles */
+.au-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f8fafc;
+  padding: 2rem 0;
+}
+
+.au-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Hero Section */
+.au-hero {
+  text-align: center;
+  margin-bottom: 4rem;
+  padding: 3rem 0;
+}
+
+.au-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.au-subtitle {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Section Titles */
+.au-section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #f8fafc;
+  position: relative;
+}
+
+.au-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #dc2626, #f97316);
+  border-radius: 2px;
+}
+
+/* Mission Section */
+.au-mission-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+  margin-bottom: 4rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.au-mission-content h2 {
+  text-align: left;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.au-mission-text {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #cbd5e1;
+}
+
+.au-mission-image img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+/* Values Section */
+.au-values-section {
+  margin-bottom: 4rem;
+}
+
+.au-values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.au-value-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.au-value-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.au-value-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.au-value-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  color: #f8fafc;
+}
+
+.au-value-description {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+/* Timeline Section */
+.au-timeline-section {
+  margin-bottom: 4rem;
+}
+
+.au-timeline {
+  position: relative;
+  max-width: 800px;
+  margin: 2rem auto 0;
+}
+
+.au-timeline::before {
+  content: '';
+  position: absolute;
+  left: 30px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(180deg, #dc2626, #f97316);
+}
+
+.au-timeline-item {
+  position: relative;
+  margin-bottom: 2rem;
+  padding-left: 80px;
+}
+
+.au-timeline-marker {
+  position: absolute;
+  left: 20px;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  border-radius: 50%;
+  border: 4px solid #1e293b;
+}
+
+.au-timeline-content {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.au-timeline-content:hover {
+  transform: translateX(10px);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.au-timeline-year {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #dc2626;
+  margin-bottom: 0.5rem;
+}
+
+.au-timeline-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  color: #f8fafc;
+}
+
+.au-timeline-description {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+/* Team Section */
+.au-team-section {
+  margin-bottom: 4rem;
+}
+
+.au-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.au-team-member {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.au-team-member:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.au-member-photo {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1rem;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid rgba(220, 38, 38, 0.3);
+}
+
+.au-member-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.au-member-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #f8fafc;
+}
+
+.au-member-position {
+  font-size: 1rem;
+  color: #dc2626;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.au-member-bio {
+  color: #cbd5e1;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* Contact Section */
+.au-contact-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.au-contact-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.au-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.au-contact-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.au-contact-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(220, 38, 38, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.au-contact-details h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #f8fafc;
+}
+
+.au-contact-details p {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .au-container {
+    padding: 0 1rem;
+  }
+  
+  .au-title {
+    font-size: 2.5rem;
+  }
+  
+  .au-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .au-mission-section {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .au-mission-content h2 {
+    text-align: center;
+  }
+  
+  .au-values-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .au-team-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .au-contact-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .au-timeline::before {
+    left: 15px;
+  }
+  
+  .au-timeline-item {
+    padding-left: 50px;
+  }
+  
+  .au-timeline-marker {
+    left: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .au-title {
+    font-size: 2rem;
+  }
+  
+  .au-value-card,
+  .au-team-member {
+    padding: 1.5rem;
+  }
+  
+  .au-contact-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .au-timeline-content {
+    padding: 1rem;
+  }
+}

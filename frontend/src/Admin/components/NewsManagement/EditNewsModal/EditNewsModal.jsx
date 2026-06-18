@@ -1,0 +1,219 @@
+import { updateNews } from '../../../../services/newsService';
+import { X } from 'lucide-react';
+import React from 'react';
+import { useState, useEffect } from 'react';
+import useToast from '../../../hooks/useToast';
+import ToastContainer from '../../Toast/ToastContainer';
+import styles from './EditNewsModal.module.css';
+
+const EditNewsModal = ({ news, onClose, onNewsUpdated }) => {
+  const { showSuccess, showError, toasts, removeToast } = useToast();
+  const [formData, setFormData] = useState({
+    title: '',
+    summary: '',
+    content: '',
+    author: '',
+    category: '',
+    tags: '',
+    imageUrl: '',
+    featured: false
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (news) {
+      setFormData({
+        title: news.title || '',
+        summary: news.summary || '',
+        content: news.content || '',
+        author: news.author || '',
+        category: news.category || '',
+        tags: news.tags ? news.tags.join(', ') : '',
+        imageUrl: news.imageUrl || '',
+        featured: news.featured || false
+      });
+    }
+  }, [news]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const tagsArray = formData.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(tag => tag.length > 0);
+
+      const newsData = {
+        ...formData,
+        tags: tagsArray
+      };
+
+      const updatedNews = await updateNews(news.id, newsData);
+
+      showSuccess('Update New Successfully!');
+
+      if (onNewsUpdated) {
+        onNewsUpdated(updatedNews);
+      }
+
+      onClose();
+    } catch (error) {
+      const errorMessage = error.message || 'An error occurred while updating the news.';
+      setError(errorMessage);
+      showError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!news) return null;
+
+  return (
+    <div className={`${styles['edit-news-overlay']}`}>
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+      <div className={`${styles['edit-news-modal']}`}>
+        <div className={`${styles['edit-news-header']}`}>
+          <h2>Edit News</h2>
+          <button className={`${styles['close-btn']}`} onClick={onClose}><X size={20} /></button>
+        </div>
+
+        <form onSubmit={handleSubmit} className={`${styles['edit-news-form']}`}>
+          {error && <div className={`${styles['error-message']}`}>{error}</div>}
+
+          <div className={`${styles['form-group']}`}>
+            <label htmlFor="title">Title *</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              required
+              placeholder="Input news title"
+            />
+          </div>
+
+          <div className={`${styles['form-group']}`}>
+            <label htmlFor="summary">Summary *</label>
+            <textarea
+              id="summary"
+              name="summary"
+              value={formData.summary}
+              onChange={handleChange}
+              required
+              rows="3"
+              placeholder="Input summary news"
+            />
+          </div>
+
+          <div className={`${styles['form-group']}`}>
+            <label htmlFor="content">Content *</label>
+            <textarea
+              id="content"
+              name="content"
+              value={formData.content}
+              onChange={handleChange}
+              required
+              rows="8"
+              placeholder="Type content news in details"
+            />
+          </div>
+
+          <div className={`${styles['form-row']}`}>
+            <div className={`${styles['form-group']}`}>
+              <label htmlFor="author">Author *</label>
+              <input
+                type="text"
+                id="author"
+                name="author"
+                value={formData.author}
+                onChange={handleChange}
+                required
+                placeholder="Tên tác giả"
+              />
+            </div>
+
+            <div className={`${styles['form-group']}`}>
+              <label htmlFor="category">Category *</label>
+              <select
+                id="category"
+                name="category"
+                value={formData.category}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Choose category</option>
+                <option value="Phim ảnh">Film</option>
+                <option value="Giải trí">Entertainment</option>
+                <option value="Công nghệ">Technology</option>
+                <option value="Thể thao">Sport</option>
+                <option value="Du lịch">Travel</option>
+                <option value="Khác">Others</option>
+              </select>
+            </div>
+          </div>
+
+          <div className={`${styles['form-group']}`}>
+            <label htmlFor="tags">Tags</label>
+            <input
+              type="text"
+              id="tags"
+              name="tags"
+              value={formData.tags}
+              onChange={handleChange}
+              placeholder="Examples: movies, cinema, entertainment"
+            />
+          </div>
+
+          <div className={`${styles['form-group']}`}>
+            <label htmlFor="imageUrl"> Image URL</label>
+            <input
+              type="url"
+              id="imageUrl"
+              name="imageUrl"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              placeholder="https://example.com/image.jpg"
+            />
+          </div>
+
+          <div className={`${styles['form-group']} ${styles['checkbox-group']}`}>
+            <label className={`${styles['checkbox-label']}`}>
+              <input
+                type="checkbox"
+                name="featured"
+                checked={formData.featured}
+                onChange={handleChange}
+              />
+              <span className={`${styles['checkmark']}`}></span>
+              <span>Featured News</span>
+            </label>
+          </div>
+
+          <div className={`${styles['form-actions']}`}>
+            <button type="button" onClick={onClose} className={styles['btn-cancel']}>
+              Cancel
+            </button>
+            <button type="submit" className={`${styles['btn-submit']}`} disabled={loading}>
+              {loading ? 'Updating...' : 'Update News'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default EditNewsModal;

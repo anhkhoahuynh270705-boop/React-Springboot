@@ -1,0 +1,539 @@
+.featuredMovies {
+  position: relative;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  overflow: hidden;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+}
+
+.cardsSection {
+  position: relative;
+  padding: 7rem 6% 8rem;
+  background:
+    radial-gradient(circle at 50% 5%, rgba(120, 40, 200, 0.28), transparent 30%),
+    radial-gradient(circle at 20% 90%, rgba(90, 20, 160, 0.22), transparent 35%),
+    radial-gradient(circle at 80% 80%, rgba(100, 30, 180, 0.20), transparent 30%),
+    linear-gradient(180deg, #1a0d30 0%, #100a22 50%, #080614 100%);
+}
+
+/* Section heading */
+.sectionHeading {
+  text-align: center;
+  margin-bottom: 4.5rem;
+  color: #fff;
+}
+
+.headingLabel {
+  margin: 0 0 0.8rem;
+  color: #e8a842;
+  font-size: 0.8rem;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+.headingTitle {
+  margin: 0 0 1.4rem;
+  font-size: clamp(2rem, 4.5vw, 3.5rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -1px;
+}
+
+.headingLine {
+  width: 60px;
+  height: 4px;
+  margin: 0 auto;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #f5a623, #d4d114);
+}
+
+.sliderRow {
+  display: grid;
+  grid-template-columns: 130px 1fr 130px;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Nav buttons */
+.navBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.navBtn:hover:not(.navBtnDisabled) {
+  background: linear-gradient(135deg, #00000050, #18191b50);
+  transform: translateY(-4px);
+}
+
+.navBtnDisabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+.navBtnArrow {
+  font-size: 1.4rem;
+}
+
+.navBtnLabel {
+  font-size: 0.72rem;
+  letter-spacing: 2px;
+}
+
+.cardsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+  perspective: 1600px;
+}
+
+.cardContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  height: 460px;
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(80px) scale(0.9);
+  filter: blur(8px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.7s ease;
+  transition-delay: calc(var(--card-index) * 150ms);
+}
+
+.card.revealed {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+/* Inner 3D wrapper */
+.cardInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hover lift when NOT flipped */
+.card:not(.cardFlipped):hover .cardInner {
+  transform: translateY(-14px) rotateX(6deg);
+}
+
+/* Flipped state */
+.card.cardFlipped .cardInner {
+  transform: rotateY(180deg);
+}
+
+.card.cardFlipped:hover .cardInner {
+  transform: rotateY(180deg) translateY(-10px);
+}
+
+/* Both faces share these base styles */
+.cardFace {
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* When flipped: cover face must NOT receive pointer events */
+.cardFlipped .cardCover {
+  pointer-events: none;
+}
+
+.cardDetail {
+  overflow: visible;
+  border-radius: 22px;
+  clip-path: inset(0 round 22px);
+}
+
+.cardCover {
+  padding: 16px;
+  background: linear-gradient(140deg, #3b0f6e, #2d1163, #1e0b4a);
+}
+
+.cardCover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(200, 80, 200, 0.28), transparent 22%),
+    repeating-linear-gradient(45deg,
+      transparent,
+      transparent 30px,
+      rgba(255, 255, 255, 0.025) 30px,
+      rgba(255, 255, 255, 0.025) 31px);
+}
+
+.coverBorder {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  border-radius: 16px;
+  border: 2.5px solid rgba(245, 166, 35, 0.65);
+  outline: 2px solid rgba(255, 255, 255, 0.12);
+  outline-offset: -12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.coverGem {
+  width: 66px;
+  height: 66px;
+  transform: rotate(45deg);
+  background: radial-gradient(circle at 30% 30%, #fff, #f5a623 35%, #a855f7 70%);
+  box-shadow:
+    0 0 18px rgba(245, 166, 35, 0.9),
+    0 0 42px rgba(168, 85, 247, 0.65);
+  margin-bottom: 1.4rem;
+}
+
+.coverDiamondTop,
+.coverDiamondBot {
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  transform: rotate(45deg);
+}
+
+.coverDiamondTop {
+  top: 36px;
+}
+
+.coverDiamondBot {
+  bottom: 36px;
+}
+
+.coverLabel {
+  margin: 0;
+  color: #fff;
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: 3px;
+}
+
+.coverHint {
+  margin-top: 10px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.cardDetail {
+  transform: rotateY(180deg);
+  background: #0d0a1a;
+  overflow: hidden;
+}
+
+.detailImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  filter: saturate(1.1) contrast(1.05);
+}
+
+.detailGradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      transparent 30%,
+      rgba(8, 4, 18, 0.6) 60%,
+      rgba(8, 4, 18, 0.96) 100%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.detailInfo {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  z-index: 3;
+  color: #fff;
+}
+
+.detailTitle {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.detailSub {
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.detailMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+
+.detailMeta span {
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(245, 166, 35, 0.2);
+  border: 1px solid rgba(245, 166, 35, 0.4);
+  color: #f5c842;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.flipBackBtn {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.65);
+  padding: 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  transition: 0.2s ease;
+}
+
+.flipBackBtn:hover {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.viewBtn {
+  width: 100%;
+  border: none;
+  padding: 11px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f5a623, #e05bab);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.viewBtn:hover {
+  transform: translateY(-3px);
+}
+
+.dots {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 3.5rem;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.25);
+  cursor: pointer;
+  transition: 0.3s ease;
+  padding: 0;
+}
+
+.dot:hover {
+  background: rgba(245, 166, 35, 0.6);
+}
+
+.dotActive {
+  background: #f5a623;
+  width: 28px;
+  border-radius: 5px;
+}
+
+.cardAction {
+  width: 100%;
+  margin-top: 1.2rem;
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+  pointer-events: none;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+
+.actionVisible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.viewBtnOutside {
+  width: 85%;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #5e5b5b, #0000008f);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.viewBtnOutside:hover {
+  transform: translateY(-3px);
+}
+
+.emptyState {
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(180deg, #1a0d30, #080614);
+  gap: 1rem;
+}
+
+@media (max-width: 1100px) {
+  .sliderRow {
+    grid-template-columns: 90px 1fr 90px;
+    gap: 1.2rem;
+  }
+
+  .cardsGrid {
+    gap: 1.8rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .sliderRow {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .navBtn {
+    width: 180px;
+    margin: 0 auto;
+  }
+
+  .cardsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .cardsSection {
+    padding: 5rem 5% 6rem;
+  }
+
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .card {
+    height: 400px;
+  }
+}
+
+/* Cinema Tunnel Styles */
+.tunnelContainer {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0518;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: opacity 0.8s ease;
+}
+
+.tunnelFading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tunnelCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.portalFlash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, #ffffff 30%, #e02489 80%, #0a0518 100%);
+  z-index: 12;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease-out;
+}
+
+.portalFlashActive {
+  opacity: 1;
+}
+
+.cardsContent {
+  width: 100%;
+  transition: opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.contentHidden {
+  opacity: 0;
+  transform: scale(0.96) translateY(20px);
+  pointer-events: none;
+}
+
+.contentVisible {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}

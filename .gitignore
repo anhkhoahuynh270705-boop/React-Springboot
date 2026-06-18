@@ -1,0 +1,60 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+web_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+target/
+spring_boot_server/Server/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Environment variables & secrets
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.p12
+*.jks
+
+# Backend Secrets
+# Ignore the active application.properties containing credentials
+spring_boot_server/Server/src/main/resources/application.properties
+
+# Python Virtual Environments
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.classpath
+.project
+.settings/
+.factorypath
+spring_boot_server/Server/.classpath
+spring_boot_server/Server/.project
+spring_boot_server/Server/.settings/
+spring_boot_server/Server/.factorypath

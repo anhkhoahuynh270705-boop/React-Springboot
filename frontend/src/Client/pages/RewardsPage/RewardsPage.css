@@ -1,0 +1,258 @@
+.rewards-page {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+.rewards-hero {
+  background: radial-gradient(1200px 600px at 10% 10%, #2e2a50 0%, #15131f 60%, #0e0d16 100%);
+  color: #fff;
+  padding: 72px 16px;
+  border-radius: 16px;
+}
+
+.rewards-hero-content {
+  max-width: 1100px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.rewards-title {
+  font-size: 40px;
+  line-height: 1.2;
+  margin: 0 0 12px;
+}
+
+.rewards-subtitle {
+  font-size: 18px;
+  opacity: 0.9;
+  margin: 0 0 24px;
+}
+
+.rewards-cta-group { 
+  display: inline-flex; gap: 12px; 
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all .2s ease;
+}
+
+.btn-primary { 
+  background: #6c5ce7;
+  color: #fff; 
+}
+
+.btn-primary:hover { 
+  background: #5846e6; 
+  transform: translateY(-1px); 
+}
+
+.btn-outline { 
+  border: 1px solid rgba(255,255,255,.3); 
+  color: #fff;
+}
+
+.btn-outline:hover { 
+  border-color: #fff; 
+  transform: translateY(-1px); 
+}
+
+.rewards-how-it-works, .rewards-tiers, .rewards-benefits, .rewards-faq, .rewards-cta-bottom {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.rewards-how-it-works h2,
+.rewards-tiers h2,
+.rewards-benefits h2,
+.rewards-faq h2 { 
+  margin: 0 0 16px; font-size: 28px; 
+}
+
+.steps { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 16px; 
+}
+
+.step { 
+  background: #fff; 
+  border-radius: 14px; 
+  padding: 16px; 
+  box-shadow: 0 6px 22px rgba(0,0,0,.06); 
+}
+
+.step-icon { 
+  width: 36px; 
+  height: 36px; 
+  border-radius: 10px; 
+  background: #f1efff; 
+  color: #5846e6; 
+  display:flex; 
+  align-items:center; 
+  justify-content:center; 
+  font-weight:700;
+  margin-bottom: 8px; 
+}
+
+.step h3 { 
+  margin: 0 0 6px; 
+  font-size: 18px; 
+}
+
+.step p { 
+  margin: 0; 
+  color: #4a4a55; 
+}
+
+.tiers-grid { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 16px; 
+}
+
+.tier-card { 
+  background: #fff; 
+  border-radius: 14px; 
+  padding: 16px; 
+  box-shadow: 0 6px 22px rgba(0,0,0,.06); 
+}
+
+.tier-card h3 { 
+  margin: 0 0 6px; 
+}
+
+.tier-card p { 
+  margin: 0 0 8px; 
+  color: #4a4a55; 
+}
+ 
+.tier-card ul { 
+  margin: 0; 
+  padding-left: 18px; 
+  color: #34343f; 
+}
+
+.tier-bronze { 
+  border-top: 4px solid #cd7f32; 
+}
+
+.tier-silver { 
+  border-top: 4px solid #c0c0c0; 
+}
+
+.tier-gold { 
+  border-top: 4px solid #ffd700; 
+}
+
+.tier-diamond { 
+  border-top: 4px solid #5ce1e6; 
+}
+
+.benefits-grid { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 16px; 
+}
+
+.benefit { 
+  background: #fff; 
+  border-radius: 14px; 
+  padding: 16px; 
+  box-shadow: 0 6px 22px rgba(0,0,0,.06); 
+  text-align:center; 
+}
+
+.benefit-emoji { 
+  font-size: 28px; 
+  display: block; 
+  margin-bottom: 8px; 
+}
+
+.benefit h4 { 
+  margin: 0 0 6px; 
+}
+
+.benefit p { 
+  margin: 0; 
+  color: #4a4a55; 
+}
+
+.faq-list details { 
+  background: #fff; 
+  border-radius: 12px; 
+  padding: 12px 14px; 
+  box-shadow: 0 6px 22px rgba(0,0,0,.06); 
+}
+
+.faq-list details + details { 
+  margin-top: 10px; 
+}
+
+.faq-list summary { 
+  cursor: pointer; 
+  font-weight: 600; 
+}
+
+.faq-list p { 
+  margin: 8px 0 0; 
+  color: #4a4a55; 
+}
+
+.rewards-cta-bottom .cta-card {
+   display: flex; 
+   align-items: center; 
+   justify-content: space-between; 
+   gap: 14px; 
+   background: linear-gradient(135deg, #f7f5ff 0%, #ffffff 100%); 
+   border: 1px solid #eceaff; 
+   border-radius: 14px; 
+   padding: 16px; 
+  }
+
+.rewards-cta-bottom .cta-text h3 { 
+  margin: 0 0 6px; 
+}
+
+.rewards-cta-bottom .cta-text p { 
+  margin: 0; 
+  color: #4a4a55; 
+}
+
+@media (max-width: 1024px) {
+  .steps { 
+    grid-template-columns: 1fr; 
+  }
+
+  .tiers-grid { 
+    grid-template-columns: 1fr 1fr; 
+  }
+
+  .benefits-grid { 
+    grid-template-columns: 1fr 1fr; 
+  }
+}
+
+@media (max-width: 640px) {
+  .tiers-grid { 
+    grid-template-columns: 1fr; 
+  }
+
+  .benefits-grid { 
+    grid-template-columns: 1fr; 
+  }
+
+  .rewards-title { 
+    font-size: 32px; 
+  }
+}
+
+

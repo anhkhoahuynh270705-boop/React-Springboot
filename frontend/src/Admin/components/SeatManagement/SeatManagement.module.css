@@ -1,0 +1,1050 @@
+.seatManagement {
+  padding: 1.5rem;
+  background: #f8f9fa;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.showtimeSelect {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: white;
+  font-size: 0.875rem;
+  min-width: 300px;
+  cursor: pointer;
+}
+
+.showtimeSelect:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.refreshButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.refreshButton:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.refreshButton:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+
+.showtimeInfo {
+  margin-bottom: 1.5rem;
+}
+
+.showtimeCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.movieInfo h3 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.showtimeDetails {
+  display: flex;
+  gap: 2rem;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.showtimeId {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: #f3f4f6;
+  border-radius: 0.5rem;
+  border: 1px solid #d1d5db;
+}
+
+.idLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+  margin-right: 0.5rem;
+}
+
+.idValue {
+  font-size: 0.875rem;
+  color: #1f2937;
+  font-weight: 600;
+  font-family: monospace;
+  background: #e5e7eb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+}
+
+.cinemaAddress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding: 0.5rem;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+.seatStats {
+  display: flex;
+  gap: 2rem;
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.noShowtime {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.noShowtime svg {
+  color: #9ca3af;
+  margin-bottom: 1rem;
+}
+
+.noShowtime h3 {
+  color: #374151;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+}
+
+.noShowtime p {
+  color: #6b7280;
+  margin: 0 0 1.5rem 0;
+}
+
+.exampleNote {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin-top: 1rem;
+  text-align: left;
+  max-width: 500px;
+}
+
+.exampleNote h4 {
+  margin: 0 0 0.75rem 0;
+  color: #1e40af;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.exampleNote ul {
+  margin: 0 0 0.75rem 0;
+  padding-left: 1.25rem;
+  color: #1e40af;
+  font-size: 0.875rem;
+}
+
+.exampleNote li {
+  margin-bottom: 0.25rem;
+}
+
+.exampleNote p {
+  margin: 0;
+  color: #1e40af;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.debugInfo {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+  text-align: left;
+  max-width: 500px;
+}
+
+.debugInfo h4 {
+  margin: 0 0 0.75rem 0;
+  color: #dc2626;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.debugInfo p {
+  margin: 0 0 0.75rem 0;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.debugInfo ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.debugInfo li {
+  margin-bottom: 0.25rem;
+}
+
+.seatManager {
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.seatManagerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f8f9fa;
+}
+
+.headerInfo h3 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.headerInfo p {
+  margin: 0 0 0.5rem 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.showtimeNote {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #dbeafe;
+  border: 1px solid #93c5fd;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #1e40af;
+}
+
+.noteIcon {
+  font-size: 1rem;
+}
+
+.comparisonNote {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #166534;
+}
+
+.comparisonNote strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #15803d;
+}
+
+.comparisonNote ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.comparisonNote li {
+  margin-bottom: 0.25rem;
+}
+
+.seatManagerActions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.lastUpdated {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.btnGenerate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btnGenerate,
+.btnSave {
+  height: 44px;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 700;
+}
+
+.btnGenerate:hover:not(:disabled) {
+  background: #059669;
+}
+
+.btnGenerate:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btnClear {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btnClear:hover:not(:disabled) {
+  background: #dc2626;
+}
+
+.btnClear:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.seatManagerContent {
+  padding: 1.5rem;
+}
+
+.addSeatForm {
+  padding: 24px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.addSeatForm h4 {
+  margin-bottom: 18px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 180px 90px 90px 90px 190px 145px 130px;
+  gap: 16px;
+  align-items: end;
+}
+
+.formRow input,
+.formRow select {
+  height: 44px;
+  width: 100%;
+  padding: 0 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+}
+
+.formRow input:focus,
+.formRow select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+}
+
+.formRow select {
+  min-width: 60px;
+}
+
+.formRow input {
+  width: 80px;
+}
+
+.formRow label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.btnSaveImmediate {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btnSaveImmediate:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btnSaveImmediate:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.seatsList h4 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.pendingSeatsSection {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 0.5rem;
+}
+
+.pendingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.pendingHeader h5 {
+  margin: 0;
+  color: #92400e;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.btnSave {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #f59e0b;
+  color: white;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btnSave:hover:not(:disabled) {
+  background: #d97706;
+}
+
+.btnSave:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.seatsGridManager {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.seatItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+
+.seatItem:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.seatItem.booked {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #166534;
+}
+
+.seatItem.pending {
+  background: #fef3c7;
+  border-color: #f59e0b;
+  color: #92400e;
+}
+
+.seatNumber {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.seatBookedInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.bookedBy {
+  color: #166534;
+  font-weight: 500;
+}
+
+.bookedAt {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.seatActions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.btnToggle {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+
+.btnToggle.book {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.btnToggle.book:hover {
+  background: #bfdbfe;
+}
+
+.btnToggle.unbook {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.btnToggle.unbook:hover {
+  background: #bbf7d0;
+}
+
+.deleteBtn {
+  width: 28px;
+  height: 28px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.deleteBtn:hover {
+  background: #fecaca;
+}
+
+.btnDelete {
+  width: 24px;
+  height: 24px;
+  background: #fef3c7;
+  color: #92400e;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btnDelete:hover {
+  background: #fde68a;
+}
+
+.noSeatsMessage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+.noSeatsContent h3 {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.noSeatsContent p {
+  margin: 0 0 1.5rem 0;
+  color: #6b7280;
+}
+
+.btnGenerateSeats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btnGenerateSeats:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.btnGenerateSeats:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.loadingSeats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.loadingSpinnerSmall {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Loading Styles */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: #6b7280;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.subTabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.subTabButton {
+  padding: 10px 18px;
+  border: 1px solid #d1d5db;
+  background: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.activeSubTab {
+  background: #3b82f6;
+  color: white;
+  border-color: #3b82f6;
+}
+
+.previewSeatMap {
+  display: grid;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  margin: 24px auto 0;
+  padding: 22px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow-x: auto;
+}
+
+.previewSeat {
+  width: 100%;
+  height: 64px;
+  border: 1px solid #94a3b8;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 5px;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-align: center;
+  line-height: 1.05;
+  font-weight: 700;
+}
+
+.previewSeatNumber {
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.previewSeatType {
+  font-size: 0.52rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewSeatPrice {
+  font-size: 0.52rem;
+  font-weight: 700;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .controls {
+    justify-content: space-between;
+  }
+  
+  .showtimeSelect {
+    min-width: auto;
+    flex: 1;
+  }
+  
+  .showtimeCard {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .showtimeDetails {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .seatStats {
+    justify-content: space-around;
+  }
+  
+  .seatManagerHeader {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+  
+  .seatManagerActions {
+    justify-content: center;
+  }
+  
+  .formRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .formRow select,
+  .formRow input {
+    width: 100%;
+  }
+  
+  .seatsGridManager {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+.managerSeatMap {
+  display: grid;
+  gap: 8px;
+  justify-content: center;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  min-width: unset;
+  margin: 24px auto 0;
+  padding: 22px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow-x: auto;
+}
+
+.managerSeat {
+  width: 100%;
+  height: 72px;
+  min-height: 72px;
+  padding: 5px;
+  border: 1px solid #94a3b8;
+  border-radius: 10px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.05;
+}
+
+.layoutManagement h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.managerSeat:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.08);
+}
+
+.rowTypeConfig {
+  grid-column: 1 / -1;
+  margin-top: 4px;
+  padding: 18px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.rowTypeConfig h4 {
+  margin: 0 0 14px 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.rowTypeItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 14px 12px 0;
+}
+
+.rowTypeItem span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.rowTypeItem select {
+  width: 120px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 9px;
+}
+
+.regular,
+.managerSeat.regular {
+  background: #ffffff;
+  border-color: #94a3b8;
+  color: #1f2937;
+}
+
+.vip,
+.managerSeat.vip {
+  background: #fbbf24;
+  border-color: #f59e0b;
+  color: #78350f;
+}
+
+.couple,
+.managerSeat.couple {
+  background: #db2777;
+  border-color: #be185d;
+  color: #ffffff;
+}
+
+.managerSeat.booked {
+  background: #dcfce7;
+  border-color: #16a34a;
+  color: #166534;
+}
+
+.managerSeat .seatNumber {
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.managerSeat .seatActions {
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.managerSeat .seatTypeText,
+.managerSeat .seatPriceText {
+  font-size: 0.52rem;
+  font-weight: 800;
+  line-height: 1.05;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.managerSeat .btnToggle,
+.managerSeat .deleteBtn {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  padding: 0;
+  font-size: 0.6rem;
+}
+
+.managerSeat .seatBookedInfo {
+  font-size: 0.65rem;
+  max-width: 60px;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.managerSeat .bookedBy,
+.managerSeat .bookedAt {
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.layoutManagement {
+  background: #f8fafc;
+}

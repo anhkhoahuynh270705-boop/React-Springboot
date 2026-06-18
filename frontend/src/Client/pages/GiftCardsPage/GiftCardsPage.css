@@ -1,0 +1,339 @@
+/* Gift Cards Page Styles */
+.gc-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #f8fafc;
+  padding: 2rem 0;
+}
+
+.gc-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Hero Section */
+.gc-hero {
+  text-align: center;
+  margin-bottom: 4rem;
+  padding: 3rem 0;
+}
+
+.gc-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gc-subtitle {
+  font-size: 1.2rem;
+  color: #cbd5e1;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Features Section */
+.gc-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.gc-feature-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.gc-feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 30px rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.gc-feature-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.gc-feature-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 0.8rem;
+  color: #f8fafc;
+}
+
+.gc-feature-card p {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+/* Gift Cards Grid */
+.gc-grid {
+  margin-bottom: 4rem;
+}
+
+.gc-section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #f8fafc;
+  position: relative;
+}
+
+.gc-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #dc2626, #f97316);
+  border-radius: 2px;
+}
+
+.gc-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.gc-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.gc-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(220, 38, 38, 0.2);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.gc-card-image {
+  position: relative;
+  overflow: hidden;
+  height: 200px;
+}
+
+.gc-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gc-card:hover .gc-card-image img {
+  transform: scale(1.05);
+}
+
+.gc-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gc-card:hover .gc-card-overlay {
+  opacity: 1;
+}
+
+.gc-buy-button {
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  color: white;
+  border: none;
+  padding: 0.8rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.gc-buy-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(220, 38, 38, 0.4);
+}
+
+.gc-card-content {
+  padding: 1.5rem;
+}
+
+.gc-card-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #f8fafc;
+}
+
+.gc-card-price {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #dc2626;
+  margin-bottom: 0.8rem;
+}
+
+.gc-card-description {
+  color: #cbd5e1;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* How to Use Section */
+.gc-how-to-use {
+  margin-bottom: 4rem;
+}
+
+.gc-steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.gc-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.gc-step:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(220, 38, 38, 0.15);
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
+.gc-step-number {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #dc2626, #f97316);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.gc-step-content h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #f8fafc;
+}
+
+.gc-step-content p {
+  color: #cbd5e1;
+  line-height: 1.5;
+}
+
+/* Terms Section */
+.gc-terms-section {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 2rem;
+}
+
+.gc-terms-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.gc-terms-content li {
+  padding: 0.8rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.gc-terms-content li:last-child {
+  border-bottom: none;
+}
+
+.gc-terms-content li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #dc2626;
+  font-weight: bold;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .gc-container {
+    padding: 0 1rem;
+  }
+  
+  .gc-title {
+    font-size: 2.5rem;
+  }
+  
+  .gc-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .gc-features {
+    grid-template-columns: 1fr;
+  }
+  
+  .gc-cards-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .gc-steps {
+    grid-template-columns: 1fr;
+  }
+  
+  .gc-step {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .gc-title {
+    font-size: 2rem;
+  }
+  
+  .gc-feature-card {
+    padding: 1.5rem;
+  }
+  
+  .gc-card-content {
+    padding: 1rem;
+  }
+  
+  .gc-terms-section {
+    padding: 1.5rem;
+  }
+}

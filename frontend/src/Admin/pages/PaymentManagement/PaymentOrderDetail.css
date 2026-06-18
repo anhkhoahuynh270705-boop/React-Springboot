@@ -1,0 +1,349 @@
+/* Modern Payment Order Detail Styles */
+.payment-order-detail {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.payment-order-detail-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #6b7280;
+  background: white;
+  border-radius: 16px;
+}
+
+.payment-order-detail-empty svg {
+  color: #d1d5db;
+  margin-bottom: 16px;
+}
+
+/* Detail Header */
+.payment-detail-header {
+  background: whitesmoke;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.payment-detail-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-detail-title h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 600;
+}
+
+.payment-detail-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+/* Detail Content */
+.payment-detail-content {
+  padding: 24px;
+}
+
+.payment-detail-section {
+  margin-bottom: 24px;
+}
+
+.payment-detail-section:last-child {
+  margin-bottom: 0;
+}
+
+.payment-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  padding-bottom: 8px;
+}
+
+.payment-section-title svg {
+  color: #667eea;
+}
+
+/* Info Grid */
+.payment-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.payment-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.payment-info-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payment-info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.payment-info-value.order-id {
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-weight: 600;
+  color: #667eea;
+}
+
+.payment-info-value.amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #059669;
+}
+
+/* Description Box */
+.payment-description-box {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 8px;
+}
+
+.payment-description-box p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+}
+
+/* Status Info */
+.payment-status-info {
+  margin-top: 8px;
+}
+
+.payment-status-display {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-status-badge-large {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.payment-status-description {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.payment-status-description p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Customer Info */
+.payment-customer-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payment-customer-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border-radius: 8px;
+}
+
+.payment-customer-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.payment-customer-label svg {
+  color: #9ca3af;
+}
+
+.payment-customer-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/* Detail Actions */
+.payment-detail-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.payment-detail-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.payment-detail-action-btn.success {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.payment-detail-action-btn.danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.payment-detail-action-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.payment-detail-action-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+}
+
+.payment-detail-status-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.payment-status-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.payment-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  color: white;
+}
+
+.payment-status-pill.paid {
+  background: #16a34a;
+}
+
+.payment-status-pill.pending {
+  background: #f59e0b;
+}
+
+.payment-status-pill.expired,
+.payment-status-pill.failed {
+  background: #ef4444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .payment-detail-header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .payment-detail-status {
+    align-self: flex-end;
+  }
+  
+  .payment-info-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .payment-customer-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .payment-customer-value {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .payment-detail-content {
+    padding: 16px;
+  }
+  
+  .payment-detail-section {
+    margin-bottom: 20px;
+  }
+  
+  .payment-section-title {
+    font-size: 14px;
+  }
+  
+  .payment-info-value {
+    font-size: 13px;
+  }
+  
+  .payment-description-box {
+    padding: 12px;
+  }
+  
+  .payment-description-box p {
+    font-size: 13px;
+  }
+}

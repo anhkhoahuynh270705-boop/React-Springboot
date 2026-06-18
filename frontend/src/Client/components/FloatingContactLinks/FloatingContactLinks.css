@@ -1,0 +1,62 @@
+.floating-contact-links {
+    position: fixed;
+    right: 24px;
+    bottom: 100px;
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .floating-contact-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .floating-contact-btn:hover {
+    transform: translateY(-3px);
+  }
+  
+  .floating-contact-btn.phone {
+    background: #16a34a;
+  }
+  
+  .floating-contact-btn.facebook {
+    background: #1877f2;
+    font-size: 28px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .floating-contact-btn.zalo {
+    background: #0068ff;
+    font-size: 13px;
+  }
+  
+  @media (max-width: 768px) {
+    .floating-contact-links {
+      right: 16px;
+      bottom: 90px;
+    }
+  
+    .floating-contact-btn {
+      width: 48px;
+      height: 48px;
+    }
+  
+    .floating-contact-btn.facebook {
+      font-size: 24px;
+    }
+  
+    .floating-contact-btn.zalo {
+      font-size: 12px;
+    }
+  }
