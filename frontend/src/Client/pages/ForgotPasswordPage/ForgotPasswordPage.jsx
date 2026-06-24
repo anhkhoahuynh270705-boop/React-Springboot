@@ -42,10 +42,10 @@ const ForgotPasswordPage = () => {
 
           {success ? (
             <div className="success-message">
-                <Mail size={48} className="success-icon" />
+              <Mail size={48} className="success-icon" />
               <h2>{t('Check Your Email')}</h2>
               <p>{message}</p>
-              <p className="email-hint">{t('Please check your inbox and spam folder.')}</p>
+              <p className="email-hint">{t('Please check your inbox and spam email.')}</p>
               <button onClick={() => navigate('/login')} className="back-to-login-btn">
                 {t('Back to Login')}
               </button>
@@ -55,14 +55,14 @@ const ForgotPasswordPage = () => {
               <div className="form-group">
                 <label htmlFor="email">Email</label>
                 <div className="input-wrapper">
-                <Mail size={20} className="input-icon" />
+                  <Mail size={20} className="input-icon" />
                   <input
                     type="email"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder={t('Enter your email')}
-                    required    
+                    required
                     disabled={loading}
                   />
                 </div>
@@ -86,9 +86,9 @@ const ForgotPasswordPage = () => {
 
         <div className="forgot-password-illustration">
           <div className="illustration-image">
-            <img 
-              src="https://cdn.moveek.com/bundles/ornweb/img/mascot.png" 
-              alt="Mascot illustration" 
+            <img
+              src="https://cdn.moveek.com/bundles/ornweb/img/mascot.png"
+              alt="Mascot illustration"
             />
           </div>
         </div>

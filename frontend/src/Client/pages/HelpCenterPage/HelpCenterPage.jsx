@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { 
-  Search, 
-  HelpCircle, 
-  Phone, 
-  Mail, 
-  MessageCircle, 
-  Clock, 
+import {
+  Search,
+  HelpCircle,
+  Phone,
+  Mail,
+  MessageCircle,
+  Clock,
   ChevronRight,
   Ticket,
   CreditCard,
@@ -136,7 +136,7 @@ const HelpCenterPage = () => {
 
   const filteredArticles = helpArticles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         article.content.toLowerCase().includes(searchQuery.toLowerCase());
+      article.content.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || article.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -150,7 +150,7 @@ const HelpCenterPage = () => {
         <div className="help-center-header">
           <div className="breadcrumb">
             <Link to="/" className="breadcrumb-link">
-                <ArrowLeft size={16} />
+              <ArrowLeft size={16} />
               {t('Back to Home')}
             </Link>
           </div>
@@ -163,7 +163,7 @@ const HelpCenterPage = () => {
         {/* Search Section */}
         <div className="search-section">
           <div className="search-container">
-                <Search size={20} className="search-icon" />
+            <Search size={20} className="search-icon" />
             <input
               type="text"
               placeholder={t('Search for help articles...')}
@@ -204,7 +204,7 @@ const HelpCenterPage = () => {
                   </div>
                   <p className="article-content">{article.content}</p>
                   <button className="read-more-btn">
-                    {t('Read More')} 
+                    {t('Read More')}
                   </button>
                 </div>
               ))}
@@ -215,8 +215,8 @@ const HelpCenterPage = () => {
         {/* Filtered Articles */}
         <div className="articles-section">
           <h2 className="section-title">
-            {selectedCategory === 'all' 
-              ? t('All Articles') 
+            {selectedCategory === 'all'
+              ? t('All Articles')
               : categories.find(cat => cat.id === selectedCategory)?.name
             }
             {searchQuery && ` - ${t('Search Results')}`}
@@ -238,7 +238,7 @@ const HelpCenterPage = () => {
                     </div>
                   </div>
                   <button className="read-more-btn">
-                    {t('Read More')} 
+                    {t('Read More')}
                   </button>
                 </div>
               ))
@@ -261,7 +261,7 @@ const HelpCenterPage = () => {
             {contactMethods.map((method, index) => (
               <div key={index} className="contact-card">
                 <div className="contact-icon" style={{ backgroundColor: method.color }}>
-                  </div>
+                </div>
                 <div className="contact-info">
                   <h3 className="contact-title">{method.title}</h3>
                   <p className="contact-description">{method.description}</p>
@@ -278,17 +278,17 @@ const HelpCenterPage = () => {
           <h2 className="section-title">{t('Additional Resources')}</h2>
           <div className="resources-grid">
             <Link to="/faq" className="resource-card">
-                <HelpCircle size={24} />
+              <HelpCircle size={24} />
               <h3>{t('Frequently Asked Questions')}</h3>
               <p>{t('Find quick answers to common questions')}</p>
             </Link>
             <Link to="/support" className="resource-card">
-                <Settings size={24} />
+              <Settings size={24} />
               <h3>{t('Technical Support')}</h3>
               <p>{t('Get help with technical issues')}</p>
             </Link>
             <Link to="/contact" className="resource-card">
-                <Phone size={24} />
+              <Phone size={24} />
               <h3>{t('Contact Us')}</h3>
               <p>{t('Get in touch with our team')}</p>
             </Link>

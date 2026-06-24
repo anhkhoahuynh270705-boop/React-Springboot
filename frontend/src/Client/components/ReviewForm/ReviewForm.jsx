@@ -69,9 +69,7 @@ const ReviewForm = ({ movieId, onReviewAdded }) => {
       setComment('');
       
       if (onReviewAdded) {
-        setTimeout(() => {
-          onReviewAdded();
-        }, 2000);
+        onReviewAdded(newReview);
       }    
     } catch (error) {
       setError(t('An error occurred while submitting your review. Please try again.'));

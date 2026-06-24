@@ -373,7 +373,8 @@
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);}
+  transform: translateY(-2px);
+}
 
 .no-results {
   background: rgba(255, 255, 255, 0.9);
@@ -381,7 +382,8 @@
   padding: 2.5rem;
   text-align: center;
   color: #6b7280;
-  border: 1px solid #e5e7eb;}
+  border: 1px solid #e5e7eb;
+}
 
 /* Error */
 .error-message {
@@ -472,7 +474,7 @@
 }
 
 .pagination-number.active {
-  background: linear-gradient(135deg, #1c93d8, #2563eb);
+  background: #2563eb;
   border-color: transparent;
   color: #fff;
 }

@@ -1,8 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { getAllCinemas as getCinemas } from '../../../services/cinemaService';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import React from 'react';
-import { Search, MapPin, Filter, Phone, Clock, Star, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Search, MapPin, Filter, Phone, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './CinemasPage.module.css';
 import { useTranslation } from 'react-i18next';
 
@@ -33,49 +32,63 @@ const CinemasPage = () => {
     };
 
     fetchCinemas();
-  }, [t]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // fetch only once on mount — t is stable, no need to re-fetch on language change
 
-  const cities = React.useMemo(() => {
+  const cities = useMemo(() => {
     const set = new Set();
-    cinemas?.forEach(c => { if (c.city) set.add(c.city); });
+    cinemas.forEach(c => { if (c.city) set.add(c.city); });
     return Array.from(set).sort();
-  }, [cinemas, t]);
+  }, [cinemas]);
 
-  const districts = React.useMemo(() => {
+  // Extract district from address (the part before the last comma tends to be district)
+  const districts = useMemo(() => {
     const set = new Set();
-    cinemas?.forEach(c => { if (c.address) set.add(c.address); });
+    cinemas.forEach(c => {
+      if (c.district) {
+        set.add(c.district);
+      } else if (c.address) {
+        // Extract "Quận X" / "Huyện X" pattern from address
+        const match = c.address.match(/(Quận|Huyện|Thành phố|TP\.?)\s[\w\s]+/i);
+        if (match) set.add(match[0].trim());
+      }
+    });
     return Array.from(set).sort();
-  }, [cinemas, t]);
+  }, [cinemas]);
 
-  // Function to remove Vietnamese diacritics for search
-  const removeVietnameseDiacritics = (str) => {
-    if (!str) return '';
+  // Pre-normalize all cinema search fields once when data loads (not on every filter call)
+  const normalizedCinemas = useMemo(() => {
+    const normalize = (str) => {
+      if (!str) return '';
+      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+    };
+    return cinemas.map(cinema => ({
+      ...cinema,
+      _normName: normalize(cinema.name),
+      _normAddress: normalize(cinema.address),
+      _normCinemaName: normalize(cinema.cinemaName),
+    }));
+  }, [cinemas]);
 
-    return str
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/đ/g, 'd').replace(/Đ/g, 'D')
-      .toLowerCase();
-  };
+  const filteredCinemas = useMemo(() => {
+    const normalize = (str) => {
+      if (!str) return '';
+      return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+    };
+    const normalizedQuery = normalize(searchQuery);
 
-  // Function to check if text contains search query 
-  const containsSearchQuery = (text, query) => {
-    if (!text || !query) return false;
-
-    const normalizedText = removeVietnameseDiacritics(text);
-    const normalizedQuery = removeVietnameseDiacritics(query);
-
-    return normalizedText.includes(normalizedQuery);
-  };
-
-  const filteredCinemas = cinemas.filter(cinema => {
-    const matchesCity = !selectedCity || cinema.city === selectedCity;
-    const matchesSearch = !searchQuery || containsSearchQuery(cinema.name, searchQuery) ||
-      containsSearchQuery(cinema.address, searchQuery) ||
-      containsSearchQuery(cinema.cinemaName, searchQuery);
-    const matchesDistrict = !selectedDistrict || cinema.address?.includes(selectedDistrict);
-    return matchesCity && matchesSearch && matchesDistrict;
-  });
+    return normalizedCinemas.filter(cinema => {
+      const matchesCity = !selectedCity || cinema.city === selectedCity;
+      const matchesDistrict = !selectedDistrict ||
+        cinema.address?.includes(selectedDistrict) ||
+        cinema.district === selectedDistrict;
+      const matchesSearch = !searchQuery ||
+        cinema._normName.includes(normalizedQuery) ||
+        cinema._normAddress.includes(normalizedQuery) ||
+        cinema._normCinemaName.includes(normalizedQuery);
+      return matchesCity && matchesSearch && matchesDistrict;
+    });
+  }, [normalizedCinemas, searchQuery, selectedCity, selectedDistrict]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -88,22 +101,18 @@ const CinemasPage = () => {
   const paginatedCinemas = filteredCinemas.slice(startIndex, endIndex);
 
   // Pagination handlers
-  const handlePageChange = (page) => {
+  const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
-  const handlePrevious = () => {
-    if (currentPage > 1) {
-      handlePageChange(currentPage - 1);
-    }
-  };
+  const handlePrevious = useCallback(() => {
+    if (currentPage > 1) handlePageChange(currentPage - 1);
+  }, [currentPage, handlePageChange]);
 
-  const handleNext = () => {
-    if (currentPage < totalPages) {
-      handlePageChange(currentPage + 1);
-    }
-  };
+  const handleNext = useCallback(() => {
+    if (currentPage < totalPages) handlePageChange(currentPage + 1);
+  }, [currentPage, totalPages, handlePageChange]);
 
   // Generate page numbers to display
   const getPageNumbers = () => {
@@ -250,7 +259,12 @@ const CinemasPage = () => {
                   <div className={styles['card-header']}>
                     <div className={styles['card-media']}>
                       {cinema.imageUrl ? (
-                        <img src={cinema.imageUrl} alt={cinema.name} onError={(e) => { e.target.style.display = 'none'; }} />
+                        <img
+                          src={cinema.imageUrl}
+                          alt={cinema.name}
+                          loading="lazy"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
                       ) : (
                         <div className={styles['media-placeholder']}>{cinema.name?.charAt(0) || 'C'}</div>
                       )}
@@ -284,7 +298,7 @@ const CinemasPage = () => {
                   onClick={handlePrevious}
                   disabled={currentPage === 1}
                   aria-label={t('Previous page')}
-                ><X size={20} /></button>
+                ><ChevronLeft size={20} /></button>
 
                 <div className={styles['pagination-numbers']}>
                   {getPageNumbers().map((page, index) => {
@@ -298,8 +312,7 @@ const CinemasPage = () => {
                     return (
                       <button
                         key={page}
-                        className={`${styles['pagination-number']} ${currentPage === page ? styles['active'] : ''
-                          }`}
+                        className={`${styles['pagination-number']} ${currentPage === page ? styles['active'] : ''}`}
                         onClick={() => handlePageChange(page)}
                       >
                         {page}
@@ -313,7 +326,7 @@ const CinemasPage = () => {
                   onClick={handleNext}
                   disabled={currentPage === totalPages}
                   aria-label={t('Next page')}
-                ><X size={20} /></button>
+                ><ChevronRight size={20} /></button>
               </div>
             )}
           </>

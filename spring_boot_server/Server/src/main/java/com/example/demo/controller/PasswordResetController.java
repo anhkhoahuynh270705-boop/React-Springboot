@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.example.demo.dto.ForgotPasswordRequest;
 import com.example.demo.dto.ResetPasswordRequest;
 import com.example.demo.dto.VerifyResetTokenRequest;
@@ -26,13 +28,13 @@ public class PasswordResetController {
     private final PasswordResetService passwordResetService;
 
     @PostMapping("/forgot-password")
-    public Map<String, Object> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public Map<String, Object> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         String message = passwordResetService.forgotPassword(request.getEmail());
         return ResponseUtils.success(message);
     }
 
     @PostMapping("/reset-password")
-    public Map<String, Object> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public Map<String, Object> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
         return ResponseUtils.success("Password has been reset successfully");
     }

@@ -1,15 +1,20 @@
 package com.example.demo.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import lombok.Data;
 
 @Data
 @Document(collection = "seats")
+@CompoundIndex(name = "idx_showtimeId_booked", def = "{'showtimeId': 1, 'booked': 1}")
 public class Seat {
     @Id
     private String id;
+
+    @Indexed
     private String showtimeId;
     private String seatNumber;
     private String row;

@@ -16,14 +16,14 @@ export async function getNotificationsByUser(userId) {
       }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    
+
     const notifications = await response.json();
-    
+
     // Trigger custom event for real-time updates
     window.dispatchEvent(new CustomEvent('notificationUpdated', {
       detail: { userId, notifications }
     }));
-    
+
     return notifications || [];
   } catch (error) {
     if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
@@ -35,8 +35,6 @@ export async function getNotificationsByUser(userId) {
   }
 }
 
-
-
 // get unread notification count
 export async function getUnreadNotificationCount(userId) {
   try {
@@ -46,7 +44,7 @@ export async function getUnreadNotificationCount(userId) {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       if (response.status === 0 || response.status >= 500) {
         console.warn('Notification service unavailable, returning 0');
@@ -150,8 +148,7 @@ export async function deleteAllNotificationsByUser(userId) {
   }
 }
 
-
-// helper function to create booking success notification
+// helper functions to create notification
 export function createBookingSuccessNotification(userId, movieTitle, seatNumbers, showTime) {
   return {
     userId: userId,
@@ -162,7 +159,6 @@ export function createBookingSuccessNotification(userId, movieTitle, seatNumbers
     relatedType: 'booking'
   };
 }
-
 
 export function createTicketApprovedNotification(userId, movieTitle, ticketNumber) {
   return {

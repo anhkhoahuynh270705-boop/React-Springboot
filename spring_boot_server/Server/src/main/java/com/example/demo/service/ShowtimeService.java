@@ -3,6 +3,8 @@ package com.example.demo.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +32,7 @@ public class ShowtimeService {
 
     public List<Showtime> getAllShowtimes() {
         List<Showtime> showtimes = showtimeRepository.findAll();
-        showtimes.forEach(this::enrich);
+        enrichAll(showtimes);
         return showtimes;
     }
 
@@ -74,19 +76,19 @@ public class ShowtimeService {
 
     public List<Showtime> getShowtimesByCinemaAndMovie(String cinemaId, String movieId) {
         List<Showtime> showtimes = showtimeRepository.findByCinemaIdAndMovieId(cinemaId, movieId);
-        showtimes.forEach(this::enrich);
+        enrichAll(showtimes);
         return showtimes;
     }
 
     public List<Showtime> getShowtimesByCinema(String cinemaId) {
         List<Showtime> showtimes = showtimeRepository.findByCinemaId(cinemaId);
-        showtimes.forEach(this::enrich);
+        enrichAll(showtimes);
         return showtimes;
     }
 
     public List<Showtime> getShowtimesByMovie(String movieId) {
         List<Showtime> showtimes = showtimeRepository.findByMovieId(movieId);
-        showtimes.forEach(this::enrich);
+        enrichAll(showtimes);
         return showtimes;
     }
 
@@ -103,7 +105,7 @@ public class ShowtimeService {
                 })
                 .toList();
 
-        filteredShowtimes.forEach(this::enrich);
+        enrichAll(filteredShowtimes);
         return filteredShowtimes;
     }
 
@@ -150,5 +152,47 @@ public class ShowtimeService {
                 : null;
 
         ShowtimeMapper.enrich(showtime, movie, cinema);
+    }
+
+    private void enrichAll(List<Showtime> showtimes) {
+        if (showtimes == null || showtimes.isEmpty()) {
+            return;
+        }
+
+        List<String> movieIds = showtimes.stream()
+                .map(Showtime::getMovieId)
+                .filter(id -> id != null && !id.isBlank())
+                .distinct()
+                .toList();
+
+        List<String> cinemaIds = showtimes.stream()
+                .map(Showtime::getCinemaId)
+                .filter(id -> id != null && !id.isBlank())
+                .distinct()
+                .toList();
+
+        Map<String, Movie> movieMap = new HashMap<>();
+        if (!movieIds.isEmpty()) {
+            movieRepository.findAllById(movieIds).forEach(movie -> {
+                if (movie != null && movie.getId() != null) {
+                    movieMap.put(movie.getId(), movie);
+                }
+            });
+        }
+
+        Map<String, Cinema> cinemaMap = new HashMap<>();
+        if (!cinemaIds.isEmpty()) {
+            cinemaRepository.findAllById(cinemaIds).forEach(cinema -> {
+                if (cinema != null && cinema.getId() != null) {
+                    cinemaMap.put(cinema.getId(), cinema);
+                }
+            });
+        }
+
+        for (Showtime showtime : showtimes) {
+            Movie movie = showtime.getMovieId() != null ? movieMap.get(showtime.getMovieId()) : null;
+            Cinema cinema = showtime.getCinemaId() != null ? cinemaMap.get(showtime.getCinemaId()) : null;
+            ShowtimeMapper.enrich(showtime, movie, cinema);
+        }
     }
 }

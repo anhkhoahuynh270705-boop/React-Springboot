@@ -1572,5 +1572,14 @@
   "Face registered successfully!": "Nhận diện khuôn mặt thành công!",
   "Failed to register face. Please try again.": "Không thể nhận diện khuôn mặt. Vui lòng thử lại.",
   "Register Face ID": "Đăng ký nhận diện khuôn mặt",
-  "5. News & Events": "5. Tin tức & Sự kiện"
+  "5. News & Events": "5. Tin tức & Sự kiện",
+  "Hi, I'm HAK cinema's Chat Assistant. How can I help you today?": "Xin chào, tôi là Trợ lý phim HAK. Tôi có thể giúp gì cho bạn hôm nay?",
+  "What movies are playing today?": "Hôm nay có những phim gì chiếu?",
+  "Suggest some action movies": "Gợi ý cho tôi vài bộ phim hành động",
+  "Suggest some horror movies": "Gợi ý cho tôi vài bộ phim kinh dị",
+  "How to book movie tickets?": "Làm thế nào để đặt vé xem phim?",
+  "What are the ticket prices?": "Giá vé xem phim là bao nhiêu?",
+  "Quick Questions": "Câu hỏi nhanh",
+  "Try asking:": "Thử hỏi:",
+  "or": "hoặc"
 }

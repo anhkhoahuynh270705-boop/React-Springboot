@@ -1,0 +1,79 @@
+# Redis Sentinel for distributed lock 
+services:
+  redis-master:
+    image: redis:7.0
+    container_name: redis-master
+    restart: always
+    command: redis-server
+    ports:
+      - "6379:6379"
+
+  redis-slave:
+    image: redis:7.0
+    container_name: redis-slave
+    restart: always
+    command: redis-server --replicaof redis-master 6379
+    ports:
+      - "6380:6379"
+    depends_on:
+      - redis-master
+
+  redis-sentinel-1:
+    image: redis:7.0
+    container_name: redis-sentinel-1
+    restart: always
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf --sentinel announce-ip 127.0.0.1 --sentinel announce-port 26379
+    volumes:
+      - ./redis-sentinel-setup/sentinel1.conf:/usr/local/etc/redis/sentinel.conf
+    ports:
+      - "26379:26379"
+    depends_on:
+      - redis-master
+      - redis-slave
+
+  redis-sentinel-2:
+    image: redis:7.0
+    container_name: redis-sentinel-2
+    restart: always
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf --sentinel announce-ip 127.0.0.1 --sentinel announce-port 26380
+    volumes:
+      - ./redis-sentinel-setup/sentinel2.conf:/usr/local/etc/redis/sentinel.conf
+    ports:
+      - "26380:26379"
+    depends_on:
+      - redis-master
+      - redis-slave
+
+  redis-sentinel-3:
+    image: redis:7.0
+    container_name: redis-sentinel-3
+    restart: always
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf --sentinel announce-ip 127.0.0.1 --sentinel announce-port 26381
+    volumes:
+      - ./redis-sentinel-setup/sentinel3.conf:/usr/local/etc/redis/sentinel.conf
+    ports:
+      - "26381:26379"
+    depends_on:
+      - redis-master
+      - redis-slave
+
+  # Prometheus & Grafana
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    restart: always

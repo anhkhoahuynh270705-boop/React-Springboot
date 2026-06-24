@@ -1569,5 +1569,14 @@
   "Face registered successfully!": "Face registered successfully!",
   "Failed to register face. Please try again.": "Failed to register face. Please try again.",
   "Register Face ID": "Register Face ID",
-  "5. News & Events": "5. News & Events"
+  "5. News & Events": "5. News & Events",
+  "Hi, I'm HAK cinema's Chat Assistant. How can I help you today?": "Hi, I'm HAK cinema's Chat Assistant. How can I help you today?",
+  "What movies are playing today?": "What movies are playing today?",
+  "Suggest some action movies": "Suggest some action movies",
+  "Suggest some horror movies": "Suggest some horror movies",
+  "How to book movie tickets?": "How to book movie tickets?",
+  "What are the ticket prices?": "What are the ticket prices?",
+  "Quick Questions": "Quick Questions",
+  "Try asking:": "Try asking:",
+  "or": "or"
 }

@@ -68,85 +68,85 @@ export const sendMessage = async (message, userId) => {
 };
 
 // sendMessageWithMovies sends a message and includes movie suggestions
-  export const sendMessageWithMovies = async (message, userId) => {
-    try {
-      const res = await axios.post(API_URL, {
-        message,
-        userId
-      });
+export const sendMessageWithMovies = async (message, userId) => {
+  try {
+    const res = await axios.post(API_URL, {
+      message,
+      userId
+    });
 
-      const reply = res.data.reply;
+    const reply = res.data.reply;
 
-      let movies = [];
+    let movies = [];
 
-      const requestedGenre = getRequestedGenre(message);
+    const requestedGenre = getRequestedGenre(message);
 
-      if (requestedGenre) {
-        try {
-          const allMovies = await getMovies();
+    if (requestedGenre) {
+      try {
+        const allMovies = await getMovies();
 
-          movies = allMovies.filter(movie =>
-            movieMatchesGenre(movie, requestedGenre)
-          );
-        } catch (err) {
-          console.warn("Failed to filter movies by genre:", err);
-        }
-      } else {
-        const movieKeywords = extractMovieKeywords(message);
+        movies = allMovies.filter(movie =>
+          movieMatchesGenre(movie, requestedGenre)
+        );
+      } catch (err) {
+        console.warn("Failed to filter movies by genre:", err);
+      }
+    } else {
+      const movieKeywords = extractMovieKeywords(message);
 
-        if (movieKeywords.length > 0) {
-          for (const keyword of movieKeywords) {
-            try {
-              const searchResults = await searchMovies(keyword);
+      if (movieKeywords.length > 0) {
+        for (const keyword of movieKeywords) {
+          try {
+            const searchResults = await searchMovies(keyword);
 
-              if (searchResults && searchResults.length > 0) {
-                movies = [...movies, ...searchResults];
-              }
-            } catch (err) {
-              console.warn(`Search failed for keyword "${keyword}":`, err);
+            if (searchResults && searchResults.length > 0) {
+              movies = [...movies, ...searchResults];
             }
+          } catch (err) {
+            console.warn(`Search failed for keyword "${keyword}":`, err);
           }
         }
       }
-
-      const uniqueMovies = movies
-        .filter((movie, index, self) =>
-          index === self.findIndex(m =>
-            (m.id || m._id || m.movieId) === (movie.id || movie._id || movie.movieId)
-          )
-        )
-        .slice(0, 5);
-
-      if (uniqueMovies.length > 0 && userId) {
-        try {
-          const storageKey = getMoviesStorageKey(userId);
-          const moviesCache = JSON.parse(localStorage.getItem(storageKey) || "{}");
-          const cacheKey = message.trim().toLowerCase();
-
-          moviesCache[cacheKey] = {
-            movies: uniqueMovies,
-            reply: reply.substring(0, 100),
-            timestamp: Date.now()
-          };
-
-          localStorage.setItem(storageKey, JSON.stringify(moviesCache));
-        } catch (err) {
-          console.warn("Failed to save movies to localStorage:", err);
-        }
-      }
-
-
-
-      return {
-        reply,
-        movies: uniqueMovies
-      };
-
-    } catch (err) {
-      console.error("Lỗi gọi API ChatGPT:", err);
-      throw err;
     }
-  };
+
+    const uniqueMovies = movies
+      .filter((movie, index, self) =>
+        index === self.findIndex(m =>
+          (m.id || m._id || m.movieId) === (movie.id || movie._id || movie.movieId)
+        )
+      )
+      .slice(0, 5);
+
+    if (uniqueMovies.length > 0 && userId) {
+      try {
+        const storageKey = getMoviesStorageKey(userId);
+        const moviesCache = JSON.parse(localStorage.getItem(storageKey) || "{}");
+        const cacheKey = message.trim().toLowerCase();
+
+        moviesCache[cacheKey] = {
+          movies: uniqueMovies,
+          reply: reply.substring(0, 100),
+          timestamp: Date.now()
+        };
+
+        localStorage.setItem(storageKey, JSON.stringify(moviesCache));
+      } catch (err) {
+        console.warn("Failed to save movies to localStorage:", err);
+      }
+    }
+
+
+
+    return {
+      reply,
+      movies: uniqueMovies
+    };
+
+  } catch (err) {
+    console.error("Lỗi gọi API ChatGPT:", err);
+    throw err;
+  }
+};
 
 // Extract movie-related keywords from message
 const extractMovieKeywords = (message) => {

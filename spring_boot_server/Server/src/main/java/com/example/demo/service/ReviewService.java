@@ -148,12 +148,49 @@ public class ReviewService {
     }
 
     private void enrichReviewsWithUserAvatar(List<Review> reviews) {
-        if (reviews == null) {
+        if (reviews == null || reviews.isEmpty()) {
             return;
         }
 
-        for (Review review : reviews) {
-            applyUserAvatarIfMissing(review);
+        // Collect all userIds that need avatar enrichment
+        List<String> userIds = reviews.stream()
+                .filter(r -> r.getUserAvatar() == null || r.getUserAvatar().trim().isEmpty())
+                .map(Review::getUserId)
+                .filter(id -> id != null && !id.trim().isEmpty())
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+
+        if (userIds.isEmpty()) {
+            return;
+        }
+
+        try {
+            // Batch fetch all users in a single database query
+            Iterable<User> users = userRepository.findAllById(userIds);
+            java.util.Map<String, String> userAvatarMap = new java.util.HashMap<>();
+            for (User user : users) {
+                if (user != null && user.getId() != null) {
+                    String avatar = getUserAvatar(user);
+                    if (avatar != null && !avatar.trim().isEmpty()) {
+                        userAvatarMap.put(user.getId(), avatar);
+                    }
+                }
+            }
+
+            // Enrich the reviews
+            for (Review review : reviews) {
+                if (review.getUserAvatar() == null || review.getUserAvatar().trim().isEmpty()) {
+                    String avatar = userAvatarMap.get(review.getUserId());
+                    if (avatar != null && !avatar.trim().isEmpty()) {
+                        review.setUserAvatar(avatar);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Fallback to one-by-one enrichment if batch fetch fails for any reason
+            for (Review review : reviews) {
+                applyUserAvatarIfMissing(review);
+            }
         }
     }
 

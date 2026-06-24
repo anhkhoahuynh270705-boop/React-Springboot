@@ -1,5 +1,4 @@
 /* eslint-disable no-constant-binary-expression */
-
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getSeatsByShowtime } from '../../../services/seatService';

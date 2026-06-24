@@ -3,10 +3,10 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Users, 
-  Ticket, 
-  BarChart3, 
+import {
+  Users,
+  Ticket,
+  BarChart3,
   FileText,
   Package,
   Film,
@@ -54,7 +54,7 @@ const AdminDashboard = () => {
     weeklyUserGrowth: {},
     popularMovies: {}
   });
-  const { t } = useTranslation(); 
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   // Chart data from API
@@ -128,7 +128,7 @@ const AdminDashboard = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          callback: function(value) {
+          callback: function (value) {
             return new Intl.NumberFormat('vi-VN', {
               style: 'currency',
               currency: 'VND'
@@ -142,13 +142,13 @@ const AdminDashboard = () => {
   useEffect(() => {
     const adminToken = localStorage.getItem('adminToken');
     const userToken = localStorage.getItem('authToken');
-    
+
     if (userToken) {
       showWarning(t('Please logout user account before accessing Admin Panel'));
       navigate('/');
       return;
     }
-    
+
     if (!adminToken) {
       navigate('/admin/login');
       return;
@@ -184,40 +184,40 @@ const AdminDashboard = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'dashboard':
-    return (
+        return (
           <div className={styles.dashboardContent}>
             <div className={styles.statsGrid}>
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
-                <Ticket size={24} />
+                  <Ticket size={24} />
                 </div>
                 <div className={styles.statInfo}>
                   <h3>{t('Total')}</h3>
                   <p className={styles.statNumber}>{stats.totalTickets}</p>
                   <div className={styles.statTrend}>
-                <TrendingUp size={16} />
+                    <TrendingUp size={16} />
                     <span>+12%</span>
                   </div>
                 </div>
               </div>
-              
+
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
-                <Users size={24} />
+                  <Users size={24} />
                 </div>
                 <div className={styles.statInfo}>
                   <h3>{t('Total users')}</h3>
                   <p className={styles.statNumber}>{stats.totalUsers}</p>
                   <div className={styles.statTrend}>
-                <TrendingDown size={16} />
+                    <TrendingDown size={16} />
                     <span>+8%</span>
                   </div>
                 </div>
               </div>
-              
+
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
-                <CheckCircle size={24} />
+                  <CheckCircle size={24} />
                 </div>
                 <div className={styles.statInfo}>
                   <h3>{t('Confirmed tickets')}</h3>
@@ -228,10 +228,10 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className={styles.statCard}>
                 <div className={styles.statIcon}>
-                <XCircle size={24} />
+                  <XCircle size={24} />
                 </div>
                 <div className={styles.statInfo}>
                   <h3>{t('Cancelled tickets')}</h3>
@@ -257,25 +257,25 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-            
+
             {/* Charts Section */}
             <div className={styles.chartsSection}>
               <div className={styles.chartContainer}>
                 <h3>{t('Revenue by month')}</h3>
                 <Line data={revenueData} options={revenueChartOptions} />
               </div>
-              
+
               <div className={styles.chartContainer}>
                 <h3>{t('Ticket sales by day in week')}</h3>
                 <Bar data={ticketSalesData} options={chartOptions} />
               </div>
-              
+
               <div className={styles.chartContainer}>
                 <h3>{t('New users registered')}</h3>
                 <Bar data={userGrowthData} options={chartOptions} />
               </div>
             </div>
-            
+
             {/* Popular Movies Section */}
             {stats.popularMovies && Object.keys(stats.popularMovies).length > 0 && (
               <div className={styles.popularMoviesSection}>
@@ -308,7 +308,7 @@ const AdminDashboard = () => {
         return <MovieManagement />;
       case 'cinemas':
         return <CinemaManagement />;
-      
+
       default:
         return <div>{t('Tab does not exist')}</div>;
     }
@@ -328,14 +328,14 @@ const AdminDashboard = () => {
       <div className={styles.sidebar}>
         <div className={styles.logo}>
           <h2>{t('Admin Panel')}</h2>
-        </div>  
+        </div>
         {/* Navbar Section */}
         <nav className={styles.nav}>
-          <button 
+          <button
             className={`${styles.navItem} ${activeTab === 'dashboard' ? styles.active : ''}`}
             onClick={() => setActiveTab('dashboard')} >
-                <BarChart3 size={20}/>
-          {t('Dashboard')} 
+            <BarChart3 size={20} />
+            {t('Dashboard')}
           </button>
           <button
             className={`${styles.navItem} ${activeTab === 'payments' ? styles.active : ''}`}
@@ -344,7 +344,7 @@ const AdminDashboard = () => {
             <CreditCard size={20} />
             {t('Payment management')}
           </button>
-          <button 
+          <button
             className={`${styles.navItem} ${activeTab === 'movies' ? styles.active : ''}`}
             onClick={() => setActiveTab('movies')}
           >
@@ -352,7 +352,7 @@ const AdminDashboard = () => {
             {t('Movie management')}
           </button>
 
-          <button 
+          <button
             className={`${styles.navItem} ${activeTab === 'cinemas' ? styles.active : ''}`}
             onClick={() => setActiveTab('cinemas')}
           >
@@ -360,39 +360,39 @@ const AdminDashboard = () => {
             {t('Cinema management')}
           </button>
 
-          <button 
+          <button
             className={`${styles.navItem} ${activeTab === 'tickets' ? styles.active : ''}`}
             onClick={() => setActiveTab('tickets')}
           >
             <Ticket size={20} />
             {t('Ticket management')}
           </button>
-          
-          <button 
+
+          <button
             className={`${styles.navItem} ${activeTab === 'news' ? styles.active : ''}`}
             onClick={() => setActiveTab('news')}
           >
             <FileText size={20} />
             {t('News management')}
           </button>
-          
-          <button 
+
+          <button
             className={`${styles.navItem} ${activeTab === 'combos' ? styles.active : ''}`}
             onClick={() => setActiveTab('combos')}
           >
             <Package size={20} />
             {t('Combo management')}
           </button>
-          
-          <button 
+
+          <button
             className={`${styles.navItem} ${activeTab === 'seats' ? styles.active : ''}`}
             onClick={() => setActiveTab('seats')}
           >
             <Armchair size={20} />
             {t('Seat management')}
           </button>
-        
-          <button 
+
+          <button
             className={`${styles.navItem} ${activeTab === 'users' ? styles.active : ''}`}
             onClick={() => setActiveTab('users')}
           >
@@ -401,7 +401,7 @@ const AdminDashboard = () => {
           </button>
 
         </nav>
-       {/* Logout Section */}
+        {/* Logout Section */}
       </div>
       <div className={styles.mainContent}>
         <div className={styles.header}>
@@ -415,23 +415,23 @@ const AdminDashboard = () => {
             {activeTab === 'seats' && t('Seat management')}
             {activeTab === 'movies' && t('Movie management')}
             {activeTab === 'cinemas' && t('Cinema management')}
-            
+
           </h1>
           {activeTab === 'dashboard' && (
-            <button 
-              className={styles.refreshBtn} 
+            <button
+              className={styles.refreshBtn}
               onClick={fetchData}
               title={t('Refresh')}
             >
               <RefreshCw size={18} />
             </button>
           )}
-      </div>
+        </div>
 
         <div className={styles.content}>
           {renderTabContent()}
-                  </div>
-                </div>
+        </div>
+      </div>
 
       {/* Toast Container */}
       <ToastContainer toasts={toasts} onRemove={removeToast} />

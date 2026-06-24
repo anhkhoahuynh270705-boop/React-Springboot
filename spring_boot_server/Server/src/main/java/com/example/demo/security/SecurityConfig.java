@@ -61,22 +61,28 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/combos/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/seats/**").permitAll()
-                .requestMatchers("/api/seat-layouts/**").permitAll()
-                .requestMatchers("/api/seat-locks/**").permitAll()
-                .requestMatchers("/api/chat/**").permitAll()
-                .requestMatchers("/api/members/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/notifications/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/tickets/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/seat-layouts/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/seat-locks/**").permitAll()
 
                 // Contact & complaint submission
                 .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/complaints").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/tickets/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/notifications/**").permitAll()
 
-                // Payment gateways
+                // Payment gateways & Actuator
                 .requestMatchers("/api/momo/**").permitAll()
                 .requestMatchers("/api/zalopay/**").permitAll()
                 .requestMatchers("/api/stripe/**").permitAll()
                 .requestMatchers("/api/payment/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers("/ws/**").permitAll()
+                .requestMatchers("/api/seat-layouts/**").permitAll()
+                .requestMatchers("/api/seat-locks/**").permitAll()
+                .requestMatchers("/api/chat/**").permitAll()
+                .requestMatchers("/api/members/**").permitAll()
 
                 // Admin login only — public
                 .requestMatchers("/api/admin/login").permitAll()

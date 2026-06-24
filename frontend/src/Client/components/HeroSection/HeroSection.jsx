@@ -120,7 +120,7 @@ const HeroSection = () => {
                   className={styles['tv-video']}
                   muted loop playsInline
                 >
-                  <source src="/videos/cinema-bg.mp4" type="video/mp4" />
+                  <source src="/videos/cineverse_intro.mp4" type="video/mp4" />
                 </video>
                 <div className={styles['tv-overlay']} />
               </div>

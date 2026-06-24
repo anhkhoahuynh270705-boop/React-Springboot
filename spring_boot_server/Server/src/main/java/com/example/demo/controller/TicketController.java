@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,10 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Ticket;
 import com.example.demo.service.TicketService;
-import com.example.demo.exception.ResourceNotFoundException;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -46,12 +46,12 @@ public class TicketController {
     }
 
     @PostMapping
-    public Ticket createTicket(@RequestBody Ticket ticket) {
+    public Ticket createTicket(@Valid @RequestBody Ticket ticket) {
         return ticketService.createTicket(ticket);
     }
 
     @PostMapping("/book")
-    public Ticket bookTicket(@RequestBody Ticket ticket) {
+    public Ticket bookTicket(@Valid @RequestBody Ticket ticket) {
         return ticketService.bookTicket(ticket);
     }
 

@@ -55,25 +55,23 @@ const CinemaMoviesModal = ({ cinema, onClose, onMoviesUpdated }) => {
     try {
       setActionLoading(true);
       await addMovieToCinema(cinema.id, movieId);
-      setCinemaMovies(prev => [...prev, movieId]);
-      showSuccess('Added movie to cinema successfully');
 
-      // Refresh cinema data to get updated movie list
+      const newCinemaMovies = [...cinemaMovies, movieId];
+      setCinemaMovies(newCinemaMovies);
+
+      // Notify parent with full movie objects so the right panel updates instantly
       if (onMoviesUpdated) {
-        const updatedCinemaMovies = [...cinemaMovies, movieId];
         const updatedMovieObjects = allMovies.filter(movie =>
-          updatedCinemaMovies.includes(movie.id)
+          newCinemaMovies.includes(movie.id)
         );
         onMoviesUpdated(updatedMovieObjects);
       }
 
-      setTimeout(() => {
-        setCinemaMovies(prev => [...prev]);
-        setActionLoading(false);
-      }, 100);
+      showSuccess('Added movie to cinema successfully');
     } catch (error) {
       console.error('Error adding movie to cinema:', error);
       showError('Cannot add movie to cinema');
+    } finally {
       setActionLoading(false);
     }
   };
@@ -101,26 +99,23 @@ const CinemaMoviesModal = ({ cinema, onClose, onMoviesUpdated }) => {
     try {
       setActionLoading(true);
       await removeMovieFromCinema(cinema.id, movieId);
-      setCinemaMovies(prev => prev.filter(id => id !== movieId));
-      showSuccess('Deleted movie from cinema successfully');
 
-      // Refresh cinema data to get updated movie list
+      const newCinemaMovies = cinemaMovies.filter(id => id !== movieId);
+      setCinemaMovies(newCinemaMovies);
+
+      // Notify parent with full movie objects so the right panel updates instantly
       if (onMoviesUpdated) {
-        const updatedCinemaMovies = cinemaMovies.filter(id => id !== movieId);
         const updatedMovieObjects = allMovies.filter(movie =>
-          updatedCinemaMovies.includes(movie.id)
+          newCinemaMovies.includes(movie.id)
         );
         onMoviesUpdated(updatedMovieObjects);
       }
 
-      // Force re-render by updating local state
-      setTimeout(() => {
-        setCinemaMovies(prev => [...prev]);
-        setActionLoading(false);
-      }, 100);
+      showSuccess('Deleted movie from cinema successfully');
     } catch (error) {
       console.error('Error removing movie from cinema:', error);
       showError('Cannot remove movie from cinema');
+    } finally {
       setActionLoading(false);
     }
   };

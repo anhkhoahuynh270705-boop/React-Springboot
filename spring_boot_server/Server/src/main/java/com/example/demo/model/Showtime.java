@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -15,8 +16,11 @@ import lombok.Data;
 public class Showtime {
     @Id
     private String id;
+    @Indexed
     private String movieId;
     private String movieName; 
+
+    @Indexed
     private String cinemaId; 
     private String cinemaName;
     private String cinemaAddress;
@@ -27,6 +31,7 @@ public class Showtime {
     private String totalRows;
     private String totalCols;
     
+    @Indexed
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime startTime;
     

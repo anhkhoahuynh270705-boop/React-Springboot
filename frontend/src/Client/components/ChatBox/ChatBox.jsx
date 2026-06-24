@@ -18,6 +18,14 @@ const ChatBox = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  const quickQuestions = [
+    { text: t("What movies are playing today?"), value: t("What movies are playing today?") },
+    { text: t("Suggest some action movies"), value: t("Suggest some action movies") },
+    { text: t("Suggest some horror movies"), value: t("Suggest some horror movies") },
+    { text: t("How to book movie tickets?"), value: t("How to book movie tickets?") },
+    { text: t("What are the ticket prices?"), value: t("What are the ticket prices?") }
+  ];
+
   // Scroll down
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -44,51 +52,56 @@ const ChatBox = () => {
   // Check if message is movie-related
   const isMovieRelated = (text) => {
     const movieKeywords = [
-      'phim', 'movie', 'film', 'gợi ý', 'suggest', 'recommend', 
-      'xem gì', 'phim hay', 'chiếu rạp', 'cinema', 'thể loại','types', 
+      'phim', 'movie', 'film', 'gợi ý', 'suggest', 'recommend',
+      'xem gì', 'phim hay', 'chiếu rạp', 'cinema', 'thể loại', 'types',
       'genre', 'diễn viên', 'actor', 'đạo diễn', 'director'
     ];
     const lowerText = text.toLowerCase();
     return movieKeywords.some(keyword => lowerText.includes(keyword));
   };
 
-  // Send message
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  // Send message text
+  const sendMessageText = async (text) => {
+    if (!text.trim() || isLoading) return;
 
-    const userMessage = { sender: "user", message: input };
+    const userMessage = { sender: "user", message: text };
     setMessages((prev) => [...prev, userMessage]);
-    const currentInput = input;
-    setInput("");
     setIsLoading(true);
 
     try {
       // Check if query is movie-related
-      if (isMovieRelated(currentInput)) {
-        const response = await sendMessageWithMovies(currentInput, userId);
-        const botMessage = { 
-          sender: "bot", 
+      if (isMovieRelated(text)) {
+        const response = await sendMessageWithMovies(text, userId);
+        const botMessage = {
+          sender: "bot",
           message: response.reply || response.message || "",
           movies: response.movies || null
         };
         setMessages((prev) => [...prev, botMessage]);
       } else {
-        const reply = await sendMessage(currentInput, userId);
+        const reply = await sendMessage(text, userId);
         const botMessage = { sender: "bot", message: reply };
         setMessages((prev) => [...prev, botMessage]);
       }
     } catch (err) {
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", message: "Cannot connect to server." },
+        { sender: "bot", message: t("Cannot connect to server.") },
       ]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Send message from input
+  const handleSend = () => {
+    if (!input.trim() || isLoading) return;
+    sendMessageText(input);
+    setInput("");
+  };
+
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") 
+    if (e.key === "Enter")
       handleSend();
   };
 
@@ -124,15 +137,30 @@ const ChatBox = () => {
               <div className="chat-welcome">
                 <MessageCircle size={40} strokeWidth={1.5} className="chat-welcome-icon" aria-hidden />
                 <p>{t('Hi, I\'m HAK cinema\'s Chat Assistant. How can I help you today?')}</p>
-                <p className="welcome-hint">Try asking: "Suggest action movies" or "What movies are playing?"</p>
+                <p className="welcome-hint">
+                  {t('Try asking:')} "{t('Suggest some action movies')}" {t('or')} "{t('What movies are playing today?')}"
+                </p>
+                <div className="welcome-quick-questions">
+                  {quickQuestions.map((q, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      className="quick-question-btn"
+                      onClick={() => sendMessageText(q.value)}
+                      disabled={isLoading}
+                    >
+                      <span>{q.text}</span>
+                      <span className="arrow-icon">→</span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
             {messages.map((msg, index) => (
               <div key={index} className="message-wrapper">
                 <div
-                  className={`chat-message ${
-                    msg.sender === "user" ? "user-msg" : "bot-msg"
-                  }`}
+                  className={`chat-message ${msg.sender === "user" ? "user-msg" : "bot-msg"
+                    }`}
                 >
                   {msg.message && <div className="message-text">{msg.message}</div>}
                   {msg.movies && msg.movies.length > 0 && (
@@ -154,6 +182,21 @@ const ChatBox = () => {
             )}
             <div ref={messagesEndRef} />
           </div>
+
+          {messages.length > 0 && !isLoading && (
+            <div className="chat-quick-suggestions">
+              {quickQuestions.map((q, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className="quick-suggestion-pill"
+                  onClick={() => sendMessageText(q.value)}
+                >
+                  {q.text}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="chat-input">
             <input

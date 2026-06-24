@@ -204,11 +204,27 @@ const ZaloPayPayment = () => {
           ) : (
             <div className="zpay-qr-ph">Generating QR...</div>
           )}
+          {qrUrl && (
+            <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', textAlign: 'center' }}>
+              ⚠️ Quét mã QR này bằng <strong>ứng dụng ZaloPay</strong> (không phải camera điện thoại).
+              <br />Hoặc nhấn nút <strong>"Thanh toán ZaloPay"</strong> bên dưới.
+            </p>
+          )}
         </div>
 
         <div className="zpay-actions">
           <button className="zpay-btn" onClick={handleBack}>Back</button>
-          <button className="zpay-btn zpay-primary" onClick={handleOpenZaloPay} disabled={!payUrl}>Pay with ZaloPay</button>
+          {payUrl && (
+            <a
+              href={payUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="zpay-btn zpay-primary"
+              style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}
+            >
+              Thanh toán ZaloPay
+            </a>
+          )}
         </div>
 
         {status === 'PENDING' && (

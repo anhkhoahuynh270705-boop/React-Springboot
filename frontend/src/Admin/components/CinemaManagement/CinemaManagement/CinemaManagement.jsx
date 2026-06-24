@@ -1,4 +1,4 @@
-import { getAllCinemas, createCinema, updateCinema, deleteCinema, getCinemaMovieCounts } from '../../../../services/cinemaService';
+import { getAllCinemas, createCinema, updateCinema, deleteCinema } from '../../../../services/cinemaService';
 import { Eye, Edit, Trash2, Plus, Search, RefreshCw, MapPin, Phone, Mail, Clock, Users, Star, Film } from 'lucide-react';
 import React from 'react';
 import { useState, useEffect, useCallback } from 'react';
@@ -23,21 +23,23 @@ const CinemaManagement = () => {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showMoviesModal, setShowMoviesModal] = useState(false);
   const [selectedCinema, setSelectedCinema] = useState(null);
-  const [cinemaMovies, setCinemaMovies] = useState({}); 
+  const [cinemaMovies, setCinemaMovies] = useState({});
   const [movieCounts, setMovieCounts] = useState({});
   const { showSuccess, showError, toasts, removeToast } = useToast();
 
   const fetchCinemas = useCallback(async () => {
     try {
       setLoading(true);
-      const [cinemasData, movieCountsData] = await Promise.all([
-        getAllCinemas(),
-        getCinemaMovieCounts()
-      ]);
-      
+      const cinemasData = await getAllCinemas();
+
+      const counts = {};
+      cinemasData.forEach(c => {
+        counts[c.id] = c.movieIds ? c.movieIds.length : 0;
+      });
+
       setCinemas(cinemasData);
       setFilteredCinemas(cinemasData);
-      setMovieCounts(movieCountsData);
+      setMovieCounts(counts);
     } catch (error) {
       console.error('Error fetching cinemas:', error);
       showError(t('Cannot load cinema list'));
@@ -88,7 +90,7 @@ const CinemaManagement = () => {
   const handleUpdateCinema = async (cinemaData) => {
     try {
       const { movies: _movies, movieIds: _movieIds, ...updateData } = cinemaData;
-      
+
       const updatedCinema = await updateCinema(selectedCinema.id, updateData);
       const currentMovies = cinemaMovies[selectedCinema.id] || selectedCinema.movies || [];
       const cinemaWithMovies = {
@@ -96,8 +98,8 @@ const CinemaManagement = () => {
         movies: currentMovies,
         movieIds: currentMovies.map(movie => movie.id)
       };
-      
-      setCinemas(prev => prev.map(cinema => 
+
+      setCinemas(prev => prev.map(cinema =>
         cinema.id === selectedCinema.id ? cinemaWithMovies : cinema
       ));
       setShowEditModal(false);
@@ -148,27 +150,34 @@ const CinemaManagement = () => {
   };
 
   const handleMoviesUpdated = (updatedMovies) => {
-    // Update cinema movies
     if (selectedCinema && updatedMovies) {
+      const updatedMovieIds = updatedMovies.map(movie => movie.id);
+
       setCinemaMovies(prev => ({
         ...prev,
         [selectedCinema.id]: updatedMovies
       }));
-      
+
       // Update movie counts
       setMovieCounts(prev => ({
         ...prev,
         [selectedCinema.id]: updatedMovies.length
       }));
-      
-      // Update selectedCinema with new movies
+
+      // Update selectedCinema 
       setSelectedCinema(prev => ({
         ...prev,
         movies: updatedMovies,
-        movieIds: updatedMovies.map(movie => movie.id)
+        movieIds: updatedMovieIds
       }));
+
+      // Update the cinema card in the main list
+      setCinemas(prev => prev.map(cinema =>
+        cinema.id === selectedCinema.id
+          ? { ...cinema, movies: updatedMovies, movieIds: updatedMovieIds }
+          : cinema
+      ));
     }
-    fetchCinemas();
   };
 
   const formatStatus = (status) => {
@@ -207,7 +216,7 @@ const CinemaManagement = () => {
         </div>
         <div className={styles.headerRight}>
           <div className={styles.searchContainer}>
-                <MapPin className={styles.searchIcon} size={20} />
+            <MapPin className={styles.searchIcon} size={20} />
             <select
               value={selectedCity}
               onChange={(e) => setSelectedCity(e.target.value)}
@@ -221,7 +230,7 @@ const CinemaManagement = () => {
             </select>
           </div>
           <div className={styles.searchContainer}>
-                <Search className={styles.searchIcon} size={20} />
+            <Search className={styles.searchIcon} size={20} />
             <input
               type="text"
               placeholder={t('Search cinemas...')}
@@ -252,8 +261,8 @@ const CinemaManagement = () => {
           <div key={cinema.id} className={styles.cinemaCard}>
             <div className={styles.cinemaImage}>
               {cinema.imageUrl ? (
-                <img 
-                  src={cinema.imageUrl} 
+                <img
+                  src={cinema.imageUrl}
                   alt={cinema.name}
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -261,35 +270,35 @@ const CinemaManagement = () => {
                   }}
                 />
               ) : null}
-              <div 
+              <div
                 className={styles.placeholderImage}
                 style={{ display: cinema.imageUrl ? 'none' : 'flex' }}
               >
                 <Film size={40} />
               </div>
-              <div 
+              <div
                 className={styles.ticketSalesBadge}
                 style={{ backgroundColor: getStatusColor(cinema.status) }}
               >
                 {formatStatus(cinema.status)}
               </div>
             </div>
-            
+
             <div className={styles.cinemaContent}>
               <h3 className={styles.cinemaName}>{cinema.name}</h3>
-              
+
               <div className={styles.cinemaInfo}>
                 <div className={styles.infoItem}>
-                <MapPin size={16} />
+                  <MapPin size={16} />
                   <span>{cinema.address}</span>
                 </div>
                 <div className={styles.infoItem}>
-                <MapPin size={16} />
+                  <MapPin size={16} />
                   <span>{cinema.city}</span>
                 </div>
                 {cinema.phone && (
                   <div className={styles.infoItem}>
-                <Phone size={16} />
+                    <Phone size={16} />
                     <span>{cinema.phone}</span>
                   </div>
                 )}
@@ -303,15 +312,15 @@ const CinemaManagement = () => {
 
               <div className={styles.cinemaStats}>
                 <div className={styles.statItem}>
-                <Users size={16} />
+                  <Users size={16} />
                   <span>{cinema.totalSeats || 0} {t('seats')}</span>
                 </div>
                 <div className={styles.statItem}>
-                <Clock size={16} />
+                  <Clock size={16} />
                   <span>{cinema.totalRooms || 0} {t('rooms')}</span>
                 </div>
                 <div className={styles.statItem}>
-                <Star size={16} />
+                  <Star size={16} />
                   <span>{movieCounts[cinema.id] || cinema.movieIds?.length || 0} {t('movies')}</span>
                 </div>
               </div>
@@ -368,7 +377,7 @@ const CinemaManagement = () => {
 
       {filteredCinemas.length === 0 && (
         <div className={styles.emptyState}>
-                <MapPin size={64} />
+          <MapPin size={64} />
           <h3>{t('No cinemas found')}</h3>
         </div>
       )}

@@ -3,6 +3,8 @@ package com.example.demo.model;
 import java.time.LocalDateTime;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -12,14 +14,22 @@ import lombok.Data;
 
 @Data
 @Document(collection = "tickets")
+@CompoundIndexes({
+    @CompoundIndex(name = "idx_userId_status", def = "{'userId': 1, 'status': 1}")
+})
 public class Ticket {
     @Id
     private String id;
     
+    @Indexed 
     private String userId;
+    
     private String userName;
     private String userEmail;
+
+    @Indexed
     private String showtimeId;
+
     private String seatId;
     private String seatNumber;
     private String movieId;

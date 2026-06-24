@@ -292,7 +292,6 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
       setNotifications([]);
       return;
     }
-
     const fetchNotifications = async () => {
       try {
         setNotificationLoading(true);

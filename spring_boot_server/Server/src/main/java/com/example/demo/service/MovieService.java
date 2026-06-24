@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Article;
@@ -23,6 +24,7 @@ public class MovieService {
 
     private final ArticleRepository articleRepository;
 
+    @Cacheable(value = "movies")
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }

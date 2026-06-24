@@ -27,7 +27,7 @@ public class SeatLockService {
     private final SeatRepository seatRepository;
     private final SimpMessagingTemplate messagingTemplate;
 
-    private static final Duration LOCK_TTL = Duration.ofMinutes(5);
+    private static final Duration LOCK_TTL = Duration.ofMinutes(10);
 
     public void lockSeats(String showtimeId, List<String> seatIds, String userId) {
         if (showtimeId == null || seatIds == null || seatIds.isEmpty() || userId == null) {
@@ -104,8 +104,10 @@ public class SeatLockService {
 
     public void validateSeatsLockedByUser(String showtimeId, List<String> seatIds, String userId) {
         for (String seatId : seatIds) {
-            String owner = redisTemplate.opsForValue().get(SeatLockUtils.lockKey(showtimeId, seatId));
+            String key = SeatLockUtils.lockKey(showtimeId, seatId);
+            String owner = redisTemplate.opsForValue().get(key);
 
+            System.out.println("[SeatLock] Validating lock for seat: " + seatId + ", user: " + userId + ", owner in Redis: " + owner);
             if (!userId.equals(owner)) {
                 throw new BadRequestException("Seat lock expired or not owned by user");
             }

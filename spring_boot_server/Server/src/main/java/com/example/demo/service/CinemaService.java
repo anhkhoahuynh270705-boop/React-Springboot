@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Cinema;
@@ -20,6 +22,7 @@ public class CinemaService {
 
     private final MovieCinemaService movieCinemaService;
 
+    @Cacheable(value = "cinemas")
     public List<Cinema> getAllCinemas() {
         List<Cinema> cinemas = cinemaRepository.findAll();
         for (Cinema cinema : cinemas) {
@@ -56,6 +59,7 @@ public class CinemaService {
         return cinemaRepository.findByMovieIdsContaining(movieId);
     }
 
+    @CacheEvict(value = "cinemas", allEntries = true)
     public Cinema createCinema(Cinema cinema) {
         if (cinema.getStatus() == null || cinema.getStatus().trim().isEmpty()) {
             cinema.setStatus("Selling Tickets");
@@ -70,15 +74,18 @@ public class CinemaService {
         return cinemaRepository.save(cinema);
     }
 
+    @CacheEvict(value = "cinemas", allEntries = true)
     public Cinema updateCinema(String id, Cinema cinema) {
         cinema.setId(id);
         return cinemaRepository.save(cinema);
     }
 
+    @CacheEvict(value = "cinemas", allEntries = true)
     public void deleteCinema(String id) {
         cinemaRepository.deleteById(id);
     }
 
+    @CacheEvict(value = "cinemas", allEntries = true)
     public Cinema addMovieToCinema(String cinemaId, String movieId) {
         boolean success = movieCinemaService.addMovieToCinema(movieId, cinemaId);
         if (success) {
@@ -90,6 +97,7 @@ public class CinemaService {
         return null;
     }
 
+    @CacheEvict(value = "cinemas", allEntries = true)
     public Cinema removeMovieFromCinema(String cinemaId, String movieId) {
         boolean success = movieCinemaService.removeMovieFromCinema(movieId, cinemaId);
         if (success) {

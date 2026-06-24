@@ -117,11 +117,11 @@ const MovieDetailPage = () => {
 
 
   // Fetch community reviews from API
-  const fetchCommunityReviews = async () => {
+  const fetchCommunityReviews = async (showSpinner = true) => {
     if (!movieId) return;
     
     try {
-      setReviewsLoading(true);
+      if (showSpinner) setReviewsLoading(true);
       setReviewsError(null);
       const reviews = await getReviewsByMovieId(movieId);
      
@@ -140,10 +140,36 @@ const MovieDetailPage = () => {
       setCommunityReviews(transformedReviews);
     } catch (error) {
       console.error(t('Error fetching community reviews:'), error);
-      setReviewsError(t('Unable to load community reviews'));
+      if (showSpinner) setReviewsError(t('Unable to load community reviews'));
     } finally {
-      setReviewsLoading(false);
+      if (showSpinner) setReviewsLoading(false);
     }
+  };
+
+  // Handle local optimistic update when a new review is added
+  const handleReviewAdded = (newReview) => {
+    if (!newReview) {
+      fetchCommunityReviews(false);
+      return;
+    }
+    
+    const transformed = {
+      id: newReview.id,
+      userId: newReview.userId,
+      userName: newReview.userName,
+      rating: newReview.rating,
+      timeAgo: t('Just now'),
+      comment: newReview.comment,
+      likes: newReview.likes || 0,
+      dislikes: newReview.dislikes || 0,
+      avatar: newReview.userAvatar || getCachedAvatar(newReview.userName)
+    };
+    
+    // Add to the top of list immediately
+    setCommunityReviews(prev => [transformed, ...prev]);
+    
+    // Fetch from server in background silently to ensure full consistency
+    fetchCommunityReviews(false);
   };
 
   // Fetch news articles
@@ -362,20 +388,42 @@ const MovieDetailPage = () => {
   // Handle like review
   const handleLikeReview = async (reviewId) => {
     try {
-      await likeReview(reviewId);
-      fetchCommunityReviews();
+      // Optimistic update: increment local count immediately for instantaneous feel
+      setCommunityReviews(prev =>
+        prev.map(r => r.id === reviewId ? { ...r, likes: (r.likes || 0) + 1 } : r)
+      );
+
+      const updatedReview = await likeReview(reviewId);
+      
+      // Update state with actual backend response data
+      setCommunityReviews(prev =>
+        prev.map(r => r.id === reviewId ? { ...r, likes: updatedReview.likes, dislikes: updatedReview.dislikes } : r)
+      );
     } catch (error) {
       console.error(t('Error liking review:'), error);
+      // Rollback on error
+      fetchCommunityReviews(false);
     }
   };
 
   // Handle dislike review
   const handleDislikeReview = async (reviewId) => {
     try {
-      await dislikeReview(reviewId);
-      fetchCommunityReviews();
+      // Optimistic update: increment local count immediately
+      setCommunityReviews(prev =>
+        prev.map(r => r.id === reviewId ? { ...r, dislikes: (r.dislikes || 0) + 1 } : r)
+      );
+
+      const updatedReview = await dislikeReview(reviewId);
+      
+      // Update state with actual backend response data
+      setCommunityReviews(prev =>
+        prev.map(r => r.id === reviewId ? { ...r, likes: updatedReview.likes, dislikes: updatedReview.dislikes } : r)
+      );
     } catch (error) {
       console.error(t('Error disliking review:'), error);
+      // Rollback on error
+      fetchCommunityReviews(false);
     }
   };
 
@@ -709,7 +757,7 @@ const MovieDetailPage = () => {
               <ReviewForm 
                 ref={reviewFormRef}
                 movieId={movieId} 
-                onReviewAdded={fetchCommunityReviews}
+                onReviewAdded={handleReviewAdded}
               />
 
               {/* Community Reviews */}
@@ -813,7 +861,7 @@ const MovieDetailPage = () => {
             {/* Review Form */}
             <ReviewForm 
               movieId={movieId} 
-              onReviewAdded={fetchCommunityReviews}
+              onReviewAdded={handleReviewAdded}
             />
             
             {/* All Reviews */}

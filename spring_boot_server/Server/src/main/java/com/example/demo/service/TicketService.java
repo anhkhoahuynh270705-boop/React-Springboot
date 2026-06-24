@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,14 +22,18 @@ import com.example.demo.repository.UserRepository;
 import com.example.demo.util.DateUtils;
 import com.example.demo.util.OrderIdGenerator;
 
+import com.example.demo.dto.BookingConfirmationEmailDto;
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class TicketService {
     private final TicketRepository ticketRepository;
-    
+
     private final NotificationService notificationService;
-    
+
+    private final EmailService emailService;
+
     private final UserRepository userRepository;
 
     private final SeatRepository seatRepository;
@@ -36,7 +41,7 @@ public class TicketService {
     private final SeatLockService seatLockService;
 
     public List<Ticket> getAllTickets() {
-        
+
         return ticketRepository.findAll();
     }
 
@@ -58,7 +63,7 @@ public class TicketService {
         if (ticket.getQrCode() == null || ticket.getQrCode().isEmpty()) {
             ticket.setQrCode(OrderIdGenerator.qrCode());
         }
-        
+
         // Set default values
         if (ticket.getStatus() == null || ticket.getStatus().isEmpty()) {
             ticket.setStatus("confirmed");
@@ -69,7 +74,7 @@ public class TicketService {
         if (!ticket.isRefundable()) {
             ticket.setRefundable(true);
         }
-        
+
         // Save user info into ticket
         if (ticket.getUserId() != null) {
             Optional<User> userOpt = userRepository.findById(ticket.getUserId());
@@ -92,24 +97,9 @@ public class TicketService {
                 .filter(id -> !id.isBlank())
                 .toList();
     }
+
     @Transactional
     public Ticket bookTicket(Ticket ticket) {
-        if (ticket.getUserId() == null || ticket.getUserId().isEmpty()) {
-            throw new BadRequestException("User ID is required");
-        }
-        if (ticket.getShowtimeId() == null || ticket.getShowtimeId().isEmpty()) {
-            throw new BadRequestException("Showtime ID is required");
-        }
-        if (ticket.getMovieId() == null || ticket.getMovieId().isEmpty()) {
-            throw new BadRequestException("Movie ID is required");
-        }
-        if (ticket.getSeatId() == null || ticket.getSeatId().isEmpty()) {
-            throw new BadRequestException("Seat ID is required");
-        }
-        if (ticket.getSeatNumber() == null || ticket.getSeatNumber().isEmpty()) {
-            throw new BadRequestException("Seat number is required");
-        }
-
         List<String> seatIds = splitSeatIds(ticket.getSeatId());
         if (seatIds.isEmpty()) {
             throw new BadRequestException("Seat IDs are required");
@@ -118,8 +108,7 @@ public class TicketService {
         seatLockService.validateSeatsLockedByUser(
                 ticket.getShowtimeId(),
                 seatIds,
-                ticket.getUserId()
-        );
+                ticket.getUserId());
 
         for (String seatId : seatIds) {
             Seat seat = seatRepository.findById(seatId)
@@ -157,26 +146,25 @@ public class TicketService {
         }
 
         for (String seatId : seatIds) {
-        Seat seat = seatRepository.findById(seatId)
-                .orElseThrow(() -> new ResourceNotFoundException("Seat", "id", seatId));
+            Seat seat = seatRepository.findById(seatId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Seat", "id", seatId));
 
-        seat.setBooked(true);
-        seat.setBookedBy(ticket.getUserId());
-        seat.setBookedAt(DateUtils.nowIso());
+            seat.setBooked(true);
+            seat.setBookedBy(ticket.getUserId());
+            seat.setBookedAt(DateUtils.nowIso());
 
-        seatRepository.save(seat);
+            seatRepository.save(seat);
+        }
+
+        Ticket savedTicket = ticketRepository.save(ticket);
+
+        seatLockService.releaseSeats(
+                ticket.getShowtimeId(),
+                seatIds,
+                ticket.getUserId());
+        return savedTicket;
     }
 
-    Ticket savedTicket = ticketRepository.save(ticket);
-
-    seatLockService.releaseSeats(
-            ticket.getShowtimeId(),
-            seatIds,
-            ticket.getUserId()
-    );
-
-    return savedTicket;
-}
     public Ticket updateTicket(String id, Ticket ticket) {
         ticket.setId(id);
         return ticketRepository.save(ticket);
@@ -193,11 +181,11 @@ public class TicketService {
         if (!"confirmed".equals(ticket.getStatus())) {
             throw new IllegalStateException("Only confirmed tickets can be cancelled");
         }
-        
+
         ticket.setStatus("cancelled");
         ticket.setCancelledAt(LocalDateTime.now());
         ticket.setCancellationReason(reason != null ? reason : "User cancelled");
-        
+
         return ticketRepository.save(ticket);
     }
 
@@ -208,10 +196,10 @@ public class TicketService {
         if (!"confirmed".equals(ticket.getStatus())) {
             throw new IllegalStateException("Only confirmed tickets can be used");
         }
-        
+
         ticket.setStatus("used");
         ticket.setUsedAt(LocalDateTime.now());
-        
+
         return ticketRepository.save(ticket);
     }
 
@@ -225,16 +213,18 @@ public class TicketService {
 
     public Object getUserTicketStats(String userId) {
         List<Ticket> tickets = ticketRepository.findByUserId(userId);
-        
+
         return new Object() {
             @SuppressWarnings("unused")
             public final long totalTickets = tickets.size();
             @SuppressWarnings("unused")
-            public final long confirmedTickets = tickets.stream().filter(t -> "confirmed".equals(t.getStatus())).count();
+            public final long confirmedTickets = tickets.stream().filter(t -> "confirmed".equals(t.getStatus()))
+                    .count();
             @SuppressWarnings("unused")
             public final long usedTickets = tickets.stream().filter(t -> "used".equals(t.getStatus())).count();
             @SuppressWarnings("unused")
-            public final long cancelledTickets = tickets.stream().filter(t -> "cancelled".equals(t.getStatus())).count();
+            public final long cancelledTickets = tickets.stream().filter(t -> "cancelled".equals(t.getStatus()))
+                    .count();
             @SuppressWarnings("unused")
             public final double totalSpent = tickets.stream().mapToDouble(Ticket::getPrice).sum();
             @SuppressWarnings("unused")
@@ -268,15 +258,15 @@ public class TicketService {
         if (!"cancelled".equals(ticket.getStatus())) {
             throw new IllegalStateException("Only cancelled tickets can be refunded");
         }
-        
+
         if (!ticket.isRefundable()) {
             throw new IllegalStateException("Ticket is not refundable");
         }
-        
+
         ticket.setRefundAmount(refundAmount);
         ticket.setRefundedAt(LocalDateTime.now());
         ticket.setRefundReason(refundReason);
-        
+
         return ticketRepository.save(ticket);
     }
 
@@ -288,11 +278,11 @@ public class TicketService {
 
     public Object getUserRefundStats(String userId) {
         List<Ticket> tickets = ticketRepository.findByUserId(userId);
-        
+
         List<Ticket> refundedTickets = tickets.stream()
                 .filter(ticket -> ticket.getRefundedAt() != null)
                 .collect(Collectors.toList());
-        
+
         return new Object() {
             @SuppressWarnings("unused")
             public final long totalRefundedTickets = refundedTickets.size();
@@ -300,8 +290,9 @@ public class TicketService {
                     .mapToDouble(Ticket::getRefundAmount)
                     .sum();
             @SuppressWarnings("unused")
-            public final double averageRefundAmount = refundedTickets.size() > 0 ? 
-                    totalRefundAmount / refundedTickets.size() : 0;
+            public final double averageRefundAmount = refundedTickets.size() > 0
+                    ? totalRefundAmount / refundedTickets.size()
+                    : 0;
         };
     }
 
@@ -309,7 +300,7 @@ public class TicketService {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", id));
         ticket.setPaymentMethod(paymentMethod);
-        
+
         return ticketRepository.save(ticket);
     }
 
@@ -325,6 +316,7 @@ public class TicketService {
                 .collect(Collectors.toList());
     }
 
+    // Admin role
     public Ticket approveTicket(String id) {
         Ticket ticket = ticketRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket", "id", id));
@@ -333,15 +325,16 @@ public class TicketService {
         }
 
         ticket.setStatus("confirmed");
-        
+
         Ticket updatedTicket = ticketRepository.save(ticket);
-        
+
         try {
             Notification notification = new Notification();
             notification.setUserId(ticket.getUserId());
             notification.setTitle("Ticket Approved");
-            notification.setMessage("Ticket " + (ticket.getTicketNumber() != null ? ticket.getTicketNumber() : ticket.getId()) +
-                " for movie \"" + ticket.getMovieTitle() + "\" has been approved by admin and ready to use.");
+            notification.setMessage("Ticket "
+                    + (ticket.getTicketNumber() != null ? ticket.getTicketNumber() : ticket.getId()) +
+                    " for movie \"" + ticket.getMovieTitle() + "\" has been approved by admin and ready to use.");
             notification.setType("ticket_approved");
             notification.setRelatedType("ticket");
             notification.setIsRead(false);
@@ -353,7 +346,36 @@ public class TicketService {
         } catch (Exception notificationError) {
             System.err.println("Error creating notification: " + notificationError.getMessage());
         }
-        
+
+        // Use Multi-threading to send email to user
+        if (ticket.getUserEmail() != null && !ticket.getUserEmail().isBlank()) {
+            BookingConfirmationEmailDto emailDto = BookingConfirmationEmailDto.builder()
+                    .to(ticket.getUserEmail())
+                    .userName(ticket.getUserName() != null ? ticket.getUserName() : "Customer")
+                    .ticketNumber(ticket.getTicketNumber() != null ? ticket.getTicketNumber() : ticket.getId())
+                    .movieTitle(ticket.getMovieTitle())
+                    .moviePoster(ticket.getMovieThumbnail())
+                    .cinemaName(ticket.getCinemaName())
+                    .cinemaAddress(ticket.getCinemaAddress())
+                    .showDate(ticket.getShowDate())
+                    .showTime(ticket.getShowTime())
+                    .seatNumber(ticket.getSeatNumber())
+                    .paymentMethod(ticket.getPaymentMethod() != null ? ticket.getPaymentMethod() : "N/A")
+                    .totalPrice(ticket.getPrice())
+                    .qrCode(ticket.getQrCode() != null ? ticket.getQrCode() : ticket.getTicketNumber())
+                    .build();
+
+            // Asynchronously process to send email
+            CompletableFuture.runAsync(() -> {
+                try {
+                    emailService.sendBookingConfirmationEmail(emailDto);
+                    System.out.println("[Email] Booking confirmation sent to: " + emailDto.getTo());
+                } catch (Exception emailError) {
+                    System.err.println("[Email] Failed to send booking confirmation: " + emailError.getMessage());
+                }
+            });
+        }
+
         return updatedTicket;
     }
 }

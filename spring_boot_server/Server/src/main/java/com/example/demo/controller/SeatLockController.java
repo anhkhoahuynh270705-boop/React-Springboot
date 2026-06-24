@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+
 import com.example.demo.dto.SeatLockRequest;
 import com.example.demo.service.SeatLockService;
 import com.example.demo.util.ResponseUtils;
@@ -25,7 +27,7 @@ public class SeatLockController {
 
     // Lock seats
     @PostMapping("/lock")
-    public ResponseEntity<Map<String, Object>> lockSeats(@RequestBody SeatLockRequest request) {
+    public ResponseEntity<Map<String, Object>> lockSeats(@Valid @RequestBody SeatLockRequest request) {
         seatLockService.lockSeats(
                 request.getShowtimeId(),
                 request.getSeatIds(),
@@ -36,7 +38,7 @@ public class SeatLockController {
 
     // Release seat locks
     @PostMapping("/release")
-    public ResponseEntity<Map<String, Object>> releaseSeats(@RequestBody SeatLockRequest request) {
+    public ResponseEntity<Map<String, Object>> releaseSeats(@Valid @RequestBody SeatLockRequest request) {
         seatLockService.releaseSeats(
                 request.getShowtimeId(),
                 request.getSeatIds(),

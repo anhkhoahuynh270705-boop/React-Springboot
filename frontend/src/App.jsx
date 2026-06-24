@@ -44,7 +44,6 @@ import ResetPasswordPage from './Client/pages/ResetPasswordPage/ResetPasswordPag
 import GithubLoginSuccess from './Client/pages/GithubLoginSuccess/GithubLoginSuccess';
 import PaymentSuccess from './Client/pages/PaymentSuccessPage/PaymentSuccess';
 import FloatingContactLinks from './Client/components/FloatingContactLinks/FloatingContactLinks';
-
 function ProtectedRoute({ children }) {
   return isAuthenticated() ? children : <Navigate to="/" replace />;
 }
