@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Article;
 import com.example.demo.model.Movie;
+import com.example.demo.model.MovieIndex;
 import com.example.demo.repository.ArticleRepository;
+import com.example.demo.repository.MovieElasticsearchRepository;
 import com.example.demo.repository.MovieRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -19,10 +25,10 @@ import lombok.RequiredArgsConstructor;
 public class MovieService {
 
     private final MovieRepository movieRepository;
-
     private final MovieCinemaService movieCinemaService;
-
     private final ArticleRepository articleRepository;
+    private final MovieElasticsearchRepository movieElasticsearchRepository;
+    private final MovieSyncService movieSyncService;
 
     @Cacheable(value = "movies")
     public List<Movie> getAllMovies() {
@@ -37,7 +43,9 @@ public class MovieService {
         if (movie.getTitle() == null || movie.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Title is required");
         }
-        return movieRepository.save(movie);
+        Movie savedMovie = movieRepository.save(movie);
+        movieSyncService.syncSave(savedMovie);
+        return savedMovie;
     }
 
     public Movie updateMovie(String id, Movie movie) {
@@ -45,7 +53,9 @@ public class MovieService {
             throw new IllegalArgumentException("Movie not found");
         }
         movie.setId(id);
-        return movieRepository.save(movie);
+        Movie savedMovie = movieRepository.save(movie);
+        movieSyncService.syncSave(savedMovie);
+        return savedMovie;
     }
 
     public boolean deleteMovie(String id) {
@@ -53,21 +63,39 @@ public class MovieService {
             return false;
         }
         movieRepository.deleteById(id);
+        movieSyncService.syncDelete(id);
         return true;
     }
 
     public List<Movie> searchMoviesByTitle(String q) {
-        List<Movie> allMovies = movieRepository.findAll();
-        String searchQuery = q.toLowerCase();
-        return allMovies.stream()
-            .filter(movie -> {
-                return (movie.getTitle() != null && movie.getTitle().toLowerCase().contains(searchQuery)) ||
-                       (movie.getGenre() != null && movie.getGenre().toLowerCase().contains(searchQuery)) ||
-                       (movie.getDirector() != null && movie.getDirector().toLowerCase().contains(searchQuery)) ||
-                       (movie.getActors() != null && movie.getActors().toLowerCase().contains(searchQuery)) ||
-                       (movie.getName() != null && movie.getName().toLowerCase().contains(searchQuery)) ||
-                       (movie.getMovieName() != null && movie.getMovieName().toLowerCase().contains(searchQuery));
-            })
+        if (q == null || q.isBlank()) {
+            return List.of();
+        }
+
+        String qNoSign = MovieSyncService.removeDiacritics(q);
+
+        // 1. Fetch matching index documents from Elasticsearch
+        List<MovieIndex> elasticResults = movieElasticsearchRepository
+            .findByTitleContainingIgnoreCaseOrTitleNoSignContainingIgnoreCaseOrDirectorContainingIgnoreCaseOrDirectorNoSignContainingIgnoreCaseOrActorsContainingIgnoreCaseOrActorsNoSignContainingIgnoreCase(
+                q, qNoSign, q, qNoSign, q, qNoSign
+            );
+
+        if (elasticResults.isEmpty()) {
+            return List.of();
+        }
+
+        // 2. Fetch the rich MongoDB documents corresponding to these IDs
+        List<String> ids = elasticResults.stream().map(MovieIndex::getId).toList();
+        List<Movie> mongoMovies = movieRepository.findAllById(ids);
+
+        // 3. Map to keep fast lookup by ID
+        Map<String, Movie> movieMap = mongoMovies.stream()
+            .collect(Collectors.toMap(Movie::getId, movie -> movie));
+
+        // 4. Sort and return results in the order returned by Elasticsearch
+        return ids.stream()
+            .map(movieMap::get)
+            .filter(Objects::nonNull)
             .toList();
     }
 

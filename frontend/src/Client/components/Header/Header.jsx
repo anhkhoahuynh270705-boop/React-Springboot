@@ -265,7 +265,7 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
     setHeaderAvatar(user);
   }, [user]);
 
-  // Fetch unread notification count (initial load + fallback polling)
+  // Fetch unread notification count
   useEffect(() => {
     const fetchNotificationCount = async () => {
       if (user?.id) {

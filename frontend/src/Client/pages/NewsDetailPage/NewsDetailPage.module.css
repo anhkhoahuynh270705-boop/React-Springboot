@@ -6,12 +6,10 @@
   padding: 32px 0 70px;
 
   background:
-  linear-gradient(
-    180deg,
-    rgba(248, 250, 252, 0.15),
-    rgba(241, 245, 249, 0.35)
-  ),
-  url("https://www.screentest.xyz/wp-content/uploads/2023/04/BB__9147.jpg");
+    linear-gradient(180deg,
+      rgba(248, 250, 252, 0.15),
+      rgba(241, 245, 249, 0.35)),
+    url("https://www.screentest.xyz/wp-content/uploads/2023/04/BB__9147.jpg");
 
   background-size: cover;
   background-position: center;
@@ -109,9 +107,8 @@
 }
 
 .cnewsd-article-category {
-  background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+  background: #1d4ed8;
   color: white;
-
   padding: 8px 16px;
   border-radius: 999px;
 

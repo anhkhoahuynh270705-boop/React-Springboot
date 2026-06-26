@@ -77,3 +77,29 @@ services:
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     restart: always
+
+  # Elastic search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    container_name: elasticsearch
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - ELASTIC_PASSWORD=27072005
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    restart: always
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - cinema-network
+
+volumes:
+  elasticsearch-data:
+
+networks:
+  cinema-network:
+    driver: bridge
+      

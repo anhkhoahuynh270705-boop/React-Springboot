@@ -343,19 +343,14 @@
   top: 16px;
   right: 16px;
   z-index: 2;
-
-  background: linear-gradient(135deg, #ef4444, #f97316);
+  background: #ef4444;
   color: white;
-
   padding: 7px 13px;
   border-radius: 999px;
-
   font-size: 0.72rem;
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-
-  box-shadow: 0 14px 28px rgba(239, 68, 68, 0.35);
 }
 
 .cnews-news-card-content {
@@ -373,9 +368,8 @@
 }
 
 .cnews-news-category {
-  background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+  background: #1d4ed8;
   color: white;
-
   padding: 6px 12px;
   border-radius: 999px;
 

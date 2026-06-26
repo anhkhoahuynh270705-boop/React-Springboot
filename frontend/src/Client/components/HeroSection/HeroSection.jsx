@@ -46,17 +46,17 @@ const HeroSection = () => {
 
       progressRef.current = p;
 
-      // 1. Curtain opening progress (0.0 to 0.3)//
-      setShowCurtain(p < 0.35);
+      // 1. Curtain opening progress//
+      setShowCurtain(p < 0.98);
 
-      // 2. Welcome text appearance (0.15 to 0.55)
+      // 2. Welcome text appearance
       setShowWelcome(p >= 0.12);
       setHideWelcome(p >= 0.50);
 
-      // 3. TV Drop appearance (0.45 to 1.0)
+      // 3. TV Drop appearance
       setShowTv(p >= 0.45);
 
-      // 4. Book Ticket button appearance (0.75 to 1.0)
+      // 4. Book Ticket button appearance
       setShowBookBtn(p >= 0.75);
     };
 
@@ -74,7 +74,7 @@ const HeroSection = () => {
     const video = videoRef.current;
     if (!video) return;
     if (showTv) {
-      video.play().catch(() => { }); // catch AbortError if component unmounts fast
+      video.play().catch(() => { });
     } else {
       video.pause();
       video.currentTime = 0;
@@ -110,9 +110,6 @@ const HeroSection = () => {
         {/* STEP 2 & 3: TV and Book Button */}
         <div className={`${styles['tv-area']} ${showTv ? styles['tv-area--visible'] : ''}`}>
           <div className={`${styles['tv-wrapper']} ${showTv ? styles['tv-drop'] : ''}`}>
-            <div className={styles['cable-left']} />
-            <div className={styles['cable-right']} />
-
             <div className={styles['tv-frame']}>
               <div className={styles['tv-screen']}>
                 <video
@@ -126,6 +123,9 @@ const HeroSection = () => {
               </div>
               <div className={styles['tv-bottom']} />
             </div>
+            {/* TV Stand sitting on the stage */}
+            <div className={styles['tv-stand-neck']} />
+            <div className={styles['tv-stand-base']} />
           </div>
 
           {/* STEP 3: Book Ticket button */}

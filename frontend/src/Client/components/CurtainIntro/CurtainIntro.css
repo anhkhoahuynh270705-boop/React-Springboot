@@ -1,13 +1,8 @@
-/* ════════════════════════════════════════════
-   CurtainIntro — hero section overlay
-════════════════════════════════════════════ */
-
-/* Sits on top of HeroSection, same dimensions */
 .curtain-overlay {
   position: absolute;
   inset: 0;
   z-index: 20;
-  pointer-events: auto;
+  pointer-events: none;
 
   transition: opacity 0.7s ease;
 }
@@ -42,5 +37,10 @@
   pointer-events: none;
 }
 
-.curtain-bar--top    { top: 0; }
-.curtain-bar--bottom { bottom: 0; }
+.curtain-bar--top {
+  top: 0;
+}
+
+.curtain-bar--bottom {
+  bottom: 0;
+}
