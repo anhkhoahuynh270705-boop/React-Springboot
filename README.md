@@ -1,5 +1,11 @@
+model 21
+controller -25
+service - 30
+repository 21
 ## 1. Công Nghệ & Thư Viện Sử Dụng (Tech Stack)
-
+React
+Spring-boot
+MongoDB
 ### Backend (Spring Boot Ecosystem)
 | Công Nghệ | Thư Viện / Giải Pháp | Chức Năng |
 | :--- | :--- | :--- |

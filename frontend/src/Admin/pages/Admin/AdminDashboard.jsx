@@ -18,7 +18,8 @@ import {
   CheckCircle,
   XCircle,
   Armchair,
-  RefreshCw
+  RefreshCw,
+  PieChart
 } from 'lucide-react';
 import { Line, Bar } from 'react-chartjs-2';
 import { getAdminStats } from '../../../services/adminService';
@@ -32,6 +33,7 @@ import SeatManagement from '../../components/SeatManagement/SeatManagement';
 import MovieManagement from '../../components/MovieManagement/MovieManagement';
 import CinemaManagement from '../../components/CinemaManagement/CinemaManagement/CinemaManagement';
 import PaymentManagement from '../PaymentManagement/PaymentManagement';
+import PowerBIEmbed from '../../components/PowerBIEmbed/PowerBIEmbed';
 import styles from './AdminDashboard.module.css';
 import { useTranslation } from 'react-i18next';
 
@@ -308,6 +310,8 @@ const AdminDashboard = () => {
         return <MovieManagement />;
       case 'cinemas':
         return <CinemaManagement />;
+      case 'powerbi':
+        return <PowerBIEmbed />;
 
       default:
         return <div>{t('Tab does not exist')}</div>;
@@ -400,6 +404,16 @@ const AdminDashboard = () => {
             {t('User management')}
           </button>
 
+          <div className={styles.navDivider} />
+
+          <button
+            className={`${styles.navItem} ${styles.navItemPowerBI} ${activeTab === 'powerbi' ? styles.active : ''}`}
+            onClick={() => setActiveTab('powerbi')}
+          >
+            <PieChart size={20} />
+            Power BI Analytics
+          </button>
+
         </nav>
         {/* Logout Section */}
       </div>
@@ -415,7 +429,7 @@ const AdminDashboard = () => {
             {activeTab === 'seats' && t('Seat management')}
             {activeTab === 'movies' && t('Movie management')}
             {activeTab === 'cinemas' && t('Cinema management')}
-
+            {activeTab === 'powerbi' && 'Power BI Analytics'}
           </h1>
           {activeTab === 'dashboard' && (
             <button

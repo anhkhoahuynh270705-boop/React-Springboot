@@ -80,16 +80,9 @@ const getGoogleOAuthConfig = async () => {
 const handleGoogleResponse = async (response) => {
   try {
     const credential = response.credential;
-    const payload = JSON.parse(atob(credential.split('.')[1]));
 
-    const googleUserData = {
-      googleId: payload.sub,
-      email: payload.email,
-      fullName: payload.name,
-      profilePicture: payload.picture
-    };
-
-    const user = await googleLogin(googleUserData);
+    // Pass the raw idToken (credential) to googleLogin for secure backend verification
+    const user = await googleLogin(credential);
 
     console.log('Google login successful:', user.fullName);
 
@@ -111,12 +104,12 @@ const handleGoogleResponse = async (response) => {
   }
 };
 
-// Google login API call
-export const googleLogin = async (googleUserData) => {
+// Google login API call - accepts raw idToken string from Google SDK
+export const googleLogin = async (idToken) => {
   try {
-    const res = await publicFetch('/users/google-login-legacy', {
+    const res = await publicFetch('/users/google-login', {
       method: 'POST',
-      body: JSON.stringify(googleUserData),
+      body: JSON.stringify({ idToken }),
     });
 
     if (!res.ok) {
@@ -126,9 +119,10 @@ export const googleLogin = async (googleUserData) => {
     const data = await res.json();
     const { token, user } = parseAuthResponse(data);
 
-    // Resolve avatar BEFORE saving to localStorage
-    if (!user.avatarUrl && googleUserData.profilePicture) {
-      user.avatarUrl = googleUserData.profilePicture;
+    // Decode the idToken locally to get the profile picture for avatar fallback
+    const payload = JSON.parse(atob(idToken.split('.')[1]));
+    if (!user.avatarUrl && payload.picture) {
+      user.avatarUrl = payload.picture;
       user.customAvatar = true;
     } else if (!user.avatarUrl && !user.avatar) {
       user.avatarUrl = generateAIPersonAvatar(user.fullName || user.username || user.email);

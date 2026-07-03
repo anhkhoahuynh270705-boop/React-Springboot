@@ -21,7 +21,7 @@ const MoMoPayment = () => {
   const [orderId, setOrderId] = useState('');
   const [payUrl, setPayUrl] = useState('');
   const [qrUrl, setQrUrl] = useState('');
-  const [status, setStatus] = useState('INITIAL'); 
+  const [status, setStatus] = useState('INITIAL');
   const [error, setError] = useState('');
   const [timeLeft, setTimeLeft] = useState(Math.floor(POLL_TIMEOUT_MS / 1000));
   const pollRef = useRef(null);
@@ -47,11 +47,11 @@ const MoMoPayment = () => {
 
     const createOrder = async () => {
       if (orderCreatedRef.current) {
-        return; 
+        return;
       }
-      
-      orderCreatedRef.current = true; 
-      
+
+      orderCreatedRef.current = true;
+
       try {
         setStatus('PENDING');
         setError('');
@@ -67,14 +67,14 @@ const MoMoPayment = () => {
         setPayUrl(res.payUrl || '');
         setQrUrl(res.qrUrl || '');
       } catch (e) {
-        orderCreatedRef.current = false; 
+        orderCreatedRef.current = false;
         setStatus('ERROR');
         setError(e?.message || t('Failed to create MoMo order'));
       }
     };
 
     createOrder();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -87,7 +87,7 @@ const MoMoPayment = () => {
         const res = await queryMoMoOrder(orderId);
         const s = res?.status || res?.returnCode || 'PENDING';
         const statusNormalized = String(s).toUpperCase().trim();
-        
+
         // Check if paid 
         if (statusNormalized === 'PAID' || statusNormalized === '1' || s === 1) {
           clearInterval(pollRef.current);
@@ -96,13 +96,13 @@ const MoMoPayment = () => {
 
           // Finalize booking
           try {
-            const result = await bookTicket({ 
-              ...ticketData, 
-              paymentMethod: 'momo', 
-              paymentStatus: 'paid', 
-              status: 'pending' 
+            const result = await bookTicket({
+              ...ticketData,
+              paymentMethod: 'momo',
+              paymentStatus: 'paid',
+              status: 'pending'
             });
-            
+
             // Create notification
             try {
               const notificationData = createBookingSuccessNotification(
@@ -115,10 +115,10 @@ const MoMoPayment = () => {
             } catch (e) {
               console.warn('Create notification failed:', e);
             }
-            
-            navigate('/tickets', { 
-              replace: true, 
-              state: { payment: 'success', ticketId: result?.id || null } 
+
+            navigate('/tickets', {
+              replace: true,
+              state: { payment: 'success', ticketId: result?.id || null }
             });
           } catch (err) {
             setError('Payment confirmed, but booking failed. Please contact support.');
@@ -128,7 +128,6 @@ const MoMoPayment = () => {
           clearTimeout(timeoutRef.current);
           setStatus('EXPIRED');
         } else {
-          // still pending
           const elapsed = Math.floor((Date.now() - startTime) / 1000);
           setTimeLeft(Math.max(0, Math.floor(POLL_TIMEOUT_MS / 1000) - elapsed));
         }
@@ -214,15 +213,15 @@ const MoMoPayment = () => {
             <strong>Hướng dẫn thanh toán:</strong>
           </p>
           <ol className="momo-instruction-steps">
-              <li>Mở ứng dụng MoMo trên điện thoại</li>
-              <li>Chọn chức năng "Quét QR"</li>
-              <li>Quét mã QR MoMo ở trên</li>
-              <li>Nhập đúng số tiền hiển thị</li>
-              <li>Nhập nội dung chuyển tiền là mã đơn hàng:
-                <strong>{orderId}</strong>
-              </li>
-              <li>Sau khi chuyển khoản thành công , vui lòng chờ 5-10 phút</li>
-              <li>Nếu chưa nhận được, vui lòng liên hệ admin</li>
+            <li>Mở ứng dụng MoMo trên điện thoại</li>
+            <li>Chọn chức năng "Quét QR"</li>
+            <li>Quét mã QR MoMo ở trên</li>
+            <li>Nhập đúng số tiền hiển thị</li>
+            <li>Nhập nội dung chuyển tiền là mã đơn hàng:
+              <strong>{orderId}</strong>
+            </li>
+            <li>Sau khi chuyển khoản thành công , vui lòng chờ 5-10 phút</li>
+            <li>Nếu chưa nhận được, vui lòng liên hệ admin</li>
           </ol>
         </div>
 

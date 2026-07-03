@@ -19,6 +19,7 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
   });
   const [loading, setLoading] = useState(false);
   const [filteredMovies, setFilteredMovies] = useState([]);
+  const [errors, setErrors] = useState({});
   const { showError, toasts, removeToast } = useToast();
 
   // Initialize defaults when provided
@@ -60,6 +61,10 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
         ? parseInt(value) || 0
         : value
     }));
+    // Clear inline error when user changes
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const handleDateTimeChange = (e) => {
@@ -73,14 +78,34 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validation
-    if (!formData.movieId || !formData.cinemaId || !formData.startTime || !formData.format) {
-      showError('Vui lòng điền đầy đủ thông tin bắt buộc (Phim, Rạp, Thời gian, Định dạng)');
-      return;
+    // Validation with inline errors
+    const newErrors = {};
+
+    if (!formData.cinemaId) {
+      newErrors.cinemaId = 'Vui lòng chọn rạp chiếu';
+    }
+    if (!formData.movieId) {
+      newErrors.movieId = 'Vui lòng chọn phim';
+    }
+    if (!formData.startTime) {
+      newErrors.startTime = 'Vui lòng chọn thời gian chiếu';
+    }
+    if (!formData.format) {
+      newErrors.format = 'Vui lòng chọn định dạng';
+    }
+    if (!formData.totalSeats || formData.totalSeats < 1) {
+      newErrors.totalSeats = 'Tổng số ghế phải ít nhất là 1';
+    }
+    if (formData.availableSeats > formData.totalSeats) {
+      newErrors.availableSeats = 'Số ghế còn trống không thể lớn hơn tổng số ghế';
+    }
+    if (!formData.price || formData.price <= 0) {
+      newErrors.price = 'Giá vé phải lớn hơn 0';
     }
 
-    if (formData.availableSeats > formData.totalSeats) {
-      showError('Số ghế còn trống không thể lớn hơn tổng số ghế');
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      showError('Vui lòng kiểm tra lại thông tin');
       return;
     }
 
@@ -88,9 +113,12 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
     const startTime = new Date(formData.startTime);
     const now = new Date();
     if (startTime <= now) {
+      setErrors(prev => ({ ...prev, startTime: 'Thời gian chiếu phải trong tương lai' }));
       showError('Thời gian chiếu phải trong tương lai');
       return;
     }
+
+    setErrors({});
 
     try {
       setLoading(true);
@@ -147,8 +175,7 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
               name="cinemaId"
               value={formData.cinemaId}
               onChange={handleInputChange}
-              className={styles.input}
-              required
+              className={`${styles.input}${errors.cinemaId ? ` ${styles.inputError}` : ''}`}
               disabled={!!defaultCinemaId}
             >
               <option value="">Chọn rạp chiếu</option>
@@ -158,6 +185,7 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
                 </option>
               ))}
             </select>
+            {errors.cinemaId && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.cinemaId}</span>}
           </div>
 
           <div className={styles.formGroup}>
@@ -169,8 +197,7 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
               name="movieId"
               value={formData.movieId}
               onChange={handleInputChange}
-              className={styles.input}
-              required
+              className={`${styles.input}${errors.movieId ? ` ${styles.inputError}` : ''}`}
               disabled={!formData.cinemaId || !!defaultMovieId}
             >
               <option value="">
@@ -182,6 +209,7 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
                 </option>
               ))}
             </select>
+            {errors.movieId && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.movieId}</span>}
             {formData.cinemaId && filteredMovies.length === 0 && (
               <p className={styles.helpText}>
                 Rạp chiếu này chưa có phim nào. Vui lòng thêm phim vào rạp trước.
@@ -199,7 +227,6 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
               value={formData.format}
               onChange={handleInputChange}
               className={styles.input}
-              required
             >
               <option value="2D - Phụ đề Việt">2D - Phụ đề Việt</option>
               <option value="3D - Phụ đề Việt">3D - Phụ đề Việt</option>
@@ -221,10 +248,10 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
               name="startTime"
               value={formData.startTime || ''}
               onChange={handleDateTimeChange}
-              className={styles.input}
+              className={`${styles.input}${errors.startTime ? ` ${styles.inputError}` : ''}`}
               min={getMinDateTime()}
-              required
             />
+            {errors.startTime && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.startTime}</span>}
           </div>
 
           <div className={styles.formGroup}>
@@ -253,10 +280,11 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
                 name="totalSeats"
                 value={formData.totalSeats}
                 onChange={handleInputChange}
-                className={styles.input}
+                className={`${styles.input}${errors.totalSeats ? ` ${styles.inputError}` : ''}`}
                 min="1"
                 max="500"
               />
+              {errors.totalSeats && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.totalSeats}</span>}
             </div>
 
             <div className={styles.formGroup}>
@@ -269,10 +297,11 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
                 name="availableSeats"
                 value={formData.availableSeats}
                 onChange={handleInputChange}
-                className={styles.input}
+                className={`${styles.input}${errors.availableSeats ? ` ${styles.inputError}` : ''}`}
                 min="0"
                 max={formData.totalSeats}
               />
+              {errors.availableSeats && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.availableSeats}</span>}
             </div>
           </div>
 
@@ -286,10 +315,11 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
               name="price"
               value={formData.price}
               onChange={handleInputChange}
-              className={styles.input}
-              min="0"
+              className={`${styles.input}${errors.price ? ` ${styles.inputError}` : ''}`}
+              min="1"
               step="1000"
             />
+            {errors.price && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.price}</span>}
           </div>
 
           <div className={styles.modalFooter}>

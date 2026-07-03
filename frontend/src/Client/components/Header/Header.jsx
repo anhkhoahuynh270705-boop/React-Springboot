@@ -21,6 +21,7 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
   const location = useLocation();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCinemaDropdownOpen, setIsCinemaDropdownOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState('Tp. Hồ Chí Minh');
@@ -164,7 +165,7 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
       } finally {
         setIsSearching(false);
       }
-    }, 300);
+    }, 150);
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
@@ -571,6 +572,26 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
             </Link>
           </div>
 
+          {/* Hamburger button - mobile only */}
+          <button
+            className="mobile-menu-btn"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            {isMobileMenuOpen ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
+          </button>
+
           <div className="header-center">
             <div className="search-container" ref={searchRef}>
               <form onSubmit={handleSearch} className="search-form">
@@ -957,6 +978,61 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
           onLogin={handleLoginSuccess}
         />
       </header>
+
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="mobile-menu-panel" onClick={(e) => e.stopPropagation()}>
+            {/* Mobile user info */}
+            {user ? (
+              <div className="mobile-user-info">
+                <div className="mobile-user-avatar">
+                  {userAvatar ? (
+                    isImageAvatar(userAvatar) ? (
+                      <img src={userAvatar} alt={user.fullName || user.username} />
+                    ) : (
+                      <div className="user-initials-mobile">{userAvatar}</div>
+                    )
+                  ) : (
+                    <User size={22} />
+                  )}
+                </div>
+                <div className="mobile-user-details">
+                  <h4>{user.fullName || user.username}</h4>
+                  <p>{user.email}</p>
+                </div>
+                <button className="mobile-logout-btn" onClick={handleLogout} title="Logout">
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="mobile-login-section">
+                <button
+                  className="mobile-login-btn"
+                  onClick={() => { setIsMobileMenuOpen(false); setIsLoginModalOpen(true); }}
+                >
+                  <User size={18} />
+                  <span>{t('login')}</span>
+                </button>
+              </div>
+            )}
+
+            <nav className="mobile-nav">
+              <Link to="/" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>{t('schedule')}</Link>
+              <Link to="/cinemas" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>{t('cinemas-system')}</Link>
+              <Link to="/news" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>{t('news')}</Link>
+              <Link to="/tickets" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>{t('myTickets')}</Link>
+              {user && (
+                <>
+                  <Link to="/game" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>{t('checkIn')}</Link>
+                  <button className="mobile-nav-link mobile-nav-btn" onClick={() => { setIsMobileMenuOpen(false); setIsUserProfileOpen(true); }}>{t('personalInformation')}</button>
+                  <button className="mobile-nav-link mobile-nav-btn" onClick={() => { setIsMobileMenuOpen(false); setIsUserSettingsOpen(true); }}>{t('settings')}</button>
+                </>
+              )}
+            </nav>
+          </div>
+        </div>
+      )}
 
       {/* User Profile Popup */}
       {isUserProfileOpen && (

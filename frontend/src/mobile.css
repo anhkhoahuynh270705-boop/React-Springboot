@@ -1,0 +1,346 @@
+/* ============================================================
+   GLOBAL MOBILE RESPONSIVE CSS
+   Áp dụng cho toàn bộ dự án – import trong main.jsx
+   Breakpoints: 768px (mobile), 480px (small mobile)
+   ============================================================ */
+
+/* ── Base touch improvements ── */
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ────────────────────────────────────────────
+   APP SHELL
+   ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .app-main {
+    padding-top: 64px;
+    /* match new mobile header height */
+  }
+}
+
+/* ────────────────────────────────────────────
+   HOMEPAGE
+   ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .movie-tabs {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 0 1rem;
+  }
+
+  .movie-tab-btn {
+    flex: 1 1 auto;
+    min-width: 120px;
+    font-size: 15px;
+    padding: 10px 16px;
+    transform: none !important;
+  }
+
+  .movie-tab-btn:hover,
+  .movie-tab-btn.active {
+    transform: translateY(-2px) !important;
+  }
+
+  .content-wrapper {
+    padding: 1rem 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-tabs {
+    gap: 8px;
+    padding: 0 0.5rem;
+  }
+
+  .movie-tab-btn {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+}
+
+/* ────────────────────────────────────────────
+   MOVIE CAROUSEL (3D)
+   ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .movie-carousel-3d-wrapper {
+    height: 420px;
+  }
+
+  .carousel-instructions {
+    font-size: 11px;
+    padding: 6px 14px;
+    bottom: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .movie-carousel-3d-wrapper {
+    height: 340px;
+  }
+}
+
+/* ────────────────────────────────────────────
+   FEATURED MOVIES / MOVIES GRID
+   ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  .movies-grid,
+  .featured-movies-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .movies-grid,
+  .featured-movies-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.6rem !important;
+  }
+}
+
+/* ────────────────────────────────────────────
+   MOVIE DETAIL PAGE
+   ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Two-column layout → single column */
+  [class*="movieDetailLayout"],
+  [class*="movie-detail-layout"] {
+    flex-direction: column !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  [class*="posterColumn"],
+  [class*="poster-column"] {
+    width: 100% !important;
+    max-width: 280px !important;
+    margin: 0 auto !important;
+  }
+
+  [class*="infoColumn"],
+  [class*="info-column"] {
+    padding: 0 !important;
+  }
+
+  /* Tabs scroll horizontally */
+  [class*="tabsBar"],
+  [class*="tabs-bar"] {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+    display: flex !important;
+    gap: 0.4rem !important;
+    padding-bottom: 4px !important;
+  }
+
+  [class*="tabsBar"]::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  [class*="tabBtn"],
+  [class*="tab-btn"] {
+    flex-shrink: 0 !important;
+    font-size: 0.85rem !important;
+    padding: 8px 14px !important;
+  }
+}
+
+/* ────────────────────────────────────────────
+   SEAT SELECTION PAGE
+   ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+
+  [class*="seatSelectionContainer"],
+  [class*="seat-selection-container"],
+  .seat-selection-container {
+    padding: 0.75rem !important;
+  }
+
+  [class*="seatGrid"],
+  [class*="seat-grid"],
+  .seat-grid {
+    gap: 4px !important;
+    transform: scale(0.9) !important;
+    transform-origin: top center !important;
+  }
+}
+
+@media (max-width: 480px) {
+
+  [class*="seatGrid"],
+  [class*="seat-grid"],
+  .seat-grid {
+    transform: scale(0.78) !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  [class*="ticketList"],
+  [class*="ticket-list"] {
+    padding: 1rem !important;
+  }
+
+  [class*="ticketCard"],
+  [class*="ticket-card"] {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+  }
+
+  [class*="ticketQr"],
+  [class*="ticket-qr"] {
+    align-self: center !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  /* Generic modal overlay stays full screen */
+  [class*="modal"],
+  [class*="Modal"],
+  .modal-overlay {
+    align-items: flex-end !important;
+  }
+
+  /* Modal content slides up from bottom on mobile */
+  [class*="modal-content"],
+  [class*="modalContent"],
+  .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 92vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    overflow-y: auto !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  [class*="cinemasGrid"],
+  [class*="cinemas-grid"],
+  .cinemas-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  [class*="paymentContainer"],
+  [class*="payment-container"],
+  .payment-container {
+    padding: 1rem !important;
+    max-width: 100% !important;
+  }
+
+  [class*="paymentCard"],
+  [class*="payment-card"] {
+    padding: 1.25rem !important;
+  }
+
+  [class*="qrCode"],
+  [class*="qr-code"] {
+    width: 200px !important;
+    height: 200px !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  [class*="profileLayout"],
+  [class*="profile-layout"] {
+    flex-direction: column !important;
+    gap: 1.5rem !important;
+  }
+
+  [class*="profileSidebar"],
+  [class*="profile-sidebar"] {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  [class*="newsGrid"],
+  [class*="news-grid"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  [class*="comboGrid"],
+  [class*="combo-grid"],
+  [class*="rewardsGrid"],
+  [class*="rewards-grid"] {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  /* Page containers — add horizontal breathing room */
+  .page-container,
+  .container,
+  .content-container {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Tables — make horizontally scrollable */
+  .table-wrapper,
+  [class*="tableWrapper"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table {
+    min-width: 500px;
+  }
+
+  /* Section headings */
+  h1 {
+    font-size: clamp(1.5rem, 5vw, 2.5rem) !important;
+  }
+
+  h2 {
+    font-size: clamp(1.25rem, 4vw, 2rem) !important;
+  }
+
+  h3 {
+    font-size: clamp(1.1rem, 3.5vw, 1.5rem) !important;
+  }
+
+  /* Prevent horizontal overflow globally */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .page-container,
+  .container,
+  .content-container {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+}

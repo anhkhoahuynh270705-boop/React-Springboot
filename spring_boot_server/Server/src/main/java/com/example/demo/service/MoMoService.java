@@ -1,12 +1,12 @@
 package com.example.demo.service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -22,7 +22,6 @@ import com.example.demo.model.MoMoOrder;
 import com.example.demo.repository.MoMoOrderRepository;
 import com.example.demo.util.HmacUtils;
 import com.example.demo.util.OrderIdGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +33,6 @@ public class MoMoService {
 
     private final MoMoOrderRepository repo;
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
 
     @Value("${momo.partner-code}")
     private String partnerCode;

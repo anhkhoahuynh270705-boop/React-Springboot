@@ -2,7 +2,7 @@ import styles from '../CreateMovieManagement/CreateMovieModal.module.css';
 import { X } from 'lucide-react';
 import React from 'react';
 import { useState, useEffect, useMemo } from 'react';
-import {useTranslation} from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
   const { t } = useTranslation();
@@ -58,7 +58,7 @@ const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -75,12 +75,23 @@ const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
       newErrors.title = t('Movie name is required');
     }
 
+    if (!formData.englishTitle.trim()) {
+      newErrors.englishTitle = t('English title is required');
+    }
+
     if (!formData.genre.trim()) {
       newErrors.genre = t('Genre is required');
     }
 
+    if (!formData.description.trim()) {
+      newErrors.description = t('Description is required');
+    }
+
     if (!formData.director.trim()) {
       newErrors.director = t('Director is required');
+    }
+    if (!formData.cast.trim()) {
+      newErrors.cast = t('Actor is required');
     }
 
     if (!formData.duration || isNaN(formData.duration) || formData.duration <= 0) {
@@ -95,13 +106,21 @@ const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
       newErrors.rating = t('Rating must be between 0 and 10');
     }
 
+    if (!formData.posterUrl.trim()) {
+      newErrors.posterUrl = t('Poster URL is required');
+    }
+
+    if (!formData.trailerUrl.trim()) {
+      newErrors.trailerUrl = t('Trailer URL is required');
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -137,7 +156,7 @@ const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
             {/* Basic Info */}
             <div className={styles.formSection}>
               <h3>{t('Basic information')}</h3>
-              
+
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>{t('Movie name')} *</label>
                 <input
@@ -152,34 +171,49 @@ const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>{t('English title')}</label>
+                <label className={styles.formLabel}>{t('English title')} *</label>
                 <input
                   type="text"
                   name="englishTitle"
                   value={formData.englishTitle}
                   onChange={handleInputChange}
-                  className={styles.formInput}
+                  className={`${styles.formInput} ${errors.englishTitle ? styles.error : ''}`}
                   placeholder={t('Enter movie name in English')}
                 />
+                {errors.englishTitle && <span className={styles.errorMessage}>{errors.englishTitle}</span>}
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>{t('Description')}</label>
+                <label className={styles.formLabel}>{t('Description')} *</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleInputChange}
-                  className={styles.formTextarea}
+                  className={`${styles.formTextarea} ${errors.description ? styles.error : ''}`}
                   placeholder={t('Enter movie description')}
                   rows={4}
                 />
+                {errors.description && <span className={styles.errorMessage}>{errors.description}</span>}
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>{t('Actor')} *</label>
+                <input
+                  type="text"
+                  name="cast"
+                  value={formData.cast}
+                  onChange={handleInputChange}
+                  className={`${styles.formInput} ${errors.cast ? styles.error : ''}`}
+                  placeholder={t('Enter actor name (separated by comma)')}
+                />
+                {errors.cast && <span className={styles.errorMessage}>{errors.cast}</span>}
               </div>
             </div>
 
             {/* Technical Info */}
             <div className={styles.formSection}>
               <h3>{t('Technical information')}</h3>
-              
+
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
                   <label className={styles.formLabel}>{t('Duration (minutes)')} *</label>
@@ -258,27 +292,29 @@ const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>{t('URL Poster')}</label>
+                <label className={styles.formLabel}>{t('URL Poster*')} *</label>
                 <input
                   type="url"
                   name="posterUrl"
                   value={formData.posterUrl}
                   onChange={handleInputChange}
-                  className={styles.formInput}
+                  className={`${styles.formInput} ${errors.posterUrl ? styles.error : ''}`}
                   placeholder="https://example.com/poster.jpg"
                 />
+                {errors.posterUrl && <span className={styles.errorMessage}>{errors.posterUrl}</span>}
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>{t('URL Trailer')}</label>
+                <label className={styles.formLabel}>{t('URL Trailer')} *</label>
                 <input
                   type="url"
                   name="trailerUrl"
                   value={formData.trailerUrl}
                   onChange={handleInputChange}
-                  className={styles.formInput}
+                  className={`${styles.formInput} ${errors.trailerUrl ? styles.error : ''}`}
                   placeholder="https://youtube.com/watch?v=..."
                 />
+                {errors.trailerUrl && <span className={styles.errorMessage}>{errors.trailerUrl}</span>}
               </div>
             </div>
           </div>

@@ -272,6 +272,10 @@ const SeatManagement = () => {
   const deleteSeatHandler = async (seatId) => {
     if (!seatId) return;
 
+    if (!window.confirm('Bạn có chắc chắn muốn xóa ghế này?')) {
+      return;
+    }
+
     try {
       await deleteSeat(seatId);
 

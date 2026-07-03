@@ -44,7 +44,7 @@ function containsSearchQuery(text, query) {
 }
 
 export async function searchMovies(query) {
-  if (!query || query.trim().length < 2) {
+  if (!query || query.trim().length < 1) {
     console.log('Query too short, skipping API call');
     return [];
   }

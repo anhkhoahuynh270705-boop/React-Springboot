@@ -43,7 +43,6 @@ public class SecurityConfig {
                                                                 "/api/users/check-username",
                                                                 "/api/users/check-email",
                                                                 "/api/users/google-login",
-                                                                "/api/users/google-login-legacy",
                                                                 "/api/users/google-oauth-config",
                                                                 "/api/users/check-google-id",
                                                                 "/api/users/verify-face",
@@ -83,8 +82,10 @@ public class SecurityConfig {
                                                 .requestMatchers("/ws/**").permitAll()
                                                 .requestMatchers("/api/seat-layouts/**").permitAll()
                                                 .requestMatchers("/api/seat-locks/**").permitAll()
-                                                .requestMatchers("/api/chat/**").authenticated()
                                                 .requestMatchers("/api/members/**").permitAll()
+
+                                                // Authenticated ( after login)
+                                                .requestMatchers("/api/chat/**").permitAll()
 
                                                 // Admin login only — public
                                                 .requestMatchers("/api/admin/login").permitAll()

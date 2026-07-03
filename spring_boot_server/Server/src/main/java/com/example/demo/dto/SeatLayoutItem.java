@@ -4,9 +4,9 @@ import lombok.Data;
 
 @Data
 public class SeatLayoutItem {
-    private String seatNumber; 
-    private String row;        
-    private int column;       
+    private String seatNumber;
+    private String row;
+    private int column;
 
     private int rowIndex;
     private int colIndex;

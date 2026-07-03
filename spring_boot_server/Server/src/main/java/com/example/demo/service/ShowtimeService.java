@@ -42,6 +42,7 @@ public class ShowtimeService {
         return showtimeOpt;
     }
 
+    // Admin CRUD operations
     @Transactional
     public Showtime createShowtime(Showtime showtime) {
         Movie movie = movieRepository.findById(showtime.getMovieId())

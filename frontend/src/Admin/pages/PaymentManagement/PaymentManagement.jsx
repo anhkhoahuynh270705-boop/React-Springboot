@@ -149,8 +149,8 @@ function PaymentManagement() {
   const handleMark = async (id, status, method) => {
     setActionLoading(l => ({ ...l, [id]: true }));
     try {
-      const isMoMoOrder = method === 'momo' && id && id.startsWith('MM-');
-      const isZaloPayOrder = method === 'zalopay' && id && id.startsWith('ZP-');
+      const isMoMoOrder = method === 'momo';
+      const isZaloPayOrder = method === 'zalopay';
 
       if (isMoMoOrder) {
         // Handle MoMo orders

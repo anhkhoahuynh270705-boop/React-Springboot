@@ -44,6 +44,7 @@ import ResetPasswordPage from './Client/pages/ResetPasswordPage/ResetPasswordPag
 import GithubLoginSuccess from './Client/pages/GithubLoginSuccess/GithubLoginSuccess';
 import PaymentSuccess from './Client/pages/PaymentSuccessPage/PaymentSuccess';
 import FloatingContactLinks from './Client/components/FloatingContactLinks/FloatingContactLinks';
+
 function ProtectedRoute({ children }) {
   return isAuthenticated() ? children : <Navigate to="/" replace />;
 }
@@ -154,7 +155,6 @@ function RouteAwareLayout({ user, setUser, onLogin, onLogout }) {
           <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route path="/github-login-success" element={<GithubLoginSuccess onLogin={onLogin} />} />
           <Route path="/payment/success" element={<PaymentSuccess />} />
-
           {/* Protected routes */}
           <Route
             path="/profile"

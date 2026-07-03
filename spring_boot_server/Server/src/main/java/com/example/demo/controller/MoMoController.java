@@ -38,8 +38,7 @@ public class MoMoController {
     public ResponseEntity<CreateMoMoResponse> create(
             @RequestParam String user,
             @RequestParam long amount,
-            @RequestParam String description
-    ) {
+            @RequestParam String description) {
         return ResponseEntity.ok(moMoService.createOrder(user, amount, description));
     }
 
@@ -52,9 +51,9 @@ public class MoMoController {
     public ResponseEntity<Map<String, Object>> webhook(@RequestBody Map<String, Object> payload) {
         log.info("[MoMo] Received webhook payload: {}", payload);
 
-        String orderId   = String.valueOf(payload.getOrDefault("orderId", ""));
+        String orderId = String.valueOf(payload.getOrDefault("orderId", ""));
         String signature = String.valueOf(payload.getOrDefault("signature", ""));
-        int resultCode   = ((Number) payload.getOrDefault("resultCode", -1)).intValue();
+        int resultCode = ((Number) payload.getOrDefault("resultCode", -1)).intValue();
 
         // 1. Verify signature to ensure the request actually came from MoMo
         boolean valid = moMoService.verifyWebhookSignature(payload, signature);
@@ -79,13 +78,14 @@ public class MoMoController {
             log.warn("[MoMo] Order not found during webhook: {}", orderId);
         }
 
-        // 3. Respond to MoMo to acknowledge receipt (MoMo expects resultCode=0 in response)
+        // 3. Respond to MoMo to acknowledge receipt (MoMo expects resultCode=0 in
+        // response)
         Map<String, Object> ack = new HashMap<>();
         ack.put("partnerCode", payload.getOrDefault("partnerCode", ""));
-        ack.put("requestId",   payload.getOrDefault("requestId", ""));
-        ack.put("orderId",     orderId);
-        ack.put("resultCode",  0);
-        ack.put("message",     "Acknowledged");
+        ack.put("requestId", payload.getOrDefault("requestId", ""));
+        ack.put("orderId", orderId);
+        ack.put("resultCode", 0);
+        ack.put("message", "Acknowledged");
         return ResponseEntity.ok(ack);
     }
 
@@ -111,7 +111,6 @@ public class MoMoController {
         try {
             moMoService.deleteOrder(orderId);
         } catch (IllegalStateException | IllegalArgumentException e) {
-            // Already paid or not found — treat as silently cleaned up
             log.warn("[MoMo] Cancel ignored: {}", e.getMessage());
         }
         return ResponseEntity.ok().build();

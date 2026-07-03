@@ -23,6 +23,7 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
     status: 'published'
   });
   const [isCreating, setIsCreating] = useState(false);
+  const [errors, setErrors] = useState({});
   const { showSuccess, showError, toasts, removeToast } = useToast();
 
   useEffect(() => {
@@ -45,6 +46,9 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
   };
 
   const handleRemoveArticle = async (articleId) => {
+    if (!window.confirm(t('Are you sure you want to remove this article from the movie?'))) {
+      return;
+    }
     try {
       await removeArticleFromMovie(movie.id, articleId);
       setMovieArticles(prev => prev.filter(article => article.id !== articleId));
@@ -58,10 +62,43 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = t('Title is required');
+    } else if (formData.title.trim().length < 5) {
+      newErrors.title = t('Title must be at least 5 characters');
+    }
+
+    if (!formData.content.trim()) {
+      newErrors.content = t('Content is required');
+    } else if (formData.content.trim().length < 20) {
+      newErrors.content = t('Content must be at least 20 characters');
+    }
+
+    if (!formData.author.trim()) {
+      newErrors.author = t('Author is required');
+    }
+
+    if (!formData.category.trim()) {
+      newErrors.category = t('Category is required');
+    }
+
+    if (!formData.imageUrl.trim()) {
+      newErrors.imageUrl = t('Image URL is required');
+    } else if (!/^https?:\/\/.+/.test(formData.imageUrl.trim())) {
+      newErrors.imageUrl = t('Image URL must start with http:// or https://');
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleCreateArticle = async (e) => {
     e.preventDefault();
-    if (!formData.title.trim() || !formData.content.trim()) {
-      showError(t('Please fill in all fields'));
+
+    if (!validateForm()) {
       return;
     }
 
@@ -93,6 +130,7 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
         imageUrl: '',
         status: 'published'
       });
+      setErrors({});
       setShowCreateForm(false);
       
       showSuccess(t('Article created and linked to movie'));
@@ -113,6 +151,10 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
       ...prev,
       [name]: value
     }));
+    // Clear inline error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
   };
 
   const filteredArticles = movieArticles.filter(article =>
@@ -169,10 +211,11 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
                     name="title"
                     value={formData.title}
                     onChange={handleFormChange}
-                    required
                     placeholder={t('Enter article title')}
                     className={styles.formInput}
+                    style={errors.title ? { borderColor: '#ef4444' } : {}}
                   />
+                  {errors.title && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.title}</span>}
                 </div>
 
                 <div className={styles.formGroup}>
@@ -193,16 +236,17 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
                     name="content"
                     value={formData.content}
                     onChange={handleFormChange}
-                    required
                     placeholder={t('Enter article content')}
                     rows="6"
                     className={styles.formTextarea}
+                    style={errors.content ? { borderColor: '#ef4444' } : {}}
                   />
+                  {errors.content && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.content}</span>}
                 </div>
 
                 <div className={styles.formRow}>
                   <div className={styles.formGroup}>
-                    <label>{t('Author')}</label>
+                    <label>{t('Author')} *</label>
                     <input
                       type="text"
                       name="author"
@@ -210,11 +254,13 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
                       onChange={handleFormChange}
                       placeholder={t('Enter author name')}
                       className={styles.formInput}
+                      style={errors.author ? { borderColor: '#ef4444' } : {}}
                     />
+                    {errors.author && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.author}</span>}
                   </div>
 
                   <div className={styles.formGroup}>
-                    <label>{t('Category')}</label>
+                    <label>{t('Category')} *</label>
                     <input
                       type="text"
                       name="category"
@@ -222,20 +268,24 @@ const MovieArticlesModal = ({ movie, onClose, onArticlesUpdated }) => {
                       onChange={handleFormChange}
                       placeholder={t('Enter category')}
                       className={styles.formInput}
+                      style={errors.category ? { borderColor: '#ef4444' } : {}}
                     />
+                    {errors.category && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.category}</span>}
                   </div>
                 </div>
 
                 <div className={styles.formGroup}>
                   <label>{t('Image URL')}</label>
                   <input
-                    type="url"
+                    type="text"
                     name="imageUrl"
                     value={formData.imageUrl}
                     onChange={handleFormChange}
                     placeholder="https://example.com/image.jpg"
                     className={styles.formInput}
+                    style={errors.imageUrl ? { borderColor: '#ef4444' } : {}}
                   />
+                  {errors.imageUrl && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.imageUrl}</span>}
                 </div>
 
                 <div className={styles.formGroup}>

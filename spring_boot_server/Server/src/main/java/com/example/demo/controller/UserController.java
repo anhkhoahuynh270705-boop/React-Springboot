@@ -139,17 +139,6 @@ public class UserController {
         return ResponseEntity.ok(new AuthResponse(token, UserMapper.toResponseMap(user)));
     }
 
-    @PostMapping("/google-login-legacy")
-    public ResponseEntity<AuthResponse> googleLoginLegacy(@RequestBody Map<String, String> googleData) {
-        User user = userService.googleLoginLegacy(
-                googleData.get("googleId"),
-                googleData.get("email"),
-                googleData.get("fullName"),
-                googleData.get("profilePicture"));
-        String token = jwtService.generateToken(user);
-        return ResponseEntity.ok(new AuthResponse(token, UserMapper.toResponseMap(user)));
-    }
-
     @GetMapping("/google-oauth-config")
     public ResponseEntity<Map<String, String>> getGoogleOAuthConfig() {
         return ResponseEntity.ok(userService.getGoogleOAuthConfig());

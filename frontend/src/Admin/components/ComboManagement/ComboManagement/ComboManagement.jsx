@@ -56,6 +56,9 @@ const ComboManagement = () => {
   };
 
   const handleDeleteCombo = async (comboId) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa combo này? Hành động này không thể hoàn tác.')) {
+      return;
+    }
     try {
       await deleteCombo(comboId);
       setCombos(combos.filter(combo => combo.id !== comboId));

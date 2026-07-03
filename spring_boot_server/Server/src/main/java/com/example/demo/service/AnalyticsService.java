@@ -7,13 +7,54 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.repository.TicketRepository;
-import lombok.RequiredArgsConstructor;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.MovieRepository;
+import com.example.demo.repository.CinemaRepository;
 import com.example.demo.model.Ticket;
+import com.example.demo.model.User;
+import com.example.demo.model.Movie;
+import com.example.demo.model.Cinema;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AnalyticsService {
     private final TicketRepository ticketRepository;
+    private final UserRepository userRepository;
+    private final MovieRepository movieRepository;
+    private final CinemaRepository cinemaRepository;
+
+    // Retrieve all tickets raw data
+    public List<Ticket> getAllTickets() {
+        return ticketRepository.findAll();
+    }
+
+    // Retrieve all movies
+    public List<Movie> getAllMovies() {
+        return movieRepository.findAll();
+    }
+
+    // Retrieve all cinemas
+    public List<Cinema> getAllCinemas() {
+        return cinemaRepository.findAll();
+    }
+
+    // Retrieve and sanitize user data for analytics
+    public List<Map<String, Object>> getAllUsersForAnalytics() {
+        return userRepository.findAll().stream().map(user -> {
+            Map<String, Object> u = new LinkedHashMap<>();
+            u.put("id", user.getId());
+            u.put("username", user.getUsername());
+            u.put("fullName", user.getFullName());
+            u.put("email", user.getEmail());
+            u.put("phone", user.getPhone());
+            u.put("createdAt", user.getCreatedAt());
+            u.put("lastLoginAt", user.getLastLoginAt());
+            u.put("provider", user.getProvider());
+            u.put("address", user.getAddress());
+            return u;
+        }).toList();
+    }
 
     // Power BI Set Up data
     public Map<String, Object> getDashboard() {

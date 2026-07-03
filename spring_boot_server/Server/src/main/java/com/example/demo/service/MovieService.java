@@ -74,90 +74,89 @@ public class MovieService {
 
         String qNoSign = MovieSyncService.removeDiacritics(q);
 
-        // 1. Fetch matching index documents from Elasticsearch
+        // Fetch matching index documents from Elasticsearch
         List<MovieIndex> elasticResults = movieElasticsearchRepository
-            .findByTitleContainingIgnoreCaseOrTitleNoSignContainingIgnoreCaseOrDirectorContainingIgnoreCaseOrDirectorNoSignContainingIgnoreCaseOrActorsContainingIgnoreCaseOrActorsNoSignContainingIgnoreCase(
-                q, qNoSign, q, qNoSign, q, qNoSign
-            );
+                .findByTitleContainingIgnoreCaseOrTitleNoSignContainingIgnoreCaseOrDirectorContainingIgnoreCaseOrDirectorNoSignContainingIgnoreCaseOrActorsContainingIgnoreCaseOrActorsNoSignContainingIgnoreCase(
+                        q, qNoSign, q, qNoSign, q, qNoSign);
 
         if (elasticResults.isEmpty()) {
             return List.of();
         }
 
-        // 2. Fetch the rich MongoDB documents corresponding to these IDs
+        // Fetch the rich MongoDB documents corresponding to these IDs
         List<String> ids = elasticResults.stream().map(MovieIndex::getId).toList();
         List<Movie> mongoMovies = movieRepository.findAllById(ids);
 
-        // 3. Map to keep fast lookup by ID
+        // Map to keep fast lookup by ID
         Map<String, Movie> movieMap = mongoMovies.stream()
-            .collect(Collectors.toMap(Movie::getId, movie -> movie));
+                .collect(Collectors.toMap(Movie::getId, movie -> movie));
 
-        // 4. Sort and return results in the order returned by Elasticsearch
+        // Sort and return results in the order returned by Elasticsearch
         return ids.stream()
-            .map(movieMap::get)
-            .filter(Objects::nonNull)
-            .toList();
+                .map(movieMap::get)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     public List<Movie> getMoviesByGenre(String genre) {
         List<Movie> allMovies = movieRepository.findAll();
         String lowerGenre = genre.toLowerCase();
         return allMovies.stream()
-            .filter(movie -> {
-                if (movie.getGenres() != null) {
-                    for (String g : movie.getGenres()) {
-                        if (g != null && g.toLowerCase().contains(lowerGenre)) {
-                            return true;
+                .filter(movie -> {
+                    if (movie.getGenres() != null) {
+                        for (String g : movie.getGenres()) {
+                            if (g != null && g.toLowerCase().contains(lowerGenre)) {
+                                return true;
+                            }
                         }
                     }
-                }
-                return movie.getGenre() != null &&
-                       movie.getGenre().toLowerCase().contains(lowerGenre);
-            })
-            .toList();
+                    return movie.getGenre() != null &&
+                            movie.getGenre().toLowerCase().contains(lowerGenre);
+                })
+                .toList();
     }
 
     public List<Movie> getFeaturedMovies(double minRating) {
         List<Movie> allMovies = movieRepository.findAll();
         return allMovies.stream()
-            .filter(movie -> {
-                try {
-                    if (movie.getRating() != null) {
-                        double rating = Double.parseDouble(movie.getRating());
-                        return rating >= minRating;
+                .filter(movie -> {
+                    try {
+                        if (movie.getRating() != null) {
+                            double rating = Double.parseDouble(movie.getRating());
+                            return rating >= minRating;
+                        }
+                        if (movie.getScore() != null) {
+                            double score = Double.parseDouble(movie.getScore());
+                            return score >= minRating;
+                        }
+                        if (movie.getVoteAverage() != null) {
+                            double voteAvg = Double.parseDouble(movie.getVoteAverage());
+                            return voteAvg >= minRating;
+                        }
+                        return false;
+                    } catch (NumberFormatException e) {
+                        return false;
                     }
-                    if (movie.getScore() != null) {
-                        double score = Double.parseDouble(movie.getScore());
-                        return score >= minRating;
-                    }
-                    if (movie.getVoteAverage() != null) {
-                        double voteAvg = Double.parseDouble(movie.getVoteAverage());
-                        return voteAvg >= minRating;
-                    }
-                    return false;
-                } catch (NumberFormatException e) {
-                    return false;
-                }
-            })
-            .toList();
+                })
+                .toList();
     }
 
     public List<Movie> getMoviesByYear(String year) {
         List<Movie> allMovies = movieRepository.findAll();
         return allMovies.stream()
-            .filter(movie -> {
-                if (movie.getReleaseYear() != null && movie.getReleaseYear().equals(year)) {
-                    return true;
-                }
-                if (movie.getYear() != null && movie.getYear().equals(year)) {
-                    return true;
-                }
-                if (movie.getReleaseDate() != null && movie.getReleaseDate().contains(year)) {
-                    return true;
-                }
-                return false;
-            })
-            .toList();
+                .filter(movie -> {
+                    if (movie.getReleaseYear() != null && movie.getReleaseYear().equals(year)) {
+                        return true;
+                    }
+                    if (movie.getYear() != null && movie.getYear().equals(year)) {
+                        return true;
+                    }
+                    if (movie.getReleaseDate() != null && movie.getReleaseDate().contains(year)) {
+                        return true;
+                    }
+                    return false;
+                })
+                .toList();
     }
 
     public Optional<Movie> addMovieToCinema(String movieId, String cinemaId) {
@@ -182,7 +181,7 @@ public class MovieService {
 
     public List<Article> getMovieArticles(String movieId) {
         if (!movieRepository.existsById(movieId)) {
-            return null; // indicate not found
+            return null;
         }
         return articleRepository.findByMovieId(movieId);
     }
@@ -190,14 +189,14 @@ public class MovieService {
     public Article addArticleToMovie(String movieId, String articleId) {
         Optional<Movie> movieOpt = movieRepository.findById(movieId);
         Optional<Article> articleOpt = articleRepository.findById(articleId);
-        
+
         if (!movieOpt.isPresent() || !articleOpt.isPresent()) {
             throw new IllegalArgumentException("Movie or Article not found");
         }
-        
+
         Article article = articleOpt.get();
         article.setMovieId(movieId);
-        
+
         // Also add to movieIds list if it exists
         if (article.getMovieIds() == null) {
             article.setMovieIds(new ArrayList<>());
@@ -205,29 +204,29 @@ public class MovieService {
         if (!article.getMovieIds().contains(movieId)) {
             article.getMovieIds().add(movieId);
         }
-        
+
         return articleRepository.save(article);
     }
 
     public boolean removeArticleFromMovie(String movieId, String articleId) {
         Optional<Article> articleOpt = articleRepository.findById(articleId);
-        
+
         if (!articleOpt.isPresent()) {
             return false;
         }
-        
+
         Article article = articleOpt.get();
-        
+
         // Remove movieId from article
         if (movieId.equals(article.getMovieId())) {
             article.setMovieId(null);
         }
-        
+
         // Remove from movieIds list if it exists
         if (article.getMovieIds() != null) {
             article.getMovieIds().remove(movieId);
         }
-        
+
         articleRepository.save(article);
         return true;
     }

@@ -8,7 +8,7 @@ export const loadFaceModels = async () => {
   if (modelsLoaded) return;
 
   try {
-    // Try loading from CDN first (more reliable)
+    // Try loading from CDN first
     const MODEL_URL = '/models';
 
     console.log('Loading face recognition models from CDN...');
@@ -254,60 +254,60 @@ export const registerFaceDescriptorMultiple = async (userId, descriptors) => {
   }
 };
 
-  // Verify face descriptor for login
-  export const verifyFaceDescriptor = async (descriptor) => {
-    try {
-      const response = await publicFetch('/users/verify-face', {
-        method: 'POST',
-        body: JSON.stringify({ faceDescriptor: descriptor }),
-      });
+// Verify face descriptor for login
+export const verifyFaceDescriptor = async (descriptor) => {
+  try {
+    const response = await publicFetch('/users/verify-face', {
+      method: 'POST',
+      body: JSON.stringify({ faceDescriptor: descriptor }),
+    });
 
-      const text = await response.text();
+    const text = await response.text();
 
-      let data = null;
-      if (text && text.trim().length > 0) {
-        try {
-          data = JSON.parse(text);
-        } catch {
-          data = null;
-        }
+    let data = null;
+    if (text && text.trim().length > 0) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = null;
       }
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('No matching face found. Please register your face first.');
-        }
-
-        if (response.status === 401) {
-          let errorMsg = 'Face does not match. ';
-
-          if (data?.bestSimilarity !== undefined && data?.threshold !== undefined) {
-            errorMsg += `Similarity: ${(data.bestSimilarity * 100).toFixed(1)}% `;
-            errorMsg += `(required: ${(data.threshold * 100).toFixed(1)}%). `;
-          }
-
-          errorMsg += 'Please try again or use password login instead.';
-          throw new Error(errorMsg);
-        }
-
-        throw new Error(
-          data?.message ||
-          `Face verification failed. Server error: ${response.status}`
-        );
-      }
-
-      if (!data) {
-        throw new Error('Server returned empty response.');
-      }
-
-      const { token, user } = parseAuthResponse(data);
-      saveUserSession(token, user);
-      return user;
-    } catch (error) {
-      console.error('Error verifying face descriptor:', error);
-      throw error;
     }
-  };
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('No matching face found. Please register your face first.');
+      }
+
+      if (response.status === 401) {
+        let errorMsg = 'Face does not match. ';
+
+        if (data?.bestSimilarity !== undefined && data?.threshold !== undefined) {
+          errorMsg += `Similarity: ${(data.bestSimilarity * 100).toFixed(1)}% `;
+          errorMsg += `(required: ${(data.threshold * 100).toFixed(1)}%). `;
+        }
+
+        errorMsg += 'Please try again or use password login instead.';
+        throw new Error(errorMsg);
+      }
+
+      throw new Error(
+        data?.message ||
+        `Face verification failed. Server error: ${response.status}`
+      );
+    }
+
+    if (!data) {
+      throw new Error('Server returned empty response.');
+    }
+
+    const { token, user } = parseAuthResponse(data);
+    saveUserSession(token, user);
+    return user;
+  } catch (error) {
+    console.error('Error verifying face descriptor:', error);
+    throw error;
+  }
+};
 
 // Check if user has registered face
 export const checkFaceRegistered = async (userId) => {

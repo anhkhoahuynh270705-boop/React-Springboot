@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Document(collection = "zalopay_orders")
 public class ZaloPayOrder {
-	private @Id String id;
+	@Id
+	private String id;
 	private String appTransId;
 	private String userLabel;
 	private long amount;

@@ -8,6 +8,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import com.example.demo.service.AnalyticsService;
+import com.example.demo.model.Ticket;
+import com.example.demo.model.Movie;
+import com.example.demo.model.Cinema;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,5 +29,25 @@ public class AnalyticsController {
     @GetMapping("/revenue-by-movie")
     public List<Map<String, Object>> getRevenueByMovie() {
         return analyticsService.getRevenueByMovie();
+    }
+
+    @GetMapping("/tickets")
+    public List<Ticket> getAllTickets() {
+        return analyticsService.getAllTickets();
+    }
+
+    @GetMapping("/users")
+    public List<Map<String, Object>> getAllUsersForAnalytics() {
+        return analyticsService.getAllUsersForAnalytics();
+    }
+
+    @GetMapping("/movies")
+    public List<Movie> getAllMovies() {
+        return analyticsService.getAllMovies();
+    }
+
+    @GetMapping("/cinemas")
+    public List<Cinema> getAllCinemas() {
+        return analyticsService.getAllCinemas();
     }
 }

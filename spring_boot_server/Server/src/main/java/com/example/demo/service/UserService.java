@@ -221,12 +221,6 @@ public class UserService {
         return handleGoogleUser(googleId, email, fullName, profilePicture);
     }
 
-    public User googleLoginLegacy(String googleId, String email, String fullName, String profilePicture) {
-        if (googleId == null || email == null || fullName == null) {
-            throw new BadRequestException("Invalid Google data");
-        }
-        return handleGoogleUser(googleId, email, fullName, profilePicture);
-    }
 
     private User handleGoogleUser(String googleId, String email, String fullName, String profilePicture) {
         Optional<User> existingUser = userRepository.findByGoogleId(googleId);

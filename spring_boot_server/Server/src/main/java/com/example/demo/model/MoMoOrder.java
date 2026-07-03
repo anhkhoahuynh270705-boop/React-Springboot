@@ -14,7 +14,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Document(collection = "momo_orders")
 public class MoMoOrder {
-	private @Id String id;
+	@Id
+	private String id;
 	private String orderId;
 	private String userLabel;
 	private long amount;

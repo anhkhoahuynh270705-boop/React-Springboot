@@ -15,6 +15,7 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -22,12 +23,58 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
+    // Clear inline error when user types
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.title.trim()) {
+      newErrors.title = 'Tiêu đề không được để trống';
+    } else if (formData.title.trim().length < 5) {
+      newErrors.title = 'Tiêu đề phải có ít nhất 5 ký tự';
+    }
+
+    if (!formData.summary.trim()) {
+      newErrors.summary = 'Tóm tắt không được để trống';
+    } else if (formData.summary.trim().length < 10) {
+      newErrors.summary = 'Tóm tắt phải có ít nhất 10 ký tự';
+    }
+
+    if (!formData.content.trim()) {
+      newErrors.content = 'Nội dung không được để trống';
+    } else if (formData.content.trim().length < 20) {
+      newErrors.content = 'Nội dung phải có ít nhất 20 ký tự';
+    }
+
+    if (!formData.author.trim()) {
+      newErrors.author = 'Tên tác giả không được để trống';
+    }
+
+    if (!formData.category) {
+      newErrors.category = 'Vui lòng chọn danh mục';
+    }
+
+    if (formData.imageUrl && !/^https?:\/\/.+/.test(formData.imageUrl.trim())) {
+      newErrors.imageUrl = 'URL hình ảnh không hợp lệ (phải bắt đầu bằng http:// hoặc https://)';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
+
+    if (!validateForm()) {
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const tagsArray = formData.tags
@@ -57,6 +104,7 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
         imageUrl: '',
         featured: false
       });
+      setErrors({});
     } catch (error) {
       setError(error.message || 'An error occurred while creating the news article.');
     } finally {
@@ -83,9 +131,10 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
               name="title"
               value={formData.title}
               onChange={handleChange}
-              required
               placeholder="Type your news title"
+              style={errors.title ? { borderColor: '#ef4444' } : {}}
             />
+            {errors.title && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.title}</span>}
           </div>
 
           <div className={`${styles['form-group']}`}>
@@ -95,10 +144,11 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
               name="summary"
               value={formData.summary}
               onChange={handleChange}
-              required
               rows="3"
               placeholder="Type summary news"
+              style={errors.summary ? { borderColor: '#ef4444' } : {}}
             />
+            {errors.summary && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.summary}</span>}
           </div>
 
           <div className={`${styles['form-group']}`}>
@@ -108,10 +158,11 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
               name="content"
               value={formData.content}
               onChange={handleChange}
-              required
               rows="8"
               placeholder="Type content in details"
+              style={errors.content ? { borderColor: '#ef4444' } : {}}
             />
+            {errors.content && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.content}</span>}
           </div>
 
           <div className={`${styles['form-row']}`}>
@@ -123,9 +174,10 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
                 name="author"
                 value={formData.author}
                 onChange={handleChange}
-                required
                 placeholder="Author name"
+                style={errors.author ? { borderColor: '#ef4444' } : {}}
               />
+              {errors.author && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.author}</span>}
             </div>
 
             <div className={`${styles['form-group']}`}>
@@ -135,7 +187,7 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
                 name="category"
                 value={formData.category}
                 onChange={handleChange}
-                required
+                style={errors.category ? { borderColor: '#ef4444' } : {}}
               >
                 <option value="">Choose Category</option>
                 <option value="Phim ảnh">Film</option>
@@ -145,6 +197,7 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
                 <option value="Du lịch">Travel</option>
                 <option value="Khác">Others</option>
               </select>
+              {errors.category && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.category}</span>}
             </div>
           </div>
 
@@ -163,13 +216,15 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
           <div className={`${styles['form-group']}`}>
             <label htmlFor="imageUrl">Image URL</label>
             <input
-              type="url"
+              type="text"
               id="imageUrl"
               name="imageUrl"
               value={formData.imageUrl}
               onChange={handleChange}
               placeholder="https://example.com/image.jpg"
+              style={errors.imageUrl ? { borderColor: '#ef4444' } : {}}
             />
+            {errors.imageUrl && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.imageUrl}</span>}
           </div>
 
           <div className={`${styles['form-group']} ${styles['checkbox-group']}`}>
