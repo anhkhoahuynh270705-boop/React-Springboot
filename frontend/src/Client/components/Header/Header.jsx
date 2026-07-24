@@ -2,7 +2,7 @@
 /* eslint-disable no-empty */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Search, MapPin, ChevronDown, User, LogOut, Settings, Ticket, CheckCircle, Shield, Bell } from 'lucide-react';
+import { Search, MapPin, ChevronDown, User, LogOut, Settings, Ticket, CheckCircle, Shield, Bell, Clock, X, Trash2 } from 'lucide-react';
 import { getAllCinemas as getCinemas } from '../../../services/cinemaService';
 import { logoutUser, applyAvatarMapping } from '../../../services/userService';
 import { searchMovies } from '../../../services/movieService';
@@ -16,6 +16,9 @@ import './Header.css';
 import LanguageSwitcher from "../LanguageSwitcher/LanguageSwitcher";
 import { useTranslation } from 'react-i18next';
 
+// Search history constants
+const SEARCH_HISTORY_KEY = 'movieSearchHistory';
+const MAX_HISTORY_ITEMS = 8;
 
 const Header = ({ user, setUser, onLogin, onLogout }) => {
   const location = useLocation();
@@ -39,14 +42,19 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [searchHistory, setSearchHistory] = useState([]);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [notifications, setNotifications] = useState([]);
   const [notificationLoading, setNotificationLoading] = useState(false);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
+  // City options
   const cityOptions = React.useMemo(() => {
     const set = new Set();
-    cinemas.forEach(c => { if (c.city) set.add(c.city); });
+    cinemas.forEach(c => {
+      if (c.city) set.add(c.city);
+    });
     return Array.from(set).sort();
   }, [cinemas]);
 
@@ -54,6 +62,73 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
   const userDropdownRef = useRef(null);
   const searchRef = useRef(null);
   const notificationRef = useRef(null);
+
+
+  // Load search history from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(SEARCH_HISTORY_KEY);
+      if (saved) {
+        setSearchHistory(JSON.parse(saved));
+      }
+    } catch { }
+  }, []);
+
+  // Save a search term to history
+  const addToSearchHistory = useCallback((term) => {
+    if (!term || !term.trim()) return;
+    const trimmed = term.trim();
+    setSearchHistory(prev => {
+      // Remove duplicate if exists, then add to front
+      const filtered = prev.filter(item => item.toLowerCase() !== trimmed.toLowerCase());
+      const updated = [trimmed, ...filtered].slice(0, MAX_HISTORY_ITEMS);
+      try {
+        localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+      } catch { }
+      return updated;
+    });
+  }, []);
+
+  // Remove a single history item
+  const removeFromSearchHistory = useCallback((term) => {
+    setSearchHistory(prev => {
+      const updated = prev.filter(item => item !== term);
+      try {
+        localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(updated));
+      } catch { }
+      return updated;
+    });
+  }, []);
+
+  // Clear all search history
+  const clearSearchHistory = useCallback(() => {
+    setSearchHistory([]);
+    try {
+      localStorage.removeItem(SEARCH_HISTORY_KEY);
+    } catch { }
+  }, []);
+
+  // Handle clicking a history item
+  const handleHistoryItemClick = useCallback((term) => {
+    setSearchQuery(term);
+    setIsSearchFocused(false);
+    // Trigger search with this term
+  }, []);
+
+  // Handle search input focus
+  const handleSearchFocus = useCallback(() => {
+    setIsSearchFocused(true);
+    if (!searchQuery.trim()) {
+      setIsSearchDropdownOpen(false);
+    }
+  }, [searchQuery]);
+
+  // Handle search input blur (delayed to allow click on history items)
+  const handleSearchBlur = useCallback(() => {
+    setTimeout(() => {
+      setIsSearchFocused(false);
+    }, 200);
+  }, []);
 
   // Helper functions avatar
   const getInitials = (user) => {
@@ -119,11 +194,14 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
 
   const handleSearch = async (e) => {
     e.preventDefault();
-    if (!searchQuery.trim() || searchQuery.trim().length < 1) {
+    if (!searchQuery.trim() || searchQuery.trim().length <= 1) {
       setSearchResults([]);
       setIsSearchDropdownOpen(false);
       return;
     }
+
+    // Save to search history when user actively submits
+    addToSearchHistory(searchQuery);
 
     try {
       setIsSearching(true);
@@ -146,7 +224,7 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
 
   // Debounced search effect
   useEffect(() => {
-    if (!searchQuery.trim() || searchQuery.trim().length < 1) {
+    if (!searchQuery.trim() || searchQuery.trim().length <= 1) {
       setSearchResults([]);
       setIsSearchDropdownOpen(false);
       return;
@@ -291,13 +369,17 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
   useEffect(() => {
     if (!user?.id) {
       setNotifications([]);
+      setUnreadNotificationCount(0);
       return;
     }
     const fetchNotifications = async () => {
       try {
         setNotificationLoading(true);
         const data = await getNotificationsByUser(user.id);
-        setNotifications(data || []);
+        const list = data || [];
+        setNotifications(list);
+        // Sync badge count directly from fetched data
+        setUnreadNotificationCount(list.filter(n => !n.isRead).length);
       } catch (error) {
         console.error('Error fetching notifications:', error);
       } finally {
@@ -316,6 +398,11 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
         return [newNotification, ...prev];
       });
       setUnreadNotificationCount(prev => prev + 1);
+
+      // Dispatch event to notify other pages (like TicketListPage)
+      if (newNotification.type === 'ticket_approved' || newNotification.type === 'ticket_cancelled') {
+        window.dispatchEvent(new CustomEvent('ticketStatusUpdated', { detail: newNotification }));
+      }
     });
 
     const interval = setInterval(fetchNotifications, 60000);
@@ -602,6 +689,8 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
                     placeholder={t('searchMovies')}
                     value={searchQuery}
                     onChange={handleSearchInputChange}
+                    onFocus={handleSearchFocus}
+                    onBlur={handleSearchBlur}
                     className="input-search"
                   />
                   {isSearching && (
@@ -611,6 +700,54 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
                   )}
                 </div>
               </form>
+
+              {/* Search History Dropdown - shown when focused and no query */}
+              {isSearchFocused && !searchQuery.trim() && searchHistory.length > 0 && !isSearchDropdownOpen && (
+                <div className="search-history-dropdown">
+                  <div className="search-history-header">
+                    <div className="search-history-title">
+                      <Clock size={14} />
+                      <span>{t('searchHistory') || 'Lịch sử tìm kiếm'}</span>
+                    </div>
+                    <button
+                      className="search-history-clear-all"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        clearSearchHistory();
+                      }}
+                    >
+                      <Trash2 size={12} />
+                      <span>{t('clearAll') || 'Xóa tất cả'}</span>
+                    </button>
+                  </div>
+                  <div className="search-history-list">
+                    {searchHistory.map((term, index) => (
+                      <div
+                        key={`${term}-${index}`}
+                        className="search-history-item"
+                        onClick={() => handleHistoryItemClick(term)}
+                      >
+                        <div className="search-history-item-left">
+                          <Clock size={14} className="search-history-icon" />
+                          <span className="search-history-text">{term}</span>
+                        </div>
+                        <button
+                          className="search-history-remove"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            removeFromSearchHistory(term);
+                          }}
+                          title={t('remove') || 'Xóa'}
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Search Results Dropdown */}
               {isSearchDropdownOpen && (
@@ -624,6 +761,7 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
                           to={`/movie/${movie.id}?tab=info`}
                           className="search-result-item"
                           onClick={() => {
+                            addToSearchHistory(searchQuery);
                             setIsSearchDropdownOpen(false);
                             setSearchQuery('');
                           }}

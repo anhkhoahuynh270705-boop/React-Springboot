@@ -292,7 +292,7 @@ const EditMovieModal = ({ movie, onClose, onMovieUpdated }) => {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>{t('URL Poster*')} *</label>
+                <label className={styles.formLabel}>{t('URL Poster')} *</label>
                 <input
                   type="url"
                   name="posterUrl"

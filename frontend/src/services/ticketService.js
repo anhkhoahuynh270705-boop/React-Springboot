@@ -303,7 +303,7 @@
   // get tickets by cinema address
   export const getTicketsByCinemaAddress = async (address) => {
     try {
-      const response = await authFetch(`/tickets/cinema-address/${encodeURIComponent(address)}`, {
+      const response = await authFetch(`/tickets/cinema-address?address=${encodeURIComponent(address)}`, {
         method: 'GET',
       });
       if (!response.ok) {

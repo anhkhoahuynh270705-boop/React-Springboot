@@ -6,12 +6,10 @@ import { Heart, Star, Play, ThumbsUp, ThumbsDown, Calendar, Clock, User, X } fro
 import { getArticlesByMovieId } from '../../../services/articleService';
 import { getReviewsByMovieId, likeReview, dislikeReview } from '../../../services/reviewService';
 import { getCachedAvatar } from '../../../services/avatarService';
-import { getAllNews, getNewsByCategory } from '../../../services/newsService';
 import ReviewForm from '../../components/ReviewForm/ReviewForm';
 import ShowtimeSchedule from '../../components/ShowtimeSchedule/ShowtimeSchedule';
 import UserProfileView from '../../components/UserProfileView/UserProfileView';
 import styles from './MovieDetailPage.module.css';
-import newsStyles from './NewsSection.module.css';
 import { useTranslation } from 'react-i18next';
 import MoviePoster3D from './MoviePoster3D';
 
@@ -32,10 +30,6 @@ const MovieDetailPage = () => {
   const [communityReviews, setCommunityReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [reviewsError, setReviewsError] = useState(null);
-  const [newsArticles, setNewsArticles] = useState([]);
-  const [newsLoading, setNewsLoading] = useState(false);
-  const [newsError, setNewsError] = useState(null);
-  const [selectedNewsCategory, setSelectedNewsCategory] = useState('all');
   const [liked, setLiked] = useState(() => {
     if (typeof window !== 'undefined' && movieId) {
       return localStorage.getItem(`liked_movie_${movieId}`) === 'true';
@@ -49,9 +43,9 @@ const MovieDetailPage = () => {
     return false;
   });
   const [selectedUserId, setSelectedUserId] = useState(null);
-  const reviewFormRef = React.useRef(null);
-  const reviewsSectionRef = React.useRef(null);
-  const bookingSectionRef = React.useRef(null);
+  const reviewFormRef = useRef(null);
+  const reviewsSectionRef = useRef(null);
+  const bookingSectionRef = useRef(null);
   const [pendingScroll, setPendingScroll] = useState(null);
   // Scroll to section
   useEffect(() => {
@@ -71,60 +65,60 @@ const MovieDetailPage = () => {
 
   // Format time ago for reviews
   const formatTimeAgo = (dateString) => {
-  if (!dateString) return t('Not found');
+    if (!dateString) return t('Not found');
 
-  const now = new Date();
-  const reviewDate = new Date(dateString);
+    const now = new Date();
+    const reviewDate = new Date(dateString);
 
-  if (isNaN(reviewDate.getTime())) {
-    return t('Not found');
-  }
+    if (isNaN(reviewDate.getTime())) {
+      return t('Not found');
+    }
 
-  const diffInMs = now - reviewDate;
+    const diffInMs = now - reviewDate;
 
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
-  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+    const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
 
-  if (diffInMinutes < 1) return t('Just now');
+    if (diffInMinutes < 1) return t('Just now');
 
-  if (diffInMinutes < 60) {
-    return t('{{count}} minutes ago', { count: diffInMinutes });
-  }
+    if (diffInMinutes < 60) {
+      return t('{{count}} minutes ago', { count: diffInMinutes });
+    }
 
-  if (diffInHours === 1) {
-    return t('1 hour ago');
-  }
+    if (diffInHours === 1) {
+      return t('1 hour ago');
+    }
 
-  if (diffInHours < 24) {
-    return t('{{count}} hours ago', { count: diffInHours });
-  }
+    if (diffInHours < 24) {
+      return t('{{count}} hours ago', { count: diffInHours });
+    }
 
-  if (diffInDays === 1) {
-    return t('1 day ago');
-  }
+    if (diffInDays === 1) {
+      return t('1 day ago');
+    }
 
-  if (diffInDays < 7) {
-    return t('{{count}} days ago', { count: diffInDays });
-  }
+    if (diffInDays < 7) {
+      return t('{{count}} days ago', { count: diffInDays });
+    }
 
-  if (diffInDays < 30) {
-    return t('{{count}} weeks ago', { count: Math.floor(diffInDays / 7) });
-  }
+    if (diffInDays < 30) {
+      return t('{{count}} weeks ago', { count: Math.floor(diffInDays / 7) });
+    }
 
-  return t('{{count}} months ago', { count: Math.floor(diffInDays / 30) });
-};
+    return t('{{count}} months ago', { count: Math.floor(diffInDays / 30) });
+  };
 
 
   // Fetch community reviews from API
   const fetchCommunityReviews = async (showSpinner = true) => {
     if (!movieId) return;
-    
+
     try {
       if (showSpinner) setReviewsLoading(true);
       setReviewsError(null);
       const reviews = await getReviewsByMovieId(movieId);
-     
+
       const transformedReviews = reviews.map(review => ({
         id: review.id,
         userId: review.userId,
@@ -136,7 +130,7 @@ const MovieDetailPage = () => {
         dislikes: review.dislikes || 0,
         avatar: review.userAvatar || getCachedAvatar(review.userName)
       }));
-      
+
       setCommunityReviews(transformedReviews);
     } catch (error) {
       console.error(t('Error fetching community reviews:'), error);
@@ -152,7 +146,7 @@ const MovieDetailPage = () => {
       fetchCommunityReviews(false);
       return;
     }
-    
+
     const transformed = {
       id: newReview.id,
       userId: newReview.userId,
@@ -164,41 +158,19 @@ const MovieDetailPage = () => {
       dislikes: newReview.dislikes || 0,
       avatar: newReview.userAvatar || getCachedAvatar(newReview.userName)
     };
-    
+
     // Add to the top of list immediately
     setCommunityReviews(prev => [transformed, ...prev]);
-    
+
     // Fetch from server in background silently to ensure full consistency
     fetchCommunityReviews(false);
-  };
-
-  // Fetch news articles
-  const fetchNewsArticles = async (category = 'all') => {
-    try {
-      setNewsLoading(true);
-      setNewsError(null);
-      
-      let news;
-      if (category === 'all') {
-        news = await getAllNews(0, 20); 
-      } else {
-        news = await getNewsByCategory(category);
-      }
-      
-      setNewsArticles(news);
-    } catch (error) {
-      console.error(t('Error fetching news articles:'), error);
-      setNewsError(t('Cannot reload news'));
-    } finally {
-      setNewsLoading(false);
-    }
   };
 
   // Check URL query parameter for tab and scroll to top
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const tabParam = urlParams.get('tab');
-    if (tabParam && ['info', 'showtimes', 'reviews', 'news', 'booking'].includes(tabParam)) {
+    if (tabParam && ['info', 'articles', 'reviews', 'booking'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
     window.scrollTo(0, 0);
@@ -227,7 +199,7 @@ const MovieDetailPage = () => {
   useEffect(() => {
     const fetchRelatedArticles = async () => {
       if (!movieId) return;
-      
+
       try {
         setArticlesLoading(true);
         setArticlesError(null);
@@ -244,17 +216,9 @@ const MovieDetailPage = () => {
 
     fetchRelatedArticles();
     fetchCommunityReviews();
-    fetchNewsArticles();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [movieId]);
 
-  const tabs = [
-    { id: 'info', label: t('Movie info') },
-    { id: 'showtimes', label: t('Showtime') },
-    { id: 'reviews', label: t('Movie review') },
-    { id: 'news', label: t('News') },
-    { id: 'booking', label: t('Buy ticket') }
-  ];
 
   if (loading) {
     return (
@@ -278,16 +242,32 @@ const MovieDetailPage = () => {
     );
   }
 
+  // Determine if the movie is coming soon
+  const isComingSoon = (() => {
+    if (!movie || !movie.releaseDate) return false;
+    const release = new Date(movie.releaseDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return release > today;
+  })();
+
+  const tabs = [
+    { id: 'info', label: t('Movie info') },
+    ...(!isComingSoon ? [{ id: 'booking', label: t('Buy ticket') }] : []),
+    { id: 'reviews', label: t('Movie review') },
+    { id: 'articles', label: t('Related articles') }
+  ];
+
   // Helper functions to get movie details with fallbacks
   const getImageUrl = (movie) => {
     console.log('Movie data:', movie);
     let imageUrl = movie.posterUrl || movie.poster || movie.imageUrl || movie.image || '/default-movie.jpg';
-    
+
     // Solve relative URLs
     if (imageUrl.startsWith('http') && !imageUrl.includes('localhost')) {
       console.log('External image URL detected:', imageUrl);
     }
-    
+
     console.log('Final Image URL:', imageUrl);
     return imageUrl;
   };
@@ -388,20 +368,18 @@ const MovieDetailPage = () => {
   // Handle like review
   const handleLikeReview = async (reviewId) => {
     try {
-      // Optimistic update: increment local count immediately for instantaneous feel
       setCommunityReviews(prev =>
         prev.map(r => r.id === reviewId ? { ...r, likes: (r.likes || 0) + 1 } : r)
       );
 
       const updatedReview = await likeReview(reviewId);
-      
+
       // Update state with actual backend response data
       setCommunityReviews(prev =>
         prev.map(r => r.id === reviewId ? { ...r, likes: updatedReview.likes, dislikes: updatedReview.dislikes } : r)
       );
     } catch (error) {
       console.error(t('Error liking review:'), error);
-      // Rollback on error
       fetchCommunityReviews(false);
     }
   };
@@ -409,20 +387,18 @@ const MovieDetailPage = () => {
   // Handle dislike review
   const handleDislikeReview = async (reviewId) => {
     try {
-      // Optimistic update: increment local count immediately
       setCommunityReviews(prev =>
         prev.map(r => r.id === reviewId ? { ...r, dislikes: (r.dislikes || 0) + 1 } : r)
       );
 
       const updatedReview = await dislikeReview(reviewId);
-      
+
       // Update state with actual backend response data
       setCommunityReviews(prev =>
         prev.map(r => r.id === reviewId ? { ...r, likes: updatedReview.likes, dislikes: updatedReview.dislikes } : r)
       );
     } catch (error) {
       console.error(t('Error disliking review:'), error);
-      // Rollback on error
       fetchCommunityReviews(false);
     }
   };
@@ -525,8 +501,8 @@ const MovieDetailPage = () => {
     <div className={styles['movie-detail-page']}>
       <div className={`${styles['movie-background']}`}>
         <div className={`${styles['background-overlay']}`}></div>
-        <img 
-          src={getImageUrl(movie)} 
+        <img
+          src={getImageUrl(movie)}
           alt={getTitle(movie)}
           className={`${styles['background-image']}`}
           onError={(e) => {
@@ -537,14 +513,14 @@ const MovieDetailPage = () => {
       <div className={styles['detail-orb-one']}></div>
       <div className={styles['detail-orb-two']}></div>
       <div className={styles['detail-orb-three']}></div>
-      
+
       {/* Movie Header Section */}
       <div className={`${styles['movie-header']}`}>
         <div className={styles['movie-header-content']}>
           <div className={`${styles['movie-info']}`}>
             <div className={styles['movie-text-content']}>
               <div className={styles['title-row']}>
-                <h1 className={`${styles['movie-title']}`} style={{color: 'white'}}>{getTitle(movie)}</h1>
+                <h1 className={`${styles['movie-title']}`} style={{ color: 'white' }}>{getTitle(movie)}</h1>
                 <div className={styles['movie-rating-badge']} title={t('Rating score')}>
                   <Star size={20} fill="currentColor" className={styles['rating-star-icon']} />
                   <span>{getRatingBadgeDisplay(movie, averageReviewRating)}</span>
@@ -558,7 +534,7 @@ const MovieDetailPage = () => {
               {getEnglishTitle(movie) && (
                 <p className={`${styles['movie-subtitle']}`}>{getEnglishTitle(movie)} - {getGenres(movie)}</p>
               )}
-              
+
               <div className={`${styles['action-buttons']}`}>
                 <button
                   type="button"
@@ -587,24 +563,43 @@ const MovieDetailPage = () => {
                   <Star size={18} />
                   <span>{t('Đánh giá')}</span>
                 </button>
-                
+
                 {movie.trailerUrl ? (
-                  <button 
+                  <button
                     onClick={() => setShowTrailerModal(true)}
                     className={`${styles['action-btn']} ${styles['trailer-btn']}`}>
                     <span>Trailer</span>
                   </button>
                 ) : (
                   <button className={`${styles['action-btn']} ${styles['trailer-btn']}`} disabled>
-                  <span>Trailer</span>
-                </button>
+                    <span>Trailer</span>
+                  </button>
                 )}
-                <button 
-                  className={`${styles['action-btn']} ${styles['buy-ticket-btn']}`}
-                  onClick={handleBuyTicket}
-                >
-                  <span>{t('Mua vé')}</span>
-                </button>
+                {isComingSoon ? (
+                  <div className={`${styles['action-btn']}`} style={{
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    color: '#fff',
+                    cursor: 'default',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 18px',
+                    borderRadius: '8px',
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    border: 'none'
+                  }}>
+                    <Calendar size={16} />
+                    <span>{t('Sắp ra mắt')} · {getReleaseDate(movie)}</span>
+                  </div>
+                ) : (
+                  <button
+                    className={`${styles['action-btn']} ${styles['buy-ticket-btn']}`}
+                    onClick={handleBuyTicket}
+                  >
+                    <span>{t('Mua vé')}</span>
+                  </button>
+                )}
               </div>
 
               <p className={`${styles['movie-description']}`}>{getDescription(movie)}</p>
@@ -612,7 +607,7 @@ const MovieDetailPage = () => {
               <div className={`${styles['movie-details']}`}>
                 <div className={`${styles['detail-item']}`}>
                   <div className={`${styles['detail-header']}`}>
-                <Star size={16} fill="currentColor" />
+                    <Star size={16} fill="currentColor" />
                     <span>{t('Rating score')}</span>
                   </div>
                   <div className={`${styles['detail-value']}`}>
@@ -621,21 +616,21 @@ const MovieDetailPage = () => {
                 </div>
                 <div className={`${styles['detail-item']}`}>
                   <div className={`${styles['detail-header']}`}>
-                <Calendar size={16} />
+                    <Calendar size={16} />
                     <span>{t('Khởi chiếu')}</span>
                   </div>
                   <div className={`${styles['detail-value']}`}>{getReleaseDate(movie)}</div>
                 </div>
                 <div className={`${styles['detail-item']}`}>
                   <div className={`${styles['detail-header']}`}>
-                <Clock size={16} />
+                    <Clock size={16} />
                     <span>{t('Thời lượng')}</span>
                   </div>
                   <div className={`${styles['detail-value']}`}>{getDuration(movie)}</div>
                 </div>
                 <div className={`${styles['detail-item']}`}>
                   <div className={`${styles['detail-header']}`}>
-                <User size={16} />
+                    <User size={16} />
                     <span>{t('Giới hạn tuổi')}</span>
                   </div>
                   <div className={`${styles['detail-value']}`}>{getAgeRating(movie)}</div>
@@ -678,54 +673,9 @@ const MovieDetailPage = () => {
 
       {/* Tab Content */}
       <div className={styles['tab-content']}>
-        {activeTab === 'showtimes' && (
-          <ShowtimeSchedule 
-            movieId={movieId} 
-            movieTitle={getTitle(movie)} 
-          />
-        )}
-
-        {activeTab === 'trailer' && (
-          <div className={`${styles['trailer-section']}`}>
-            <div className={`${styles['video-player']}`}>
-              {movie.trailerUrl ? (
-                <iframe
-                  src={movie.trailerUrl}
-                  title={t('Movie Trailer')}
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              ) : (
-                <div className={`${styles['no-trailer']}`}>
-                  <p>{t('Chưa có trailer cho phim này')}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'info' && (
+        {activeTab === 'articles' && (
           <div className={`${styles['info-section']}`}>
             <div className={`${styles['movie-full-info']}`}>
-              <div className={`${styles['trailer-embed-section']}`}>
-                <div className={`${styles['video-player']}`}>  
-                  {movie.trailerUrl ? (
-                    <iframe
-                      src={movie.trailerUrl}
-                      title={t('Movie Trailer')}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    ></iframe>
-                  ) : (
-                    <div className={`${styles['no-trailer']}`}>
-                      <p>{t('Chưa có trailer cho phim này')}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
               {/* Related articles */}
               <div className={`${styles['related-articles']}`}>
                 <h3>{t('Related articles')}</h3>
@@ -752,18 +702,62 @@ const MovieDetailPage = () => {
                   </div>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'trailer' && (
+          <div className={`${styles['trailer-section']}`}>
+            <div className={`${styles['video-player']}`}>
+              {movie.trailerUrl ? (
+                <iframe
+                  src={movie.trailerUrl}
+                  title={t('Movie Trailer')}
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <div className={`${styles['no-trailer']}`}>
+                  <p>{t('Chưa có trailer cho phim này')}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'info' && (
+          <div className={`${styles['info-section']}`}>
+            <div className={`${styles['movie-full-info']}`}>
+              <div className={`${styles['trailer-embed-section']}`}>
+                <div className={`${styles['video-player']}`}>
+                  {movie.trailerUrl ? (
+                    <iframe
+                      src={movie.trailerUrl}
+                      title={t('Movie Trailer')}
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <div className={`${styles['no-trailer']}`}>
+                      <p>{t('Chưa có trailer cho phim này')}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Review Form */}
-              <ReviewForm 
+              <ReviewForm
                 ref={reviewFormRef}
-                movieId={movieId} 
+                movieId={movieId}
                 onReviewAdded={handleReviewAdded}
               />
 
               {/* Community Reviews */}
               <div className={`${styles['community-section']}`}>
                 <h3>{t('Cộng đồng')}</h3>
-                
+
                 {/* Loading State */}
                 {reviewsLoading && (
                   <div className={`${styles['loading-message']}`}>
@@ -771,7 +765,7 @@ const MovieDetailPage = () => {
                     <p>{t('Đang tải đánh giá từ cộng đồng...')}</p>
                   </div>
                 )}
-                
+
                 {/* Error State */}
                 {reviewsError && (
                   <div className={`${styles['error-message']}`}>
@@ -781,7 +775,7 @@ const MovieDetailPage = () => {
                     </button>
                   </div>
                 )}
-                
+
                 {/* Reviews Grid*/}
                 {!reviewsLoading && !reviewsError && (
                   <div className={`${styles['reviews-grid']}`}>
@@ -794,14 +788,14 @@ const MovieDetailPage = () => {
                         <div className={`${styles['review-card']}`} key={review.id}>
                           <div className={`${styles['review-header']}`}>
                             <div className={`${styles['user-info']}`}>
-                              <div 
+                              <div
                                 className={`${styles['user-avatar']}`}
                                 onClick={() => review.userId && setSelectedUserId(review.userId)}
                                 style={{ cursor: review.userId ? 'pointer' : 'default' }}
                                 title={review.userId ? t('Click to view profile') : ''}
                               >
-                                <img 
-                                  src={review.avatar || getCachedAvatar(review.userName)} 
+                                <img
+                                  src={review.avatar || getCachedAvatar(review.userName)}
                                   alt={review.userName}
                                   onError={(e) => {
                                     const fallback = getCachedAvatar(review.userName) || '/default-avatar.jpg';
@@ -810,7 +804,7 @@ const MovieDetailPage = () => {
                                 />
                               </div>
                               <div className={`${styles['user-details']}`}>
-                                <span 
+                                <span
                                   className={`${styles['user-name']}`}
                                   onClick={() => review.userId && setSelectedUserId(review.userId)}
                                   style={{ cursor: review.userId ? 'pointer' : 'default' }}
@@ -834,10 +828,10 @@ const MovieDetailPage = () => {
                     )}
                   </div>
                 )}
-                
+
                 {/* View more reviews */}
                 {!reviewsLoading && !reviewsError && communityReviews.length > 3 && (
-                  <button 
+                  <button
                     className={`${styles['view-more-reviews-btn']}`}
                     onClick={() => {
                       setActiveTab('reviews');
@@ -857,17 +851,17 @@ const MovieDetailPage = () => {
         {activeTab === 'reviews' && (
           <div className={`${styles['reviews-section']}`} ref={reviewsSectionRef}>
             <h2>{t('Đánh giá từ cộng đồng')}</h2>
-            
+
             {/* Review Form */}
-            <ReviewForm 
-              movieId={movieId} 
+            <ReviewForm
+              movieId={movieId}
               onReviewAdded={handleReviewAdded}
             />
-            
+
             {/* All Reviews */}
             <div className={`${styles['all-reviews-section']}`}>
               <h3>{t('Tất cả đánh giá')} ({communityReviews.length})</h3>
-              
+
               {/* Loading State */}
               {reviewsLoading && (
                 <div className={`${styles['loading-message']}`}>
@@ -881,7 +875,7 @@ const MovieDetailPage = () => {
                 <div className={`${styles['error-message']}`}>
                   <p>{reviewsError}</p>
                   <button onClick={fetchCommunityReviews} className={`${styles['retry-btn']}`}>
-                  {t('Thử lại')}
+                    {t('Thử lại')}
                   </button>
                 </div>
               )}
@@ -898,14 +892,14 @@ const MovieDetailPage = () => {
                       <div className={`${styles['review-card']}`} key={review.id}>
                         <div className={`${styles['review-header']}`}>
                           <div className={`${styles['user-info']}`}>
-                            <div 
+                            <div
                               className={`${styles['user-avatar']}`}
                               onClick={() => review.userId && setSelectedUserId(review.userId)}
                               style={{ cursor: review.userId ? 'pointer' : 'default' }}
                               title={review.userId ? t('Click to view profile') : ''}
                             >
-                              <img 
-                                src={review.avatar || getCachedAvatar(review.userName)} 
+                              <img
+                                src={review.avatar || getCachedAvatar(review.userName)}
                                 alt={review.userName}
                                 onError={(e) => {
                                   const fallback = getCachedAvatar(review.userName) || '/default-avatar.jpg';
@@ -914,7 +908,7 @@ const MovieDetailPage = () => {
                               />
                             </div>
                             <div className={`${styles['user-details']}`}>
-                              <span 
+                              <span
                                 className={`${styles['user-name']}`}
                                 onClick={() => review.userId && setSelectedUserId(review.userId)}
                                 style={{ cursor: review.userId ? 'pointer' : 'default' }}
@@ -944,132 +938,11 @@ const MovieDetailPage = () => {
           </div>
         )}
 
-        {activeTab === 'news' && (
-          <div className={newsStyles['news-section']}>
-            <div className={newsStyles['news-header']}>
-              <h2>{t('Tin tức điện ảnh')}</h2>
-              <div className={newsStyles['news-filters']}>
-                <button 
-                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'all' ? newsStyles['active'] : ''}`}
-                  onClick={() => {
-                    setSelectedNewsCategory('all');
-                    fetchNewsArticles('all');
-                  }}
-                >
-                  {t('Tất cả')}
-                </button>
-                <button 
-                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'phim' ? newsStyles['active'] : ''}`}
-                  onClick={() => {
-                    setSelectedNewsCategory('phim');
-                    fetchNewsArticles('phim');
-                  }}
-                >
-                  {t('Phim')}
-                </button>
-                <button 
-                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'rap' ? newsStyles['active'] : ''}`}
-                  onClick={() => {
-                    setSelectedNewsCategory('rap');
-                    fetchNewsArticles('rap');
-                  }}
-                >
-                  {t('Rạp chiếu')}
-                </button>
-                <button 
-                  className={`${newsStyles['filter-btn']} ${selectedNewsCategory === 'su-kien' ? newsStyles['active'] : ''}`}
-                  onClick={() => {
-                    setSelectedNewsCategory('su-kien');
-                    fetchNewsArticles('su-kien');
-                  }}
-                >
-                  {t('Sự kiện')}
-                </button>
-              </div>
-            </div>
-
-            {/* Loading State */}
-            {newsLoading && (
-              <div className={styles['loading-message']}>
-                <div className={styles['loading-spinner']}></div>
-                <p>{t('Đang tải tin tức...')}</p>
-              </div>
-            )}
-
-            {/* Error State */}
-            {newsError && (
-              <div className={styles['error-message']}>
-                <p>{newsError}</p>
-                <button onClick={() => fetchNewsArticles(selectedNewsCategory)} className={styles['retry-btn']}>
-                {t('Thử lại')}
-                </button>
-              </div>
-            )}
-
-            {/* News Grid */}
-            {!newsLoading && !newsError && (
-              <div className={newsStyles['news-grid']}>
-                {newsArticles.length === 0 ? (
-                  <div className={newsStyles['no-news-message']}>
-                    <p>{t('Chưa có tin tức nào trong danh mục này')}</p>
-                  </div>
-                ) : (
-                  newsArticles.map((article) => (
-                    <div className={newsStyles['news-card']} key={article.id}>
-                      <div className={newsStyles['news-image']}>
-                        <img 
-                          src={article.imageUrl || article.image || '/placeholder-news.jpg'} 
-                          alt={article.title}
-                          onError={(e) => {
-                            e.target.src = '/placeholder-news.jpg';
-                          }}
-                        />
-                        {article.featured && (
-                          <div className={newsStyles['featured-badge']}>{t('Nổi bật')}</div>
-                        )}
-                      </div>
-                      <div className={newsStyles['news-content']}>
-                        <div className={newsStyles['news-meta']}>
-                          <span className={newsStyles['news-category']}>{article.category || 'Tin tức'}</span>
-                          <span className={newsStyles['news-date']}>
-                            {article.createdAt ? formatTimeAgo(article.createdAt) : t('Không có ngày')}
-                          </span>
-                        </div>
-                        <h3 className={newsStyles['news-title']}>{article.title}</h3>
-                        <p className={newsStyles['news-excerpt']}>
-                          {article.excerpt || article.summary || article.content?.substring(0, 150) + '...' || t('Không có mô tả')}
-                        </p>
-                        <div className={newsStyles['news-footer']}>
-                          <span className={newsStyles['news-author']}>
-                            {article.author || 'Biên tập viên'}
-                          </span>
-                          <button className={newsStyles['read-more-btn']}>
-                          {t('Đọc thêm')}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-
-            {/* Load More Button */}
-            {!newsLoading && !newsError && newsArticles.length > 0 && (
-              <div className={newsStyles['load-more-section']}>
-                <button className={newsStyles['load-more-btn']}>
-                {t('Xem thêm tin tức')}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         {activeTab === 'booking' && (
           <div ref={bookingSectionRef}>
-            <ShowtimeSchedule 
-              movieId={movieId} 
-              movieTitle={getTitle(movie)} 
+            <ShowtimeSchedule
+              movieId={movieId}
+              movieTitle={getTitle(movie)}
             />
           </div>
         )}
@@ -1077,21 +950,21 @@ const MovieDetailPage = () => {
 
       {/* User Profile View Modal */}
       {selectedUserId && (
-        <UserProfileView 
-          userId={selectedUserId} 
-          onClose={() => setSelectedUserId(null)} 
+        <UserProfileView
+          userId={selectedUserId}
+          onClose={() => setSelectedUserId(null)}
         />
       )}
 
       {/* Trailer Modal */}
       {showTrailerModal && movie.trailerUrl && (
         <div className={`${styles['trailer-modal-overlay']}`} onClick={() => setShowTrailerModal(false)}>
-          <div className={`${styles['trailer-modal-content']}`} onClick={(e) => e.stopPropagation()}>  
-            <button 
-              className={`${styles['close-modal-btn']}`} 
+          <div className={`${styles['trailer-modal-content']}`} onClick={(e) => e.stopPropagation()}>
+            <button
+              className={`${styles['close-modal-btn']}`}
               onClick={() => setShowTrailerModal(false)}
             >
-              
+
             </button>
             <div className={`${styles['modal-video-container']}`}>
               <iframe

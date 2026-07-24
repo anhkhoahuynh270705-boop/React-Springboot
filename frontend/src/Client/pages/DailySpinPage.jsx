@@ -1,53 +1,66 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  hasCheckedInToday,
-  checkInToday,
   getCoins,
-  grantCheckInCoins,
+  addCoins,
   getCatalog,
   redeemReward,
   getRedeemHistory
 } from '../../services/rewardService';
+import { hasCheckedInTodayAPI, checkInTodayAPI } from '../../services/checkInApiService';
 import { getCurrentUserSync } from '../../services/userService';
 import { useTranslation } from 'react-i18next';
 
 
 const DailySpinPage = () => {
-   const { t } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const user = getCurrentUserSync();
   const userId = user?.id;
 
-  const [checkedIn, setCheckedIn] = useState(() => hasCheckedInToday(userId));
+  const [checkedIn, setCheckedIn] = useState(false);
   const [coins, setCoins] = useState(() => getCoins(userId));
   const [catalog] = useState(() => getCatalog());
   const [redeemHistory, setRedeemHistory] = useState(() => getRedeemHistory(userId));
   const [message, setMessage] = useState('');
+  const [checkInLoading, setCheckInLoading] = useState(false);
 
+  // Kiểm tra trạng thái check-in từ DB khi vào trang
   useEffect(() => {
-    setCheckedIn(hasCheckedInToday(userId));
+    if (!userId) return;
+    hasCheckedInTodayAPI().then(setCheckedIn);
     setCoins(getCoins(userId));
     setRedeemHistory(getRedeemHistory(userId));
   }, [userId]);
 
-  const handleCheckIn = () => {
+  const handleCheckIn = async () => {
     if (!userId) {
       alert(t('Please CheckIn'));
       navigate('/');
       return;
     }
-    if (checkedIn) return;
+    if (checkedIn || checkInLoading) return;
 
-    const ok = checkInToday(userId);
-    if (!ok) {
+    setCheckInLoading(true);
+    const result = await checkInTodayAPI();
+    setCheckInLoading(false);
+
+    if (result.error === 'already_checked_in') {
+      setCheckedIn(true);
+      setMessage(t('Attendance has been taken.'));
+      return;
+    }
+
+    if (!result.success) {
       setMessage(t('CheckInFailed'));
       return;
     }
+
+    // Check-in thành công - cộng coins vào localStorage
     setCheckedIn(true);
-    const res = grantCheckInCoins(userId, 10);
-    setCoins(res.coins);
-    setMessage(res.granted ? t('CheckInSuccess') : t('CheckInSuccess'));
+    const newCoins = addCoins(userId, result.coinsEarned);
+    setCoins(newCoins);
+    setMessage(t('CheckInSuccess'));
   };
 
   const handleRedeem = (rewardId) => {
@@ -92,18 +105,22 @@ const DailySpinPage = () => {
               </div>
               <button
                 onClick={handleCheckIn}
-                disabled={!userId || checkedIn}
+                disabled={!userId || checkedIn || checkInLoading}
                 style={{
                   padding: '10px 14px',
                   background: (!userId || checkedIn) ? '#9ca3af' : '#10b981',
                   color: '#fff',
                   border: 'none',
                   borderRadius: 8,
-                  cursor: (!userId || checkedIn) ? 'not-allowed' : 'pointer',
+                  cursor: (!userId || checkedIn || checkInLoading) ? 'not-allowed' : 'pointer',
                   fontWeight: 700
                 }}
               >
-                {checkedIn ? t('Attendance has been taken.') : t('Attendance check (+10 cents)')}
+                {checkInLoading
+                  ? '...'
+                  : checkedIn
+                    ? t('Attendance has been taken.')
+                    : t('Attendance check (+10 cents)')}
               </button>
             </div>
           </div>

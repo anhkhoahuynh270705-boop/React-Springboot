@@ -99,11 +99,15 @@ const EditCinemaModal = ({ cinema, onClose, onCinemaUpdated }) => {
       newErrors.description = 'Desscription is required';
     }
 
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+    if (!formData.email && !formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
     }
 
-    if (formData.phone && !/^[\d\s\-\+ (\)]+$/.test(formData.phone)) {
+    if (!formData.phone || !formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^[\d\s\-\+ (\)]+$/.test(formData.phone)) {
       newErrors.phone = 'Phone number is invalid';
     }
 
@@ -296,7 +300,7 @@ const EditCinemaModal = ({ cinema, onClose, onCinemaUpdated }) => {
                   value={formData.openingHours}
                   onChange={handleInputChange}
                   className={styles.formInput}
-                  placeholder="Ex: 08:00-23:00"
+                  disabled={true}
                 />
               </div>
 

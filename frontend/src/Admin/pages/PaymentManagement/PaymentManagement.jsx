@@ -1,7 +1,7 @@
 /* eslint-disable no-empty */
 /* eslint-disable no-unused-vars */
 import './PaymentManagement.css';
-import { CreditCard, DollarSign, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, Eye, Filter, Search, Calendar, User, Mail, Phone } from 'lucide-react';
+import { CreditCard, DollarSign, Clock, CheckCircle, XCircle, AlertCircle, RefreshCw, Eye, EyeOff, Filter, Search, Calendar, User, Mail, Phone } from 'lucide-react';
 import { getAllOrders, markPaid, markExpired } from '../../../services/paymentService';
 import React from 'react';
 import { useState, useEffect } from 'react';
@@ -22,10 +22,36 @@ function PaymentManagement() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [revealedOrders, setRevealedOrders] = useState({});
   const { toasts, showSuccess, showError, removeToast } = useToast();
 
-  const fetchOrders = async () => {
-    setLoading(true);
+  // Masking helpers
+  const maskOrderId = (id) => {
+    if (!id) return 'N/A';
+    const s = String(id);
+    if (s.length <= 8) return s;
+    return `${s.slice(0, 4)}xxxx${s.slice(-4)}`;
+  };
+
+  const maskEmail = (email) => {
+    if (!email) return 'N/A';
+    const [local, domain] = email.split('@');
+    if (!domain) return `${email.slice(0, 2)}xxxx`;
+    const maskedLocal = local.length <= 2 ? local : `${local.slice(0, 2)}xx`;
+    const domainParts = domain.split('.');
+    const maskedDomain = `xxx.${domainParts.slice(-1)}`;
+    return `${maskedLocal}@${maskedDomain}`;
+  };
+
+  const toggleReveal = (orderId, e) => {
+    e.stopPropagation();
+    setRevealedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
+  };
+
+  const fetchOrders = async (isInitial = false) => {
+    if (isInitial) {
+      setLoading(true);
+    }
     try {
       // Fetch all types of orders in parallel
       const [paymentOrders, momoOrders, zaloPayOrders] = await Promise.allSettled([
@@ -125,24 +151,29 @@ function PaymentManagement() {
       });
 
       setOrders(allOrders);
+      setSelectedOrder(prev => {
+        if (!prev) return null;
+        const updated = allOrders.find(o => o.orderId === prev.orderId);
+        return updated || prev;
+      });
       setError(null);
     } catch (e) {
       setError(e.message);
-      setOrders([]);
+      if (isInitial) setOrders([]);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await fetchOrders();
+    await fetchOrders(false);
     setRefreshing(false);
   };
 
   useEffect(() => {
-    fetchOrders();
-    const timer = setInterval(fetchOrders, 8000);
+    fetchOrders(true);
+    const timer = setInterval(() => fetchOrders(false), 8000);
     return () => clearInterval(timer);
   }, []);
 
@@ -320,7 +351,7 @@ function PaymentManagement() {
           <div className="error-container">
             <AlertCircle size={48} />
             <p>{error}</p>
-            <button onClick={fetchOrders} className="retry-btn">{t('Try again')}</button>
+            <button onClick={() => fetchOrders(true)} className="retry-btn">{t('Try again')}</button>
           </div>
         ) : (
           <div className="payment-layout">
@@ -351,62 +382,71 @@ function PaymentManagement() {
                         </td>
                       </tr>
                     ) : (
-                      filteredOrders.map((order) => (
-                        <tr
-                          key={order.orderId}
-                          className={`order-row ${selectedOrder?.orderId === order.orderId ? 'selected' : ''}`}
-                          onClick={() => setSelectedOrder(order)}
-                        >
-                          <td className="order-id">
-                            <div className="id-content">
-                              <span className="id-text">{order.orderId}</span>
-                              <button
-                                className="view-btn"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedOrder(order);
-                                }}
+                      filteredOrders.map((order) => {
+                        const isRevealed = !!revealedOrders[order.orderId];
+                        return (
+                          <tr
+                            key={order.orderId}
+                            className={`order-row ${selectedOrder?.orderId === order.orderId ? 'selected' : ''}`}
+                            onClick={() => setSelectedOrder(order)}
+                          >
+                            <td className="order-id">
+                              <div className="id-content">
+                                <span className="id-text">
+                                  {isRevealed ? order.orderId : maskOrderId(order.orderId)}
+                                </span>
+                                <button
+                                  className="view-btn"
+                                  title={isRevealed ? t('Hide') : t('Reveal')}
+                                  onClick={(e) => toggleReveal(order.orderId, e)}
+                                >
+                                  {isRevealed ? <EyeOff size={16} /> : <Eye size={16} />}
+                                </button>
+                              </div>
+                              <span className={`method-badge method-${order.method}`}>
+                                {order.method === 'creditcard' ? 'Credit Card'
+                                  : order.method === 'momo' ? 'MoMo'
+                                    : order.method === 'zalopay' ? 'ZaloPay'
+                                      : 'VietQR'}
+                              </span>
+                            </td>
+                            <td className="customer-info">
+                              <div className="customer-details">
+                                <div className="customer-email">
+                                  <Mail size={14} />
+                                  {isRevealed ? (order.userEmail || 'N/A') : maskEmail(order.userEmail)}
+                                </div>
+                                <div className="customer-name">
+                                  <User size={14} />
+                                  {order.userName || 'N/A'}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="order-info">
+                              <div className="info-text" title={order.orderInfo}>
+                                {order.orderInfo?.length > 50
+                                  ? `${order.orderInfo.substring(0, 50)}...`
+                                  : order.orderInfo || 'N/A'
+                                }
+                              </div>
+                            </td>
+                            <td className="amount">
+                              <span className="amount-value">
+                                {order.amount?.toLocaleString('vi-VN')}₫
+                              </span>
+                            </td>
+                            <td className="status">
+                              <div
+                                className="status-badge"
+                                style={{ backgroundColor: getStatusColor(order.status) }}
                               >
-                                <Eye size={16} />
-                              </button>
-                            </div>
-                          </td>
-                          <td className="customer-info">
-                            <div className="customer-details">
-                              <div className="customer-email">
-                                <Mail size={14} />
-                                {order.userEmail || 'N/A'}
-                              </div>
-                              <div className="customer-name">
-                                <User size={14} />
-                                {order.userName || 'N/A'}
-                              </div>
-                            </div>
-                          </td>
-                          <td className="order-info">
-                            <div className="info-text" title={order.orderInfo}>
-                              {order.orderInfo?.length > 50
-                                ? `${order.orderInfo.substring(0, 50)}...`
-                                : order.orderInfo || 'N/A'
-                              }
-                            </div>
-                          </td>
-                          <td className="amount">
-                            <span className="amount-value">
-                              {order.amount?.toLocaleString('vi-VN')}₫
-                            </span>
-                          </td>
-                          <td className="status">
-                            <div
-                              className="status-badge"
-                              style={{ backgroundColor: getStatusColor(order.status) }}
-                            >
 
-                              <span>{order.status}</span>
-                            </div>
-                          </td>
-                        </tr>
-                      ))
+                                <span>{order.status}</span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
                     )}
                   </tbody>
                 </table>

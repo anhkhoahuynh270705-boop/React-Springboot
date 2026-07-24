@@ -28,6 +28,7 @@ const MoMoPayment = () => {
   const timeoutRef = useRef(null);
   const orderCreatedRef = useRef(false); // Prevent double order creation
   const orderIdRef = useRef('');        // Track latest orderId for cleanup
+  const bookingDoneRef = useRef(false); // Prevent double booking on PAID
 
   const amount = useMemo(() => summary?.totalPrice || summary?.amount || ticketData?.price || 0, [summary, ticketData]);
   const orderDescription = useMemo(() => (
@@ -90,6 +91,9 @@ const MoMoPayment = () => {
 
         // Check if paid 
         if (statusNormalized === 'PAID' || statusNormalized === '1' || s === 1) {
+          if (bookingDoneRef.current) return;
+          bookingDoneRef.current = true;
+
           clearInterval(pollRef.current);
           clearTimeout(timeoutRef.current);
           setStatus('PAID');

@@ -35,7 +35,7 @@ const Homepage = () => {
   }, []);
 
   const nowShowingMovies = movies.filter(
-    (movie) => movie.releaseDate && new Date(movie.releaseDate) <= today
+    (movie) => !movie.releaseDate || new Date(movie.releaseDate) <= today
   );
   const comingSoonMovies = movies.filter(
     (movie) => movie.releaseDate && new Date(movie.releaseDate) > today

@@ -23,23 +23,25 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
   useEffect(() => {
     if (isOpen && showtime?.id) {
       fetchSeats();
-      // Subscribe to real-time seat lock updates via WebSocket
+      // Connect WebSocket
       connectWebSocket(userId);
       const unsubscribe = subscribeToSeatUpdates(showtime.id, (update) => {
-        // update: { seatId, status, lockedBy } from SeatLockService broadcast
-        const { seatId, status, lockedBy } = update;
+        const { seatIds, lockedBy, action } = update;
+        if (!seatIds || !Array.isArray(seatIds)) return;
+
         setSeats(prev => prev.map(seat => {
-          if (String(seat.id) !== String(seatId)) return seat;
-          if (status === 'LOCKED') {
+          if (!seatIds.map(String).includes(String(seat.id))) return seat;
+          if (action === 'LOCKED') {
             return { ...seat, booked: true, bookedBy: lockedBy || 'other' };
-          } else if (status === 'RELEASED') {
+          } else if (action === 'RELEASED') {
             return { ...seat, booked: false, bookedBy: null };
           }
           return seat;
         }));
 
-        if (status === 'LOCKED' && lockedBy !== userId) {
-          setSelectedSeats(prev => prev.filter(s => String(s.id) !== String(seatId)));
+        // Deselect any seats that got locked by someone else
+        if (action === 'LOCKED' && lockedBy !== userId) {
+          setSelectedSeats(prev => prev.filter(s => !seatIds.map(String).includes(String(s.id))));
         }
       });
 

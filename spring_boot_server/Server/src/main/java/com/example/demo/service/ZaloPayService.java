@@ -92,9 +92,11 @@ public class ZaloPayService {
         String qrUrl;
 
         try {
+            @SuppressWarnings("rawtypes")
             ResponseEntity<Map> response = restTemplate.postForEntity(
                     endpoint, new HttpEntity<>(form, headers), Map.class);
 
+            @SuppressWarnings("unchecked")
             Map<String, Object> resp = response.getBody();
             log.info("[ZaloPay] Create order response: {}", resp);
 

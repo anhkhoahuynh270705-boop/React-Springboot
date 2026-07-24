@@ -100,13 +100,13 @@ const VietQRPayment = () => {
 
     checkIntervalRef.current = setInterval(() => {
       checkPaymentStatusRef.current?.();
-    }, 3000);
+    }, 2500);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       stopPolling();
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Confirm paid from admin 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { confirmCreditCardBooking } from '../../../services/creditCardService';
-import { createBookingSuccessNotification } from '../../../services/notificationService';
+import { createBookingSuccessNotification, createNotification } from '../../../services/notificationService';
 import './PaymentSuccess.css';
 
 const PENDING_KEY = 'pendingCreditCardBooking';
@@ -62,12 +62,13 @@ function PaymentSuccess() {
         sessionStorage.setItem(guardKey, '1');
 
         try {
-          createBookingSuccessNotification(
+          const notificationPayload = createBookingSuccessNotification(
             user?.id || ticketData.userId || 'guest',
             ticketData.movieTitle,
             ticketData.seatNumber,
             ticketData.showTime
           );
+          await createNotification(notificationPayload);
         } catch (e) {
           console.warn('Create notification failed:', e);
         }

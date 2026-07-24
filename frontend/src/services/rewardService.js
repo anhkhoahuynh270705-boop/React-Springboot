@@ -47,18 +47,19 @@ function setDiscountCards(userId, cards) {
   if (!userId) return;
   try {
     localStorage.setItem(STORAGE_KEYS.DISCOUNT_CARDS(userId), JSON.stringify(cards));
-  } catch {}
+  } catch { }
 }
 
 export function addToDiscountCards(userId, reward) {
   if (!userId || !reward) return [];
-  const voucherIds = ['voucher_10', 'voucher_20', 'free_popcorn', 'free_drink', 'free_ticket'];
-  if (!voucherIds.includes(reward.id)) return getUnusedDiscountCards(userId);
   const cards = getDiscountCardsRaw(userId);
   const newCard = {
     id: `card_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
     rewardId: reward.id,
     label: reward.label,
+    discountType: reward.discountType || null,
+    discountValue: reward.discountValue ?? 0,
+    discountTarget: reward.discountTarget || 'all',
     used: false,
     redeemedAt: new Date().toISOString()
   };
@@ -131,7 +132,7 @@ export function setCoins(userId, amount) {
   const safe = Math.max(0, Math.floor(amount || 0));
   try {
     localStorage.setItem(STORAGE_KEYS.COINS(userId), String(safe));
-  } catch {}
+  } catch { }
   return safe;
 }
 
@@ -162,7 +163,7 @@ export function recordSpin(userId) {
   try {
     const today = getTodayISODate();
     localStorage.setItem(STORAGE_KEYS.LAST_SPIN_DATE(userId), today);
-  } catch {}
+  } catch { }
 }
 
 export function getSpinHistory(userId) {
@@ -186,7 +187,7 @@ export function addSpinHistory(userId, reward) {
   const next = [entry, ...history].slice(0, 50);
   try {
     localStorage.setItem(STORAGE_KEYS.SPIN_HISTORY(userId), JSON.stringify(next));
-  } catch {}
+  } catch { }
   return next;
 }
 
@@ -213,17 +214,18 @@ export function updateStreakAfterSpin(userId) {
   const next = last === yISO ? getStreak(userId) + 1 : 1;
   try {
     localStorage.setItem(STORAGE_KEYS.STREAK(userId), String(next));
-  } catch {}
+  } catch { }
   return next;
 }
 
 // Rewards catalog and redemption
 export const DEFAULT_CATALOG = [
-  { id: 'voucher_10', label: 'Voucher 10% ticket', coinCost: 50 },
-  { id: 'voucher_20', label: 'Voucher 20% ticket', coinCost: 90 },
-  { id: 'free_popcorn', label: 'Free corn', coinCost: 60 },
-  { id: 'free_drink', label: 'Free water', coinCost: 60 },
-  { id: 'free_ticket', label: '1 free ticket', coinCost: 200 }
+  { id: 'voucher_10', label: 'Voucher 10% ticket', coinCost: 50, discountType: 'percentage', discountValue: 10, discountTarget: 'ticket' },
+  { id: 'voucher_20', label: 'Voucher 20% ticket', coinCost: 90, discountType: 'percentage', discountValue: 20, discountTarget: 'ticket' },
+  { id: 'voucher_50', label: 'Voucher 50% ticket', coinCost: 200, discountType: 'percentage', discountValue: 50, discountTarget: 'ticket' },
+  { id: 'free_popcorn', label: 'Free popcorn', coinCost: 60, discountType: 'free_combo', discountValue: 50000, discountTarget: 'combo' },
+  { id: 'free_drink', label: 'Free water', coinCost: 60, discountType: 'free_combo', discountValue: 50000, discountTarget: 'combo' },
+  { id: 'free_ticket', label: '1 free ticket', coinCost: 400, discountType: 'free_ticket', discountValue: 0, discountTarget: 'ticket' }
 ];
 
 export function getCatalog() {
@@ -251,7 +253,7 @@ export function addRedeemHistory(userId, reward) {
   const next = [entry, ...history].slice(0, 100);
   try {
     localStorage.setItem(STORAGE_KEYS.REDEEM_HISTORY(userId), JSON.stringify(next));
-  } catch {}
+  } catch { }
   return next;
 }
 

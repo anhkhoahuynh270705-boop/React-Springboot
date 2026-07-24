@@ -130,8 +130,8 @@ public class TicketController {
         return ticketService.getTicketsByPaymentMethod(paymentMethod);
     }
 
-    @GetMapping("/cinema-address/{address}")
-    public List<Ticket> getTicketsByCinemaAddress(@PathVariable String address) {
+    @GetMapping("/cinema-address")
+    public List<Ticket> getTicketsByCinemaAddress(@RequestParam String address) {
         return ticketService.getTicketsByCinemaAddress(address);
     }
 

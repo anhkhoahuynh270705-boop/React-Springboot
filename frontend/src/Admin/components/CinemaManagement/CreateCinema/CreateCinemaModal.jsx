@@ -76,11 +76,15 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
       newErrors.description = 'Mô tả rạp chiếu là bắt buộc';
     }
 
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
+    if (!formData.email || !formData.email.trim()) {
+      newErrors.email = 'Email là bắt buộc';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email không hợp lệ';
     }
 
-    if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
+    if (!formData.phone || !formData.phone.trim()) {
+      newErrors.phone = 'Số điện thoại là bắt buộc';
+    } else if (!/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
       newErrors.phone = 'Số điện thoại không hợp lệ';
     }
 
@@ -90,6 +94,10 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
 
     if (formData.totalSeats < 1) {
       newErrors.totalSeats = 'Số ghế phải lớn hơn 0';
+    }
+
+    if (!formData.imageUrl) {
+      newErrors.imageUrl = 'Hình ảnh rạp chiếu là bắt buộc';
     }
 
     setErrors(newErrors);
@@ -123,6 +131,22 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors(prev => ({ ...prev, imageUrl: 'Chỉ chấp nhận file hình ảnh (jpg, png, webp...)' }));
+        return;
+      }
+      
+      // Validate file size (e.g., 2MB limit)
+      const maxSize = 2 * 1024 * 1024; // 2MB
+      if (file.size > maxSize) {
+        setErrors(prev => ({ ...prev, imageUrl: 'Kích thước ảnh không được vượt quá 2MB' }));
+        return;
+      }
+
+      // Clear image error if valid file is selected
+      setErrors(prev => ({ ...prev, imageUrl: '' }));
+
       const reader = new FileReader();
       reader.onload = (event) => {
         setFormData(prev => ({
@@ -189,7 +213,7 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
 
             <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Số điện thoại</label>
+                <label className={styles.formLabel}>Số điện thoại*</label>
                 <input
                   type="text"
                   name="phone"
@@ -202,7 +226,7 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
               </div>
 
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Email</label>
+                <label className={styles.formLabel}>Email*</label>
                 <input
                   type="email"
                   name="email"
@@ -269,7 +293,7 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
                   value={formData.openingHours}
                   onChange={handleInputChange}
                   className={styles.formInput}
-                  placeholder="VD: 08:00-23:00"
+                  disabled={true}
                 />
               </div>
 
@@ -329,7 +353,7 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
           </div>
 
           <div className={styles.formSection}>
-            <h3>Hình ảnh</h3>
+            <h3>Hình ảnh *</h3>
 
             <div className={styles.imageUploadContainer}>
               <input
@@ -339,10 +363,12 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
                 onChange={handleImageUpload}
                 className={styles.fileInput}
               />
-              <label htmlFor="imageUpload" className={styles.imageUploadButton}>
+              <label htmlFor="imageUpload" className={`${styles.imageUploadButton} ${errors.imageUrl ? styles.error : ''}`}>
                 <Upload size={20} />
                 Tải lên hình ảnh
               </label>
+
+              {errors.imageUrl && <span className={styles.errorMessage} style={{ display: 'block', marginTop: '8px' }}>{errors.imageUrl}</span>}
 
               {formData.imageUrl && (
                 <div className={styles.imagePreview}>

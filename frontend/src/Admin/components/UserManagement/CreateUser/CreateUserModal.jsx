@@ -38,25 +38,37 @@ const CreateUserModal = ({ onSave, onCancel }) => {
     const newErrors = {};
 
     if (!formData.username.trim()) {
-      newErrors.username = 'Tên đăng nhập không được để trống';
+      newErrors.username = 'Username is required';
     } else if (formData.username.length < 3) {
-      newErrors.username = 'Tên đăng nhập phải có ít nhất 3 ký tự';
+      newErrors.username = 'Username must be at least 3 characters long';
     }
 
     if (!formData.password.trim()) {
-      newErrors.password = 'Mật khẩu không được để trống';
+      newErrors.password = 'Password is required';
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+      newErrors.password = 'Password must be at least 6 characters long';
+    }
+
+    if (!formData.fullName.trim()) {
+      newErrors.fullName = 'Full name is required';
+    } else if (formData.fullName.length > 100) {
+      newErrors.fullName = 'Full name must be less than 100 characters long';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email không được để trống';
+      newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = 'Email is invalid';
     }
 
-    if (formData.phone && !/^[0-9+\-\s()]+$/.test(formData.phone)) {
-      newErrors.phone = 'Số điện thoại không hợp lệ';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!/^[0-9+\-\s()]+$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number is invalid';
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
     }
 
     setErrors(newErrors);
@@ -86,7 +98,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
         <div className={styles.modalHeader}>
           <div className={styles.headerTitle}>
             <UserPlus size={20} />
-            <h3>Tạo người dùng mới</h3>
+            <h3>Create new user</h3>
           </div>
           <button
             className={styles.closeBtn}
@@ -99,7 +111,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
           <div className={styles.formGrid}>
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                Tên đăng nhập *
+                Username *
               </label>
               <input
                 type="text"
@@ -107,7 +119,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
                 value={formData.username}
                 onChange={handleInputChange}
                 className={`${styles.input} ${errors.username ? styles.inputError : ''}`}
-                placeholder="Nhập tên đăng nhập"
+                placeholder="Enter username"
                 disabled={loading}
               />
               {errors.username && (
@@ -117,7 +129,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
 
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                Mật khẩu *
+                Password *
               </label>
               <div className={styles.passwordInput}>
                 <input
@@ -126,7 +138,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
                   value={formData.password}
                   onChange={handleInputChange}
                   className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
-                  placeholder="Nhập mật khẩu"
+                  placeholder="Enter password"
                   disabled={loading}
                 />
                 <button
@@ -145,17 +157,20 @@ const CreateUserModal = ({ onSave, onCancel }) => {
 
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                Họ và tên
+                Full Name
               </label>
               <input
                 type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleInputChange}
-                className={styles.input}
-                placeholder="Nhập họ và tên"
+                className={`${styles.input} ${errors.fullName ? styles.inputError : ''}`}
+                placeholder="Enter full name"
                 disabled={loading}
               />
+              {errors.fullName && (
+                <span className={styles.errorText}>{errors.fullName}</span>
+              )}
             </div>
 
             <div className={styles.formGroup}>
@@ -168,7 +183,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
                 value={formData.email}
                 onChange={handleInputChange}
                 className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
-                placeholder="Nhập email"
+                placeholder="Enter email"
                 disabled={loading}
               />
               {errors.email && (
@@ -178,7 +193,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
 
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                Số điện thoại
+                Phone Number
               </label>
               <input
                 type="tel"
@@ -186,7 +201,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
                 value={formData.phone}
                 onChange={handleInputChange}
                 className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
-                placeholder="Nhập số điện thoại"
+                placeholder="Enter phone number"
                 disabled={loading}
               />
               {errors.phone && (
@@ -196,30 +211,33 @@ const CreateUserModal = ({ onSave, onCancel }) => {
 
             <div className={styles.formGroup}>
               <label className={styles.label}>
-                Địa chỉ
+                Address
               </label>
               <input
                 type="text"
                 name="address"
                 value={formData.address}
                 onChange={handleInputChange}
-                className={styles.input}
-                placeholder="Nhập địa chỉ"
+                className={`${styles.input} ${errors.address ? styles.inputError : ''}`}
+                placeholder="Enter address"
                 disabled={loading}
               />
+              {errors.address && (
+                <span className={styles.errorText}>{errors.address}</span>
+              )}
             </div>
           </div>
 
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              Ghi chú
+              Notes
             </label>
             <textarea
               name="notes"
               value={formData.notes}
               onChange={handleInputChange}
               className={styles.textarea}
-              placeholder="Nhập ghi chú (tùy chọn)"
+              placeholder="Enter notes (optional)"
               rows={3}
               disabled={loading}
             />
@@ -234,7 +252,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
               onClick={onCancel}
               disabled={loading}
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="submit"
@@ -242,7 +260,7 @@ const CreateUserModal = ({ onSave, onCancel }) => {
               onClick={handleSubmit}
               disabled={loading}
             >
-              {loading ? 'Đang tạo...' : 'Tạo người dùng'}
+              {loading ? 'Creating...' : 'Create User'}
             </button>
           </div>
         </div>

@@ -80,7 +80,7 @@ public class TicketService {
             Optional<User> userOpt = userRepository.findById(ticket.getUserId());
             if (userOpt.isPresent()) {
                 User user = userOpt.get();
-                ticket.setUserName(user.getFullName());
+                ticket.setUserName(user.getFullName() != null ? user.getFullName() : user.getUsername());
                 ticket.setUserEmail(user.getEmail());
             }
         }
@@ -140,7 +140,7 @@ public class TicketService {
 
         if (ticket.getUserId() != null) {
             userRepository.findById(ticket.getUserId()).ifPresent(user -> {
-                ticket.setUserName(user.getFullName());
+                ticket.setUserName(user.getFullName() != null ? user.getFullName() : user.getUsername());
                 ticket.setUserEmail(user.getEmail());
             });
         }

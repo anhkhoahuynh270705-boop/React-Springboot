@@ -53,7 +53,7 @@ const LayoutManagement = ({ onLayoutCreated }) => {
     return false;
   };
 
-    const generateLayout = () => {
+  const generateLayout = () => {
     const rowLabels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
     const generatedSeats = [];
 
@@ -165,53 +165,53 @@ const LayoutManagement = ({ onLayoutCreated }) => {
             onChange={(e) => setTotalCols(Number(e.target.value))}
             placeholder="Columns"
           />
-        {aisleType === "CUSTOM" &&(
-          <input
-            type="number"
-            min="1"
-            max ="totalCols"
-            value={aisleCol}
-            onChange={(e) => setAisleCol(Number(e.target.value))}
-            placeholder="Aisle Column"
-          />
+          {aisleType === "CUSTOM" && (
+            <input
+              type="number"
+              min="1"
+              max="totalCols"
+              value={aisleCol}
+              onChange={(e) => setAisleCol(Number(e.target.value))}
+              placeholder="Aisle Column"
+            />
           )}
           <div className={styles.rowTypeConfig}>
-              <h4>Seat type by row</h4>
+            <h4>Seat type by row</h4>
 
-              {Array.from({ length: Number(totalRows) }, (_, index) => {
-                const rowIndex = index + 1;
-                const rowLabel = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index];
+            {Array.from({ length: Number(totalRows) }, (_, index) => {
+              const rowIndex = index + 1;
+              const rowLabel = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[index];
 
-                return (
-                  <div key={rowIndex} className={styles.rowTypeItem}>
-                    <span>Row {rowLabel}</span>
+              return (
+                <div key={rowIndex} className={styles.rowTypeItem}>
+                  <span>Row {rowLabel}</span>
 
-                    <select
-                      value={rowTypes[rowIndex] || "REGULAR"}
-                      onChange={(e) =>
-                        setRowTypes((prev) => ({
-                          ...prev,
-                          [rowIndex]: e.target.value
-                        }))
-                      }
-                    >
-                      <option value="REGULAR">Regular</option>
-                      <option value="VIP">VIP</option>
-                      <option value="COUPLE">Couple</option>
-                    </select>
-                  </div>
-                );
-              })}
-            </div>
+                  <select
+                    value={rowTypes[rowIndex] || "REGULAR"}
+                    onChange={(e) =>
+                      setRowTypes((prev) => ({
+                        ...prev,
+                        [rowIndex]: e.target.value
+                      }))
+                    }
+                  >
+                    <option value="REGULAR">Regular</option>
+                    <option value="VIP">VIP</option>
+                    <option value="COUPLE">Couple</option>
+                  </select>
+                </div>
+              );
+            })}
+          </div>
           <select
             value={aisleType}
             onChange={(e) => setAisleType(e.target.value)}
-            >
+          >
             <option value="NONE">No aisle</option>
             <option value="MIDDLE">Aisle in the middle</option>
             <option value="SIDES">Aisle on both sides</option>
             <option value="CUSTOM">Custom Aisle</option>
-            </select>
+          </select>
 
 
           <button onClick={generateLayout} className={styles.btnGenerate}>
@@ -229,26 +229,26 @@ const LayoutManagement = ({ onLayoutCreated }) => {
       <div
         className={styles.previewSeatMap}
         style={{
-            gridTemplateColumns: `repeat(${totalCols}, 60px)`,
+          gridTemplateColumns: `repeat(${totalCols}, 60px)`,
         }}
-        >
+      >
         {seats.map((seat, index) => (
-            <div
+          <div
             key={index}
             className={`${styles.previewSeat} ${styles[seat.seatType.toLowerCase()]}`}
             style={{
-                gridRow: seat.rowIndex,
-                gridColumn: `${seat.colIndex} / span ${seat.colSpan || 1}`,
+              gridRow: seat.rowIndex,
+              gridColumn: `${seat.colIndex} / span ${seat.colSpan || 1}`,
             }}
-            >
+          >
             <span className={styles.previewSeatNumber}>{seat.seatNumber}</span>
             <span className={styles.previewSeatType}>{seat.seatType}</span>
             <span className={styles.previewSeatPrice}>
               {Number(seat.price).toLocaleString("vi-VN")}₫
             </span>
-            </div>
+          </div>
         ))}
-        </div>
+      </div>
     </div>
   );
 };

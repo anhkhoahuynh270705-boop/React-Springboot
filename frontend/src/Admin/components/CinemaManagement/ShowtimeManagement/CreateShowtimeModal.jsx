@@ -90,6 +90,9 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
     if (!formData.startTime) {
       newErrors.startTime = 'Vui lòng chọn thời gian chiếu';
     }
+    if (!formData.room) {
+      newErrors.room = 'Vui lòng chọn phòng chiếu';
+    }
     if (!formData.format) {
       newErrors.format = 'Vui lòng chọn định dạng';
     }
@@ -264,9 +267,10 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
               name="room"
               value={formData.room}
               onChange={handleInputChange}
-              className={styles.input}
+              className={`${styles.input}${errors.room ? ` ${styles.inputError}` : ''}`}
               placeholder="Ví dụ: Phòng 1, Phòng VIP..."
             />
+            {errors.room && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.room}</span>}
           </div>
 
           <div className={styles.formRow}>
@@ -316,7 +320,7 @@ const CreateShowtimeModal = ({ cinemas, movies, onClose, onSubmit, defaultCinema
               value={formData.price}
               onChange={handleInputChange}
               className={`${styles.input}${errors.price ? ` ${styles.inputError}` : ''}`}
-              min="1"
+              min="0"
               step="1000"
             />
             {errors.price && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.price}</span>}

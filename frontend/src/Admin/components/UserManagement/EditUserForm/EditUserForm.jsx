@@ -73,15 +73,15 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
     const newErrors = {};
 
     if (!passwordData.newPassword.trim()) {
-      newErrors.newPassword = 'Mật khẩu mới không được để trống';
+      newErrors.newPassword = 'New password cannot be empty';
     } else if (passwordData.newPassword.length < 6) {
-      newErrors.newPassword = 'Mật khẩu phải có ít nhất 6 ký tự';
+      newErrors.newPassword = 'Password must be at least 6 characters';
     }
 
     if (!passwordData.confirmPassword.trim()) {
-      newErrors.confirmPassword = 'Xác nhận mật khẩu không được để trống';
+      newErrors.confirmPassword = 'Confirm password cannot be empty';
     } else if (passwordData.newPassword !== passwordData.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+      newErrors.confirmPassword = 'Confirm password does not match';
     }
 
     setPasswordErrors(newErrors);
@@ -101,10 +101,10 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
       setPasswordData({ newPassword: '', confirmPassword: '' });
       setShowPasswordSection(false);
       setPasswordErrors({});
-      alert('Đặt lại mật khẩu thành công!');
+      alert('Reset password successfully!');
     } catch (error) {
       console.error('Error resetting password:', error);
-      setPasswordErrors({ submit: 'Lỗi khi đặt lại mật khẩu: ' + error.message });
+      setPasswordErrors({ submit: 'Error resetting password: ' + error.message });
     } finally {
       setIsPasswordLoading(false);
     }
@@ -114,17 +114,23 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
     const newErrors = {};
 
     if (!formData.fullName.trim()) {
-      newErrors.fullName = 'Họ tên không được để trống';
+      newErrors.fullName = 'Full name cannot be empty';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Email không được để trống';
+      newErrors.email = 'Email cannot be empty';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ';
+      newErrors.email = 'Email is not valid';
     }
 
-    if (formData.phone && !/^[0-9+\-\s()]+$/.test(formData.phone)) {
-      newErrors.phone = 'Số điện thoại không hợp lệ';
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Phone number cannot be empty';
+    } else if (!/^[0-9+\-\s()]+$/.test(formData.phone)) {
+      newErrors.phone = 'Phone number is not valid';
+    }
+
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address cannot be empty';
     }
 
     setErrors(newErrors);
@@ -153,7 +159,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
       <div className={`${styles['form-grid']}`}>
         <div className={`${styles['form-group']}`}>
           <label htmlFor="fullName" className={`${styles['form-label']}`}>
-            Họ tên <span className={styles['required']}>*</span>
+            Full name <span className={styles['required']}>*</span>
           </label>
           <input
             type="text"
@@ -162,7 +168,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
             value={formData.fullName}
             onChange={handleInputChange}
             className={`${styles['form-input']} ${errors.fullName ? styles['error'] : ''}`}
-            placeholder="Nhập họ tên đầy đủ"
+            placeholder="Enter full name"
           />
           {errors.fullName && <span className={`${styles['error-message']}`}>{errors.fullName}</span>}
         </div>
@@ -178,14 +184,14 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
             value={formData.email}
             onChange={handleInputChange}
             className={`${styles['form-input']} ${errors.email ? styles['error'] : ''}`}
-            placeholder="Nhập địa chỉ email"
+            placeholder="Enter email"
           />
           {errors.email && <span className={`${styles['error-message']}`}>{errors.email}</span>}
         </div>
 
         <div className={`${styles['form-group']}`}>
           <label htmlFor="phone" className={`${styles['form-label']}`}>
-            Số điện thoại
+            Phone number
           </label>
           <input
             type="tel"
@@ -194,14 +200,14 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
             value={formData.phone}
             onChange={handleInputChange}
             className={`${styles['form-input']} ${errors.phone ? styles['error'] : ''}`}
-            placeholder="Nhập số điện thoại"
+            placeholder="Enter phone number"
           />
           {errors.phone && <span className={`${styles['error-message']}`}>{errors.phone}</span>}
         </div>
 
         <div className={`${styles['form-group']}`}>
           <label htmlFor="address" className={`${styles['form-label']}`}>
-            Địa chỉ
+            Address
           </label>
           <input
             type="text"
@@ -209,14 +215,15 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
             name="address"
             value={formData.address}
             onChange={handleInputChange}
-            className={`${styles['form-input']}`}
-            placeholder="Nhập địa chỉ"
+            className={`${styles['form-input']} ${errors.address ? styles['error'] : ''}`}
+            placeholder="Enter address"
           />
+          {errors.address && <span className={`${styles['error-message']}`}>{errors.address}</span>}
         </div>
 
         <div className={`${styles['form-group']} ${styles['full-width']}`}>
           <label htmlFor="notes" className={`${styles['form-label']}`}>
-            Ghi chú
+            Note
           </label>
           <textarea
             id="notes"
@@ -224,7 +231,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
             value={formData.notes}
             onChange={handleInputChange}
             className={`${styles['form-textarea']}`}
-            placeholder="Nhập ghi chú về người dùng"
+            placeholder="Enter notes about the user"
             rows={3}
           />
         </div>
@@ -234,14 +241,14 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
       {/* Password Reset Section */}
       <div className={`${styles['password-section']}`}>
         <div className={`${styles['password-section-header']}`}>
-          <h4>Đổi mật khẩu</h4>
+          <h4>Reset password</h4>
           <button
-            type="button" 
+            type="button"
             className={`${styles['toggle-password-btn']}`}
             onClick={() => setShowPasswordSection(!showPasswordSection)}
           >
 
-            {showPasswordSection ? 'Ẩn' : 'Hiện'} đổi mật khẩu
+            {showPasswordSection ? 'Hide' : 'Show'} reset password
           </button>
         </div>
 
@@ -250,7 +257,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
             <div className={`${styles['form-grid']}`}>
               <div className={`${styles['form-group']}`}>
                 <label htmlFor="newPassword" className={`${styles['form-label']}`}>
-                  Mật khẩu mới <span className={styles['required']}>*</span>
+                  New password <span className={styles['required']}>*</span>
                 </label>
                 <div className={`${styles['password-input-wrapper']}`}>
                   <input
@@ -260,7 +267,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
                     className={`${styles['form-input']} ${passwordErrors.newPassword ? styles['error'] : ''}`}
-                    placeholder="Nhập mật khẩu mới"
+                    placeholder="Enter new password"
                   />
                   <button
                     type="button"
@@ -277,7 +284,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
 
               <div className={`${styles['form-group']}`}>
                 <label htmlFor="confirmPassword" className={`${styles['form-label']}`}>
-                  Xác nhận mật khẩu <span className={styles['required']}>*</span>
+                  Confirm password <span className={styles['required']}>*</span>
                 </label>
                 <div className={`${styles['password-input-wrapper']}`}>
                   <input
@@ -287,7 +294,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
                     value={passwordData.confirmPassword}
                     onChange={handlePasswordChange}
                     className={`${styles['form-input']} ${passwordErrors.confirmPassword ? styles['error'] : ''}`}
-                    placeholder="Nhập lại mật khẩu mới"
+                    placeholder="Enter confirm password"
                   />
                   <button
                     type="button"
@@ -316,7 +323,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
                 disabled={isPasswordLoading}
                 onClick={handlePasswordSubmit}
               >
-                {isPasswordLoading ? 'Đang đặt lại...' : 'Đặt lại mật khẩu'}
+                {isPasswordLoading ? 'Resetting password...' : 'Reset password'}
               </button>
             </div>
           </div>
@@ -331,7 +338,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
           disabled={isLoading}
         >
 
-          Hủy
+          Cancel
         </button>
         <button
           type="submit"
@@ -339,7 +346,7 @@ const EditUserForm = ({ user, onSave, onCancel }) => {
           disabled={isLoading}
         >
 
-          {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
+          {isLoading ? 'Saving...' : 'Save changes'}
         </button>
       </div>
     </form>

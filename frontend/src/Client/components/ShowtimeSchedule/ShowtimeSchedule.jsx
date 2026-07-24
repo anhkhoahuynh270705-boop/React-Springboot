@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { getAllShowtimes } from '../../../services/showtimeService';
+import { getShowtimesByMovie } from '../../../services/showtimeService';
 import { getAllCinemas } from '../../../services/cinemaService';
 import styles from './ShowtimeSchedule.module.css';
 import { useTranslation } from 'react-i18next';
@@ -32,7 +32,7 @@ const ShowtimeSchedule = ({ movieId, movieTitle }) => {
     try {
       setLoading(true);
       const [showtimesData, cinemasData] = await Promise.all([
-        getAllShowtimes(),
+        getShowtimesByMovie(movieId),
         getAllCinemas()
       ]);
 
@@ -154,11 +154,11 @@ const ShowtimeSchedule = ({ movieId, movieTitle }) => {
 
   const detectCinemaSystem = (cinema) => {
     let brand = cinema.brand || cinema.cinemaSystem || '';
-    if (brand.toUpperCase() === 'CGV') brand = 'CINEVERSE';
+    if (brand.toUpperCase() === 'CNV' || brand.toUpperCase() === 'CGV') brand = 'CINEVERSE';
     if (brand) return brand;
     // Separate form cinema name
     const name = (cinema.name || cinema.cinemaName || '').toLowerCase();
-    if (name.includes('cineverse') || name.includes('cgv')) return 'CINEVERSE';
+    if (name.includes('cineverse') || name.includes('cnv') || name.includes('cgv')) return 'CINEVERSE';
     if (name.includes('galaxy')) return 'Galaxy Cinema';
     if (name.includes('lotte')) return 'Lotte Cinema';
     if (name.includes('bhd')) return 'BHD Star Cineplex';
@@ -192,7 +192,7 @@ const ShowtimeSchedule = ({ movieId, movieTitle }) => {
   };
 
   const cinemaSystemLogos = {
-    'CINEVERSE': 'https://cdn.moveek.com/storage/media/cache/square/524ba157cd271c9c24d15f367a57c13abc26af06.jpg',
+    'CINEVERSE': '/images/logo.png',
     'Galaxy Cinema': 'https://cdn1.vieclam24h.vn/images/default/2024/04/10/images_171276257558.w-240.h-240.jpg',
     'Lotte Cinema': '/public/payment-icons/lotte.png',
     'BHD Star Cineplex': '/public/payment-icons/bhd.png',

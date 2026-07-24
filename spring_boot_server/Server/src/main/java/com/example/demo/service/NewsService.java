@@ -72,6 +72,7 @@ public class NewsService {
         return newsRepository.findAllByOrderByPublishDateDesc();
     }
 
+    // getNewsById intentionally not cached – it increments views on every call
     public News getNewsById(String id) {
         News news = newsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("News", "id", id));

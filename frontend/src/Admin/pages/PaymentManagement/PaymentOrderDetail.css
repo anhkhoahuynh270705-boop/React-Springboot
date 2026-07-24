@@ -44,6 +44,28 @@
   font-weight: 600;
 }
 
+/* Reveal button in detail header */
+.payment-detail-header .view-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #d1d5db;
+  background: #fff;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.payment-detail-header .view-btn:hover {
+  background: #667eea;
+  border-color: #667eea;
+  color: #fff;
+}
+
 .payment-detail-status {
   display: flex;
   align-items: center;

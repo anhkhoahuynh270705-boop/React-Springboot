@@ -2,21 +2,30 @@ package com.example.demo.service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.data.elasticsearch.client.elc.NativeQuery;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Article;
 import com.example.demo.model.Movie;
 import com.example.demo.model.MovieIndex;
 import com.example.demo.repository.ArticleRepository;
-import com.example.demo.repository.MovieElasticsearchRepository;
 import com.example.demo.repository.MovieRepository;
+
+import co.elastic.clients.elasticsearch._types.query_dsl.BoolQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.MultiMatchQuery;
+import co.elastic.clients.elasticsearch._types.query_dsl.Query;
+import co.elastic.clients.elasticsearch._types.query_dsl.TextQueryType;
 
 import lombok.RequiredArgsConstructor;
 
@@ -27,18 +36,23 @@ public class MovieService {
     private final MovieRepository movieRepository;
     private final MovieCinemaService movieCinemaService;
     private final ArticleRepository articleRepository;
-    private final MovieElasticsearchRepository movieElasticsearchRepository;
     private final MovieSyncService movieSyncService;
+    private final ElasticsearchOperations elasticsearchOperations;
 
-    @Cacheable(value = "movies")
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
 
     public Optional<Movie> getMovieById(String id) {
-        return movieRepository.findById(id);
+        return Optional.ofNullable(getMovieFromCacheOrDb(id));
     }
 
+    @Cacheable(value = "movies", key = "#id", unless = "#result == null")
+    public Movie getMovieFromCacheOrDb(String id) {
+        return movieRepository.findById(id).orElse(null);
+    }
+
+    @CacheEvict(value = "movies", allEntries = true)
     public Movie createMovie(Movie movie) {
         if (movie.getTitle() == null || movie.getTitle().trim().isEmpty()) {
             throw new IllegalArgumentException("Title is required");
@@ -48,6 +62,7 @@ public class MovieService {
         return savedMovie;
     }
 
+    @CacheEvict(value = "movies", allEntries = true)
     public Movie updateMovie(String id, Movie movie) {
         if (!movieRepository.existsById(id)) {
             throw new IllegalArgumentException("Movie not found");
@@ -58,6 +73,7 @@ public class MovieService {
         return savedMovie;
     }
 
+    @CacheEvict(value = "movies", allEntries = true)
     public boolean deleteMovie(String id) {
         if (!movieRepository.existsById(id)) {
             return false;
@@ -74,24 +90,58 @@ public class MovieService {
 
         String qNoSign = MovieSyncService.removeDiacritics(q);
 
-        // Fetch matching index documents from Elasticsearch
-        List<MovieIndex> elasticResults = movieElasticsearchRepository
-                .findByTitleContainingIgnoreCaseOrTitleNoSignContainingIgnoreCaseOrDirectorContainingIgnoreCaseOrDirectorNoSignContainingIgnoreCaseOrActorsContainingIgnoreCaseOrActorsNoSignContainingIgnoreCase(
-                        q, qNoSign, q, qNoSign, q, qNoSign);
+        // Short queries
+        boolean isShortQuery = q.trim().length() <= 3; // Avoid wrong results
+        String fuzziness = isShortQuery ? "0" : "AUTO";
+        int prefixLen = isShortQuery ? 0 : 2;
 
-        if (elasticResults.isEmpty()) {
+        // Multi match query
+        Query multiMatchOriginal = Query.of(qb -> qb
+                .multiMatch(MultiMatchQuery.of(mm -> mm
+                        .query(q)
+                        .fields("title^4", "englishTitle^3", "director^2", "actors")
+                        .type(TextQueryType.BestFields)
+                        .operator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
+                        .fuzziness(fuzziness)
+                        .prefixLength(prefixLen))));
+
+        Query multiMatchNoSign = Query.of(qb -> qb
+                .multiMatch(MultiMatchQuery.of(mm -> mm
+                        .query(qNoSign)
+                        .fields("titleNoSign^3", "directorNoSign^2", "actorsNoSign")
+                        .type(TextQueryType.BestFields)
+                        .operator(co.elastic.clients.elasticsearch._types.query_dsl.Operator.And)
+                        .fuzziness(fuzziness)
+                        .prefixLength(prefixLen))));
+
+        // Bool query
+        Query boolQuery = Query.of(qb -> qb
+                .bool(BoolQuery.of(b -> b
+                        .should(multiMatchOriginal)
+                        .should(multiMatchNoSign)
+                        .minimumShouldMatch("1"))));
+
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(boolQuery)
+                .build();
+
+        SearchHits<MovieIndex> hits = elasticsearchOperations.search(nativeQuery, MovieIndex.class);
+
+        List<String> ids = hits.getSearchHits().stream()
+                .map(SearchHit::getContent)
+                .map(MovieIndex::getId)
+                .toList();
+
+        if (ids.isEmpty()) {
             return List.of();
         }
 
-        // Fetch the rich MongoDB documents corresponding to these IDs
-        List<String> ids = elasticResults.stream().map(MovieIndex::getId).toList();
+        // Hydrate full movie data from MongoDB
         List<Movie> mongoMovies = movieRepository.findAllById(ids);
-
-        // Map to keep fast lookup by ID
         Map<String, Movie> movieMap = mongoMovies.stream()
                 .collect(Collectors.toMap(Movie::getId, movie -> movie));
 
-        // Sort and return results in the order returned by Elasticsearch
+        // Preserve Elasticsearch ranking order
         return ids.stream()
                 .map(movieMap::get)
                 .filter(Objects::nonNull)
@@ -159,6 +209,10 @@ public class MovieService {
                 .toList();
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "movies", allEntries = true),
+            @CacheEvict(value = "cinemas", allEntries = true)
+    })
     public Optional<Movie> addMovieToCinema(String movieId, String cinemaId) {
         boolean success = movieCinemaService.addMovieToCinema(movieId, cinemaId);
         if (success) {
@@ -167,6 +221,10 @@ public class MovieService {
         return Optional.empty();
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "movies", allEntries = true),
+            @CacheEvict(value = "cinemas", allEntries = true)
+    })
     public Optional<Movie> removeMovieFromCinema(String movieId, String cinemaId) {
         boolean success = movieCinemaService.removeMovieFromCinema(movieId, cinemaId);
         if (success) {

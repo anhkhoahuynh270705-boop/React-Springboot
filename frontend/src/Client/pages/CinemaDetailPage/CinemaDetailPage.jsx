@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Mail, Clock, Users, Star, Film, ArrowLeft, Calendar, Play, Building2, Globe, List } from 'lucide-react';
 import { getMoviesByCinema } from '../../../services/movieService';
+import { getShowtimesByDateAndCinema } from '../../../services/showtimeService';
 import MovieCard from '../../components/MovieCard/MovieCard';
 import './CinemaDetailPage.css';
 import { useTranslation } from 'react-i18next';
@@ -36,6 +37,29 @@ const CinemaDetailPage = () => {
     });
   }, []);
   const [error, setError] = useState(null);
+  const [showtimes, setShowtimes] = useState([]);
+
+  useEffect(() => {
+    if (cinemaId && selectedDate) {
+      fetchShowtimesForDate();
+    }
+  }, [cinemaId, selectedDate]);
+
+  const fetchShowtimesForDate = async () => {
+    try {
+      const data = await getShowtimesByDateAndCinema(cinemaId, selectedDate);
+      setShowtimes(data || []);
+    } catch (err) {
+      console.error('Error fetching showtimes for date:', err);
+      setShowtimes([]);
+    }
+  };
+
+  const displayedMovies = useMemo(() => {
+    if (!showtimes || showtimes.length === 0) return [];
+    const activeMovieIds = new Set(showtimes.map(s => s.movieId));
+    return movies.filter(movie => activeMovieIds.has(movie.id) || activeMovieIds.has(movie._id));
+  }, [movies, showtimes]);
 
   useEffect(() => {
     fetchCinemaData();
@@ -45,18 +69,18 @@ const CinemaDetailPage = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Get a list of all theaters and search for theaters by ID
       const allCinemas = await getAllCinemas();
-      const foundCinema = allCinemas.find(c => c.id === cinemaId);
-      
+      const foundCinema = allCinemas.find(c => c.id === cinemaId || c._id === cinemaId);
+
       if (!foundCinema) {
         setError(t('CinemaNotFound'));
         return;
       }
 
       const cinemaData = {
-        id: foundCinema.id,
+        id: foundCinema.id || foundCinema._id,
         name: foundCinema.name || t('CinemaNameNotFound'),
         address: foundCinema.address || t('CinemaAddressNotFound'),
         city: foundCinema.city || t('CinemaCityNotFound'),
@@ -69,9 +93,9 @@ const CinemaDetailPage = () => {
         totalRooms: foundCinema.totalRooms || 0,
         movieIds: foundCinema.movieIds || []
       };
-      
+
       setCinema(cinemaData);
-      
+
       // get movies by cinema
       try {
         const cinemaMovies = await getMoviesByCinema(cinemaId);
@@ -80,7 +104,7 @@ const CinemaDetailPage = () => {
         console.error('Error fetching movies by cinema:', movieErr);
         setMovies([]);
       }
-      
+
     } catch (err) {
       console.error('Error fetching cinema data:', err);
       setError(t('CinemaNotFound'));
@@ -117,7 +141,7 @@ const CinemaDetailPage = () => {
         url.searchParams.delete('date');
       }
       window.history.replaceState({}, '', url.toString());
-    } catch {}
+    } catch { }
   };
 
   const formatDateForDisplay = (date) => {
@@ -144,7 +168,7 @@ const CinemaDetailPage = () => {
           <h2>{t('LoadingCinemaDataFailed')}</h2>
           <p>{error}</p>
           <button onClick={() => navigate('/')} className="back-button">
-                <ArrowLeft size={20} />
+            <ArrowLeft size={20} />
             {t('BackToHome')}
           </button>
         </div>
@@ -159,7 +183,7 @@ const CinemaDetailPage = () => {
           <h2>{t('CinemaNotFound')}</h2>
           <p>{t('CinemaNotFoundDescription')}</p>
           <button onClick={() => navigate('/')} className="back-button">
-            
+
             {t('BackToHome')}
           </button>
         </div>
@@ -168,11 +192,11 @@ const CinemaDetailPage = () => {
   }
 
   return (
-    <div className="cinema-detail-page">     
+    <div className="cinema-detail-page">
       {/* Header */}
       <div className="cinema-detail-header">
         <button onClick={() => navigate(-1)} className="back-button">
-          
+
           {t('Back')}
         </button>
         <h1>{t('CinemaInfo')}</h1>
@@ -184,8 +208,8 @@ const CinemaDetailPage = () => {
           <div className="cinema-header">
             <div className="cinema-logo">
               {cinema.imageUrl ? (
-                <img 
-                  src={cinema.imageUrl} 
+                <img
+                  src={cinema.imageUrl}
                   alt={cinema.name}
                   onError={(e) => {
                     e.target.style.display = 'none';
@@ -193,7 +217,7 @@ const CinemaDetailPage = () => {
                   }}
                 />
               ) : null}
-              <div 
+              <div
                 className="cinema-placeholder"
                 style={{ display: cinema.imageUrl ? 'none' : 'flex' }}
               >
@@ -203,22 +227,22 @@ const CinemaDetailPage = () => {
             <div className="cinema-info">
               <h2 className="cinema-name">{cinema.name}</h2>
               <p className="cinema-address">{cinema.address}</p>
-              
+
               <div className="cinema-links">
-              <div className="cinema-link">
-                <MapPin size={16} />
-                <a
-                  href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d71201.48065974319!2d106.56698455245727!3d10.784670077217974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752dcece7b50db%3A0xf53f7643a9134531!2zQUVPTiBNQUxMIELDrG5oIFTDom4!5e1!3m2!1svi!2s!4v1758431025675!5m2!1svi!2s"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ marginLeft: "5px", textDecoration: "none", color: "inherit" }}
-                >
-                  {t('Map')}
-                </a>
-              </div>
+                <div className="cinema-link">
+                  <MapPin size={16} />
+                  <a
+                    href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d71201.48065974319!2d106.56698455245727!3d10.784670077217974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752dcece7b50db%3A0xf53f7643a9134531!2zQUVPTiBNQUxMIELDrG5oIFTDom4!5e1!3m2!1svi!2s!4v1758431025675!5m2!1svi!2s"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ marginLeft: "5px", textDecoration: "none", color: "inherit" }}
+                  >
+                    {t('Map')}
+                  </a>
+                </div>
 
                 <div className="cinema-link">
-                <Globe size={16} />
+                  <Globe size={16} />
                   <span>{cinema.city}</span>
                 </div>
               </div>
@@ -241,14 +265,14 @@ const CinemaDetailPage = () => {
       <div className="movies-section">
         <div className="section-header">
           <h2>{t('MoviesPlaying')}</h2>
-          <span className="movie-count">{movies.length} {t('Movies')}</span>
+          <span className="movie-count">{displayedMovies.length} {t('Movies')}</span>
         </div>
 
         {/* 7-Day Date Selector */}
-        <div className="date-selector" style={{ 
-          display: 'flex', 
-          gap: '8px', 
-          marginBottom: '20px', 
+        <div className="date-selector" style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: '20px',
           overflowX: 'auto',
           padding: '8px 0'
         }}>
@@ -256,7 +280,7 @@ const CinemaDetailPage = () => {
             const dateString = date.toISOString().slice(0, 10);
             const { day, dateStr } = formatDateForDisplay(date);
             const isSelected = selectedDate === dateString;
-            
+
             return (
               <button
                 key={dateString}
@@ -280,17 +304,17 @@ const CinemaDetailPage = () => {
           })}
         </div>
 
-        {movies.length === 0 ? (
+        {displayedMovies.length === 0 ? (
           <div className="no-movies">
-                <Film size={64} />
+            <Film size={64} />
             <h3>{t('NoMoviesToDisplay')}</h3>
-            <p>{t('CinemaNoMovies')}</p>  
+            <p>{t('CinemaNoMovies')}</p>
           </div>
         ) : (
           <div className="movies-grid">
-            {movies.map((movie) => (
+            {displayedMovies.map((movie) => (
               <div key={movie.id} className="movie-card-wrapper">
-                <MovieCard 
+                <MovieCard
                   movie={movie}
                   cinemaId={cinemaId}
                   selectedDate={selectedDate}

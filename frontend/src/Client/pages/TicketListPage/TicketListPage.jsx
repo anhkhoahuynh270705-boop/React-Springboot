@@ -1,13 +1,12 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, Clock, MapPin, Ticket, Eye, Trash2, Filter, Search, BarChart3, CheckCircle, XCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Ticket, Filter, Search } from 'lucide-react';
 import {
   getTicketsByUser,
   getTicketsByStatus,
   getUserTicketStats,
   cancelTicketWithReason,
-  downloadFile,
   refundTicket,
   getUserRefundStats,
   cancelTicket,
@@ -18,7 +17,6 @@ import { addFunds } from '../../../services/virtualWalletService';
 import { getMovieById } from '../../../services/movieService';
 import styles from './TicketListPage.module.css';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../../i18n';
 
 const TicketListPage = ({ userId }) => {
   const { t } = useTranslation();
@@ -48,6 +46,7 @@ const TicketListPage = ({ userId }) => {
   const [refundReason, setRefundReason] = useState('');
   const [refundStats, setRefundStats] = useState(null);
   const [viewTicket, setViewTicket] = useState(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     const fetchTickets = async () => {
@@ -145,7 +144,19 @@ const TicketListPage = ({ userId }) => {
     };
 
     fetchTickets();
-  }, [userId, statusFilter, paymentMethodFilter, cinemaAddressFilter]);
+  }, [userId, statusFilter, paymentMethodFilter, cinemaAddressFilter, refreshTrigger]);
+
+  useEffect(() => {
+    const handleTicketStatusUpdated = (e) => {
+      console.log('[TicketListPage] Ticket status updated event received, refetching...', e.detail);
+      setRefreshTrigger(prev => prev + 1);
+    };
+
+    window.addEventListener('ticketStatusUpdated', handleTicketStatusUpdated);
+    return () => {
+      window.removeEventListener('ticketStatusUpdated', handleTicketStatusUpdated);
+    };
+  }, []);
 
   useEffect(() => {
     let filtered = tickets;

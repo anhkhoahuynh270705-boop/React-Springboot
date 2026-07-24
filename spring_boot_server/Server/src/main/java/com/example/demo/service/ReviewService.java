@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 import org.springframework.stereotype.Service;
 
@@ -165,9 +167,9 @@ public class ReviewService {
         }
 
         try {
-            // Batch fetch all users in a single database query
+            // Batch fetching all users in a single database query
             Iterable<User> users = userRepository.findAllById(userIds);
-            java.util.Map<String, String> userAvatarMap = new java.util.HashMap<>();
+            Map<String, String> userAvatarMap = new HashMap<>();
             for (User user : users) {
                 if (user != null && user.getId() != null) {
                     String avatar = getUserAvatar(user);

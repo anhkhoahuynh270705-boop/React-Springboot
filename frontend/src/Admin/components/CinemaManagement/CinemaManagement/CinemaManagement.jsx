@@ -55,7 +55,9 @@ const CinemaManagement = () => {
   // Unique city list
   const cityOptions = React.useMemo(() => {
     const set = new Set();
-    cinemas.forEach(c => { if (c.city) set.add(c.city); });
+    cinemas.forEach(c => {
+      if (c.city) set.add(c.city);
+    });
     return Array.from(set).sort();
   }, [cinemas]);
 
@@ -257,8 +259,8 @@ const CinemaManagement = () => {
       </div>
 
       <div className={styles.cinemaGrid}>
-        {filteredCinemas.map((cinema) => (
-          <div key={cinema.id} className={styles.cinemaCard}>
+        {filteredCinemas.map((cinema, index) => (
+          <div key={cinema.id || cinema._id || index} className={styles.cinemaCard}>
             <div className={styles.cinemaImage}>
               {cinema.imageUrl ? (
                 <img

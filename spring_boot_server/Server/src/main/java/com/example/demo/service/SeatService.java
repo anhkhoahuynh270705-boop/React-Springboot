@@ -170,7 +170,7 @@ public class SeatService {
 
         return savedSeats;
     }
-    
+
     private String getUserIdFromRequest(Map<String, String> request) {
         if (request == null) {
             throw new BadRequestException("Request body is required");

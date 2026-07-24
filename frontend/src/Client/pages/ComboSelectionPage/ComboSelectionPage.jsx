@@ -153,17 +153,47 @@ const ComboSelectionPage = () => {
 
   const getDiscountAmount = () => {
     const subtotal = getSubtotal();
+    if (!selectedDiscountCard) return 0;
+    // TODO: get discount card from DB
+    const {
+      discountType,
+      discountValue = 0,
+      discountTarget = 'all'
+    } = selectedDiscountCard;
+    // TODO: get base price from DB
+    const basePrice =
+      discountTarget === 'ticket' ? getTicketPrice()
+        : discountTarget === 'combo' ? getTotalComboPrice()
+          : subtotal;
+
     let discount = 0;
-    if (selectedDiscountCard) {
-      const r = selectedDiscountCard.rewardId;
-      if (r === 'voucher_10') discount += Math.floor(getTicketPrice() * 0.1);
-      if (r === 'voucher_20') discount += Math.floor(getTicketPrice() * 0.2);
-      if (r === 'free_ticket') discount += getTicketPrice();
-      if (r === 'free_popcorn' || r === 'free_drink') {
-        const comboPrice = getTotalComboPrice();
-        discount += Math.min(50000, comboPrice);
-      }
+
+    switch (discountType) {
+      case 'percentage':
+        // discountValue is a percent (e.g. 10 means 10%)
+        discount = Math.floor(basePrice * (discountValue / 100));
+        break;
+
+      case 'fixed':
+        // discountValue is a fixed VND amount
+        discount = discountValue;
+        break;
+
+      case 'free_ticket':
+        // Waive the full ticket price
+        discount = getTicketPrice();
+        break;
+
+      case 'free_combo':
+        // Waive combo price up to discountValue cap (default 50 000 VND)
+        discount = Math.min(discountValue || 50000, getTotalComboPrice());
+        break;
+
+      default:
+        discount = 0;
     }
+
+    // Never discount more than the order total
     return Math.min(discount, subtotal);
   };
 
@@ -367,38 +397,38 @@ const ComboSelectionPage = () => {
             user
           }
         });
-        } else if (selectedPaymentMethod === 'creditcard') {
-          const payload = {
-            amount: Number(summary.totalPrice) || 0,
-            orderInfo: `${ticketData.movieTitle} - ${ticketData.seatNumber}`.trim(),
-            method: 'CreditCard',
-            userId: String(user?.id || ''),
-            userName: String(user?.fullName || user?.username || 'Guest'),
-            userEmail: String(user?.email || ''),
-          };
+      } else if (selectedPaymentMethod === 'creditcard') {
+        const payload = {
+          amount: Number(summary.totalPrice) || 0,
+          orderInfo: `${ticketData.movieTitle} - ${ticketData.seatNumber}`.trim(),
+          method: 'CreditCard',
+          userId: String(user?.id || ''),
+          userName: String(user?.fullName || user?.username || 'Guest'),
+          userEmail: String(user?.email || ''),
+        };
 
-          const session = await createCreditCardCheckoutSession(payload);
+        const session = await createCreditCardCheckoutSession(payload);
 
-          localStorage.setItem(
-            'pendingCreditCardBooking',
-            JSON.stringify({
-              ticketData,
-              summary,
-              user,
-              stripeSessionId: session?.sessionId || null
-            })
-          );
+        localStorage.setItem(
+          'pendingCreditCardBooking',
+          JSON.stringify({
+            ticketData,
+            summary,
+            user,
+            stripeSessionId: session?.sessionId || null
+          })
+        );
 
-          if (session?.checkoutUrl) {
-            window.location.href = session.checkoutUrl;
-            return;
-          }
-
-          localStorage.removeItem('pendingCreditCardBooking');
-
-          setMessage('Cannot redirect to credit card payment page.');
-          setBooking(false);
+        if (session?.checkoutUrl) {
+          window.location.href = session.checkoutUrl;
           return;
+        }
+
+        localStorage.removeItem('pendingCreditCardBooking');
+
+        setMessage('Cannot redirect to credit card payment page.');
+        setBooking(false);
+        return;
       } else if (selectedPaymentMethod === 'sandbox') {
         const balance = getBalance();
         if (balance < summary.totalPrice) {

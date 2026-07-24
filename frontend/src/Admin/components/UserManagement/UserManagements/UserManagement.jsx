@@ -49,7 +49,7 @@ const UserManagement = () => {
       setUsers(usersData);
     } catch (error) {
       console.error('Error fetching users:', error);
-      showError('Lỗi khi tải danh sách người dùng: ' + error.message);
+      showError('Error fetching users: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ const UserManagement = () => {
       setUsers(searchResults);
     } catch (error) {
       console.error('Error searching users:', error);
-      showError('Tìm kiếm người dùng thất bại: ' + error.message);
+      showError('Error searching users: ' + error.message);
     }
   };
 
@@ -77,7 +77,7 @@ const UserManagement = () => {
       setShowUserModal(true);
     } catch (error) {
       console.error('Error fetching user details:', error);
-      showError('Lỗi khi tải thông tin người dùng: ' + error.message);
+      showError('Error fetching user details: ' + error.message);
     }
   };
 
@@ -88,7 +88,7 @@ const UserManagement = () => {
       setShowEditUserModal(true);
     } catch (error) {
       console.error('Error fetching user details:', error);
-      showError('Lỗi khi tải thông tin người dùng: ' + error.message);
+      showError('Error fetching user details: ' + error.message);
     }
   };
 
@@ -97,23 +97,23 @@ const UserManagement = () => {
       await updateUser(selectedUser.id, formData);
       setShowEditUserModal(false);
       setSelectedUser(null);
-      showSuccess('Cập nhật thông tin người dùng thành công!');
+      showSuccess('Update user successfully!');
       await fetchUsers();
     } catch (error) {
       console.error('Error updating user:', error);
-      showError('Cập nhật thông tin người dùng thất bại: ' + error.message);
+      showError('Update user failed: ' + error.message);
     }
   };
 
   const handleDeleteUser = async (userId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa người dùng này?')) {
+    if (window.confirm('Are you sure you want to delete this user?')) {
       try {
         await deleteUser(userId);
         showSuccess('Delete user successfully!');
         await fetchUsers();
       } catch (error) {
         console.error('Error deleting user:', error);
-        showError('Xóa người dùng thất bại: ' + error.message);
+        showError('Delete user failed: ' + error.message);
       }
     }
   };
@@ -122,16 +122,16 @@ const UserManagement = () => {
     try {
       await createUser(formData);
       setShowCreateUserModal(false);
-      showSuccess('Tạo người dùng thành công!');
+      showSuccess('Create user successfully!');
       await fetchUsers();
     } catch (error) {
       console.error('Error creating user:', error);
-      showError('Tạo người dùng thất bại: ' + error.message);
+      showError('Create user failed: ' + error.message);
     }
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return 'Chưa cập nhật';
+    if (!dateString) return 'Not updated';
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('vi-VN', {
@@ -142,7 +142,7 @@ const UserManagement = () => {
         minute: '2-digit'
       });
     } catch (error) {
-      return 'Chưa cập nhật';
+      return 'Not updated';
     }
   };
 
@@ -166,7 +166,7 @@ const UserManagement = () => {
             <input
               ref={searchInputRef}
               type="text"
-              placeholder="Tìm kiếm người dùng..."
+              placeholder="Search user..."
               value={userSearchTerm}
               onChange={(e) => {
                 setUserSearchTerm(e.target.value);
@@ -178,15 +178,15 @@ const UserManagement = () => {
             <button
               className={styles.createButton}
               onClick={() => setShowCreateUserModal(true)}
-              title="Tạo người dùng mới"
+              title="Create new user"
             >
               <UserPlus size={18} />
-              Tạo người dùng
+              Create user
             </button>
             <button
               className={styles.refreshButton}
               onClick={fetchUsers}
-              title="Làm mới"
+              title="Refresh"
             >
               <RefreshCw size={18} />
             </button>
@@ -199,13 +199,13 @@ const UserManagement = () => {
           <thead>
             <tr>
               <th>ID</th>
-              <th>Tên đăng nhập</th>
-              <th>Họ tên</th>
+              <th>Username</th>
+              <th>Full name</th>
               <th>Email</th>
-              <th>Số điện thoại</th>
-              <th>Ngày tạo</th>
-              <th>Cập nhật lần cuối</th>
-              <th>Thao tác</th>
+              <th>Phone number</th>
+              <th>Created at</th>
+              <th>Updated at</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -213,9 +213,9 @@ const UserManagement = () => {
               <tr key={user.id}>
                 <td>{user.id}</td>
                 <td>{user.username}</td>
-                <td>{user.fullName || 'Chưa cập nhật'}</td>
+                <td>{user.fullName || 'Not updated'}</td>
                 <td>{user.email}</td>
-                <td>{user.phone || 'Chưa cập nhật'}</td>
+                <td>{user.phone || 'Not updated'}</td>
                 <td>{formatDate(user.createdAt)}</td>
                 <td>{formatDate(user.updatedAt)}</td>
                 <td>
@@ -223,21 +223,21 @@ const UserManagement = () => {
                     <button
                       className={styles.actionBtn}
                       onClick={() => handleViewUser(user.id)}
-                      title="Xem chi tiết"
+                      title="View details"
                     >
                       <Eye size={16} />
                     </button>
                     <button
                       className={styles.actionBtn}
                       onClick={() => handleEditUser(user.id)}
-                      title="Chỉnh sửa"
+                      title="Edit"
                     >
                       <Edit size={16} />
                     </button>
                     <button
                       className={`${styles.actionBtn} ${styles.deleteBtn}`}
                       onClick={() => handleDeleteUser(user.id)}
-                      title="Xóa"
+                      title="Delete"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -254,7 +254,7 @@ const UserManagement = () => {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h3>Chi tiết người dùng</h3>
+              <h3>User details</h3>
               <button
                 className={styles.closeBtn}
                 onClick={() => {
@@ -273,36 +273,36 @@ const UserManagement = () => {
                   <span>{selectedUser.id}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <label>Tên đăng nhập:</label>
+                  <label>Username:</label>
                   <span>{selectedUser.username}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <label>Họ tên:</label>
-                  <span>{selectedUser.fullName || 'Chưa cập nhật'}</span>
+                  <label>Full name:</label>
+                  <span>{selectedUser.fullName || 'Not updated'}</span>
                 </div>
                 <div className={styles.infoRow}>
                   <label>Email:</label>
                   <span>{selectedUser.email}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <label>Số điện thoại:</label>
-                  <span>{selectedUser.phone || 'Chưa cập nhật'}</span>
+                  <label>Phone number:</label>
+                  <span>{selectedUser.phone || 'Not updated'}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <label>Địa chỉ:</label>
-                  <span>{selectedUser.address || 'Chưa cập nhật'}</span>
+                  <label>Address:</label>
+                  <span>{selectedUser.address || 'Not updated'}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <label>Ngày tạo:</label>
+                  <label>Created at:</label>
                   <span>{formatDate(selectedUser.createdAt)}</span>
                 </div>
                 <div className={styles.infoRow}>
-                  <label>Cập nhật lần cuối:</label>
+                  <label>Updated at:</label>
                   <span>{formatDate(selectedUser.updatedAt)}</span>
                 </div>
                 {selectedUser.notes && (
                   <div className={styles.infoRow}>
-                    <label>Ghi chú:</label>
+                    <label>Notes:</label>
                     <span>{selectedUser.notes}</span>
                   </div>
                 )}
@@ -319,7 +319,7 @@ const UserManagement = () => {
                   }}
                 >
 
-                  Chỉnh sửa
+                  Edit
                 </button>
                 <button
                   className={`${styles.actionBtn} ${styles.closeBtn}`}
@@ -328,7 +328,7 @@ const UserManagement = () => {
                     setSelectedUser(null);
                   }}
                 >
-                  Đóng
+                  Close
                 </button>
               </div>
             </div>
@@ -341,7 +341,7 @@ const UserManagement = () => {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h3>Chỉnh sửa người dùng</h3>
+              <h3>Edit user</h3>
               <button
                 className={styles.closeBtn}
                 onClick={() => {

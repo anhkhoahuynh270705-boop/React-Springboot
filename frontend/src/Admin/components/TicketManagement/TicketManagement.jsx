@@ -139,47 +139,68 @@ const TicketManagement = () => {
     setShowTicketModal(true);
   };
 
+  // Optimistically update local state immediately, then sync with server in background
+  const applyOptimisticUpdate = (ticketId, newStatus) => {
+    setTickets(prev => prev.map(t =>
+      t.id === ticketId ? { ...t, status: newStatus } : t
+    ));
+    if (selectedTicket && selectedTicket.id === ticketId) {
+      setSelectedTicket(prev => ({ ...prev, status: newStatus }));
+    }
+  };
+
   const handleStatusUpdate = async (ticketId, newStatus) => {
+    // Snapshot for rollback on error
+    const snapshot = tickets;
+
+    // 1. Update UI immediately (no waiting)
+    applyOptimisticUpdate(ticketId, newStatus);
+
     try {
       if (newStatus === 'confirmed') {
         await approveTicket(ticketId);
         showSuccess('Update ticket status successfully!');
       } else if (newStatus === 'cancelled') {
         await cancelTicket(ticketId);
-        const ticket = tickets.find(t => t.id === ticketId);
+        const ticket = snapshot.find(t => t.id === ticketId);
         if (ticket) {
-          await createNotification(
+          createNotification(
             createTicketCancelledNotification(ticket.userId, ticket.movieTitle, ticket.ticketNumber)
-          );
+          ).catch(() => {});
         }
         showSuccess('Ticket cancelled successfully!');
       } else {
         await updateTicketStatus(ticketId, newStatus);
         showSuccess('Update ticket status successfully!');
       }
-      await fetchTickets();
-
-      if (selectedTicket && selectedTicket.id === ticketId) {
-        const updated = tickets.find(t => t.id === ticketId);
-        if (updated) setSelectedTicket({ ...updated, status: newStatus });
-      }
+      // Sync quietly in background — no await so UI is not blocked
+      fetchTickets();
     } catch (error) {
+      // Rollback on failure
+      setTickets(snapshot);
+      if (selectedTicket && selectedTicket.id === ticketId) {
+        const orig = snapshot.find(t => t.id === ticketId);
+        if (orig) setSelectedTicket(orig);
+      }
       console.error('Error updating ticket status:', error);
       showError('Failed to update status: ' + error.message);
     }
   };
 
   const handleMarkAsUsed = async (ticketId) => {
+    const snapshot = tickets;
+    // Optimistic update
+    applyOptimisticUpdate(ticketId, 'used');
     try {
       await markTicketAsUsed(ticketId);
       showSuccess('Ticket marked as used successfully!');
-      await fetchTickets();
-
-      if (selectedTicket && selectedTicket.id === ticketId) {
-        const updated = await getTicketById(ticketId);
-        setSelectedTicket(updated);
-      }
+      fetchTickets(); // background sync
     } catch (error) {
+      setTickets(snapshot);
+      if (selectedTicket && selectedTicket.id === ticketId) {
+        const orig = snapshot.find(t => t.id === ticketId);
+        if (orig) setSelectedTicket(orig);
+      }
       console.error('Error marking ticket as used:', error);
       showError('Failed to mark ticket as used: ' + error.message);
     }
@@ -191,26 +212,37 @@ const TicketManagement = () => {
       return;
     }
 
+    const snapshot = tickets;
+    const count = selectedTickets.length;
+
+    // Optimistic: update all selected tickets immediately
+    setTickets(prev => prev.map(t =>
+      selectedTickets.includes(t.id) ? { ...t, status: newStatus } : t
+    ));
+    setSelectedTickets([]);
+
     try {
-      for (const ticketId of selectedTickets) {
-        const ticket = tickets.find(t => t.id === ticketId);
+      // Fire all requests in parallel instead of sequential awaits
+      await Promise.all(selectedTickets.map(async ticketId => {
         if (newStatus === 'confirmed') {
           await approveTicket(ticketId);
         } else if (newStatus === 'cancelled') {
+          const ticket = snapshot.find(t => t.id === ticketId);
           await cancelTicket(ticketId);
           if (ticket) {
-            await createNotification(
+            createNotification(
               createTicketCancelledNotification(ticket.userId, ticket.movieTitle, ticket.ticketNumber)
-            );
+            ).catch(() => {});
           }
         } else {
           await updateTicketStatus(ticketId, newStatus);
         }
-      }
-      setSelectedTickets([]);
-      showSuccess(`Updated status for ${selectedTickets.length} tickets successfully!`);
-      await fetchTickets();
+      }));
+
+      showSuccess(`Updated status for ${count} tickets successfully!`);
+      fetchTickets(); // background sync
     } catch (error) {
+      setTickets(snapshot);
       console.error('Error bulk updating tickets:', error);
       showError('Failed to update ticket statuses: ' + error.message);
     }

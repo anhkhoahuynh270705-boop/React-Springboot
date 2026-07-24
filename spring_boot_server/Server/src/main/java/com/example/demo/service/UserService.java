@@ -57,7 +57,7 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new ConflictException("Email is already registered");
         }
-        
+
         User savedUser = userRepository.save(user);
         savedUser.setPassword(null);
         return savedUser;
@@ -73,7 +73,7 @@ public class UserService {
 
         User existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        
+
         if (user.getUsername() != null) existingUser.setUsername(user.getUsername());
         if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
         if (user.getFullName() != null) existingUser.setFullName(user.getFullName());
@@ -93,12 +93,12 @@ public class UserService {
     public User updateAvatar(String id, Map<String, Object> body) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", id));
-        
+
         if (body.containsKey("avatar")) {
             Object v = body.get("avatar");
             user.setAvatar(v == null || "".equals(v) ? null : v.toString());
         }
-        
+
         User updatedUser = userRepository.save(user);
         updatedUser.setPassword(null);
         return updatedUser;
@@ -179,7 +179,7 @@ public class UserService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User", "id", userId));
-        
+
         if (!user.getPassword().equals(currentPassword)) {
             throw new UnauthorizedException("Current password is incorrect");
         }
@@ -253,7 +253,7 @@ public class UserService {
         savedUser.setPassword(null);
         return savedUser;
     }
-    
+
     public Map<String, String> getGoogleOAuthConfig() {
         Map<String, String> config = new HashMap<>();
         config.put("clientId", googleClientId);
@@ -289,7 +289,7 @@ public class UserService {
             if (user.getFaceDescriptor() != null && !user.getFaceDescriptor().isEmpty()) {
                 List<Double> normalizedStored = FaceDescriptorUtils.normalize(user.getFaceDescriptor());
                 double similarity = FaceDescriptorUtils.cosineSimilarity(normalizedInput, normalizedStored);
-                
+
                 if (similarity > bestSimilarity) {
                     bestSimilarity = similarity;
                     matchedUser = user;

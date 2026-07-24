@@ -25,21 +25,21 @@ export async function getMovieById(id) {
 // function to remove Vietnamese diacritics for search
 function removeVietnameseDiacritics(str) {
   if (!str) return '';
-  
+
   return str
-    .normalize('NFD') 
+    .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/đ/g, 'd').replace(/Đ/g, 'D') 
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D')
     .toLowerCase();
 }
 
 // Function to check if text contains search query 
 function containsSearchQuery(text, query) {
   if (!text || !query) return false;
-  
+
   const normalizedText = removeVietnameseDiacritics(text);
   const normalizedQuery = removeVietnameseDiacritics(query);
-  
+
   return normalizedText.includes(normalizedQuery);
 }
 
@@ -52,34 +52,34 @@ export async function searchMovies(query) {
   try {
     const encodedQuery = encodeURIComponent(query.trim());
     console.log('API call to search movies:', `http://localhost:8080/api/movies/search?q=${encodedQuery}`);
-    
+
     const res = await fetch(`http://localhost:8080/api/movies/search?q=${encodedQuery}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
       },
     });
-    
+
     console.log('Search API response status:', res.status);
-    
+
     if (res.status === 400) {
       console.warn('Server returned 400');
       throw new Error('Query validation failed');
     }
-    
+
     if (!res.ok) {
       throw new Error(`Server error: ${res.status}`);
     }
-    
+
     const data = await res.json();
     console.log('Search API response data:', data);
     return data;
   } catch (error) {
     console.warn('Search API failed, using fallback:', error.message);
-    
+
     try {
       const allMovies = await getMovies();
-      const filteredMovies = allMovies.filter(movie => 
+      const filteredMovies = allMovies.filter(movie =>
         containsSearchQuery(movie.title, query) ||
         containsSearchQuery(movie.genre, query) ||
         containsSearchQuery(movie.director, query) ||
@@ -88,7 +88,7 @@ export async function searchMovies(query) {
         containsSearchQuery(movie.description, query) ||
         containsSearchQuery(movie.cast, query)
       );
-      
+
       console.log(`Fallback search found ${filteredMovies.length} movies`);
       return filteredMovies;
     } catch (fallbackError) {
@@ -116,12 +116,12 @@ export async function createMovie(movieData) {
       method: 'POST',
       body: JSON.stringify(movieData),
     });
-    
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || 'Cannot create movie');
     }
-    
+
     return await res.json();
   } catch (error) {
     console.error('Error creating movie:', error);
@@ -135,12 +135,12 @@ export async function updateMovie(movieId, movieData) {
       method: 'PUT',
       body: JSON.stringify(movieData),
     });
-    
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || 'Cannot update movie');
     }
-    
+
     return await res.json();
   } catch (error) {
     console.error('Error updating movie:', error);
@@ -153,12 +153,12 @@ export async function deleteMovie(movieId) {
     const res = await adminFetch(`/movies/${movieId}`, {
       method: 'DELETE',
     });
-    
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || 'Cannot delete movie');
     }
-    
+
     return true;
   } catch (error) {
     console.error('Error deleting movie:', error);
@@ -187,12 +187,12 @@ export async function addMovieToCinema(movieId, cinemaId) {
     const res = await adminFetch(`/movies/${movieId}/cinemas/${cinemaId}`, {
       method: 'POST',
     });
-    
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || 'Cannot add movie to cinema');
     }
-    
+
     return await res.json();
   } catch (error) {
     console.error('Error adding movie to cinema:', error);
@@ -206,12 +206,12 @@ export async function removeMovieFromCinema(movieId, cinemaId) {
     const res = await adminFetch(`/movies/${movieId}/cinemas/${cinemaId}`, {
       method: 'DELETE',
     });
-    
+
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({}));
       throw new Error(errorData.message || 'Cannot remove movie from cinema');
     }
-    
+
     return await res.json();
   } catch (error) {
     console.error('Error removing movie from cinema:', error);

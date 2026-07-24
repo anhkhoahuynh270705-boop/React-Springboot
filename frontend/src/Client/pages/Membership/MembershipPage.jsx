@@ -28,7 +28,7 @@ const MembershipPage = () => {
 
   return (
     <div className="container" style={{ maxWidth: '960px', margin: '0 auto', padding: '1.5rem' }}>
-      <h1 style={{ margin: 0, fontSize: '1.5rem' }}>{t('CGVMember')}</h1>
+      <h1 style={{ margin: 0, fontSize: '1.5rem' }}>{t('CNVMember')}</h1>
       <p style={{ color: '#4b5563' }}>{t('Earn points when buying tickets/combos, level up to unlock exclusive benefits.')}</p>
 
       {/* info */}
@@ -49,9 +49,9 @@ const MembershipPage = () => {
           </div>
           <div style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 8, padding: '0.75rem' }}>
             <strong>{t('Tier-based promotions')}</strong>
-          <div>  {overview.promotions?.[0] || t('Discounts and combos for {{tier}} tier', { tier: overview.tier })}</div>
+            <div>  {overview.promotions?.[0] || t('Discounts and combos for {{tier}} tier', { tier: overview.tier })}</div>
+          </div>
         </div>
-      </div>
 
         <div style={{ marginTop: '0.75rem' }}>
           <strong>{t('Transaction history')}</strong>

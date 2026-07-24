@@ -10,10 +10,11 @@ import com.example.demo.model.Combo;
 import com.example.demo.repository.ComboRepository;
 
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class ComboService {
-    
+
     private final ComboRepository comboRepository;
 
     public List<Combo> getAllActiveCombos() {

@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, User, Eye, Search, Filter, Clock, Tag } from 'lucide-react';
 import { getAllNews, getNewsCategories } from '../../../services/newsService';
@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 const NewsPage = () => {
   const { t } = useTranslation();
   const [articles, setArticles] = useState([]);
-  const [filteredArticles, setFilteredArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -21,10 +20,6 @@ const NewsPage = () => {
     fetchNews();
     fetchCategories();
   }, []);
-
-  useEffect(() => {
-    filterAndSortArticles();
-  }, [articles, searchQuery, selectedCategory, sortBy]);
 
   const fetchNews = async () => {
     try {
@@ -70,7 +65,7 @@ const NewsPage = () => {
     return normalizedText.includes(normalizedQuery);
   };
 
-  const filterAndSortArticles = () => {
+  const filteredArticles = useMemo(() => {
     let filtered = [...articles];
 
     // Filter by category
@@ -104,8 +99,8 @@ const NewsPage = () => {
       }
     });
 
-    setFilteredArticles(filtered);
-  };
+    return filtered;
+  }, [articles, searchQuery, selectedCategory, sortBy]);
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
@@ -162,7 +157,7 @@ const NewsPage = () => {
     <div className={`${styles['cnews-page']}`}>
       <div className={`${styles['cnews-container']}`}>
         <div className={`${styles['cnews-header']}`}>
-          <h1>{t('CGV HAK News')}</h1>
+          <h1>{t('CNV HAK News')}</h1>
           <p>{t('Stay updated with the latest news on movies, cinemas, and promotions')}</p>
         </div>
 

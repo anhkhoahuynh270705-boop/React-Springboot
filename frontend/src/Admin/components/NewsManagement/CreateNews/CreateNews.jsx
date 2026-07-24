@@ -58,7 +58,13 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
       newErrors.category = 'Vui lòng chọn danh mục';
     }
 
-    if (formData.imageUrl && !/^https?:\/\/.+/.test(formData.imageUrl.trim())) {
+    if (!formData.tags.trim()) {
+      newErrors.tags = 'Tags không được để trống';
+    }
+
+    if (!formData.imageUrl && !formData.imageUrl.trim()) {
+      newErrors.imageUrl = 'URL hình ảnh không được để trống';
+    } else if (!/^https?:\/\/.+/.test(formData.imageUrl)) {
       newErrors.imageUrl = 'URL hình ảnh không hợp lệ (phải bắt đầu bằng http:// hoặc https://)';
     }
 
@@ -88,11 +94,11 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
       };
 
       const createdNews = await createNews(newsData);
-      
+
       if (onNewsCreated) {
         onNewsCreated(createdNews);
       }
-      
+
       // Reset form
       setFormData({
         title: '',
@@ -113,16 +119,16 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
   };
 
   return (
-    <div className={`${styles['create-news-overlay']}`}> 
+    <div className={`${styles['create-news-overlay']}`}>
       <div className={`${styles['create-news-modal']}`}>
         <div className={`${styles['create-news-header']}`}>
           <h2>Create News</h2>
           <button className={styles['close-btn']} onClick={onClose}>×</button>
         </div>
-        
+
         <form onSubmit={handleSubmit} className={`${styles['create-news-form']}`}>
           {error && <div className={styles['error-message']}>{error}</div>}
-          
+
           <div className={`${styles['form-group']}`}>
             <label htmlFor="title">Title *</label>
             <input
@@ -181,7 +187,7 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
             </div>
 
             <div className={`${styles['form-group']}`}>
-              <label htmlFor="category">Category *</label>  
+              <label htmlFor="category">Category *</label>
               <select
                 id="category"
                 name="category"
@@ -209,8 +215,10 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
               name="tags"
               value={formData.tags}
               onChange={handleChange}
+              style={errors.tags ? { borderColor: '#ef4444' } : {}}
               placeholder="Examples: movies, cinema, entertainment"
             />
+            {errors.tags && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.tags}</span>}
           </div>
 
           <div className={`${styles['form-group']}`}>
@@ -241,7 +249,7 @@ const CreateNews = ({ onNewsCreated, onClose }) => {
           </div>
 
           <div className={`${styles['form-actions']}`}>
-            <button type="button" onClick={onClose} className={styles['btn-cancel']}> 
+            <button type="button" onClick={onClose} className={styles['btn-cancel']}>
               Cancel
             </button>
             <button type="submit" className={`${styles['btn-submit']}`} disabled={loading}>

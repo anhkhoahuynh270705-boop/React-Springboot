@@ -5,36 +5,49 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Arrays;
 
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.model.Cinema;
 import com.example.demo.repository.CinemaRepository;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class CinemaService {
-    
+
     private final CinemaRepository cinemaRepository;
 
     private final MovieCinemaService movieCinemaService;
 
-    @Cacheable(value = "cinemas")
     public List<Cinema> getAllCinemas() {
+        Cinema[] cachedArray = getAllCinemasCached();
+        return cachedArray != null ? new ArrayList<>(Arrays.asList(cachedArray)) : new ArrayList<>();
+    }
+
+    @Cacheable(value = "cinemas", key = "'all'")
+    public Cinema[] getAllCinemasCached() {
         List<Cinema> cinemas = cinemaRepository.findAll();
         for (Cinema cinema : cinemas) {
             if (cinema.getMovieIds() == null) {
                 cinema.setMovieIds(new ArrayList<>());
             }
         }
-        return cinemas;
+        return cinemas.toArray(new Cinema[0]);
     }
 
     public Optional<Cinema> getCinemaById(String id) {
-        return cinemaRepository.findById(id);
+        return Optional.ofNullable(getCinemaFromCacheOrDb(id));
+    }
+
+    @Cacheable(value = "cinemas", key = "#id", unless = "#result == null")
+    public Cinema getCinemaFromCacheOrDb(String id) {
+        return cinemaRepository.findById(id).orElse(null);
     }
 
     public List<Cinema> searchCinemas(String name, String city, String status) {
@@ -56,7 +69,14 @@ public class CinemaService {
     }
 
     public List<Cinema> getCinemasByMovie(String movieId) {
-        return cinemaRepository.findByMovieIdsContaining(movieId);
+        Cinema[] cachedArray = getCinemasByMovieCached(movieId);
+        return cachedArray != null ? new ArrayList<>(Arrays.asList(cachedArray)) : new ArrayList<>();
+    }
+
+    @Cacheable(value = "cinemas", key = "'movie-' + #movieId")
+    public Cinema[] getCinemasByMovieCached(String movieId) {
+        List<Cinema> list = cinemaRepository.findByMovieIdsContaining(movieId);
+        return list.toArray(new Cinema[0]);
     }
 
     @CacheEvict(value = "cinemas", allEntries = true)
@@ -85,7 +105,10 @@ public class CinemaService {
         cinemaRepository.deleteById(id);
     }
 
-    @CacheEvict(value = "cinemas", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "movies", allEntries = true),
+            @CacheEvict(value = "cinemas", allEntries = true)
+    })
     public Cinema addMovieToCinema(String cinemaId, String movieId) {
         boolean success = movieCinemaService.addMovieToCinema(movieId, cinemaId);
         if (success) {
@@ -97,7 +120,10 @@ public class CinemaService {
         return null;
     }
 
-    @CacheEvict(value = "cinemas", allEntries = true)
+    @Caching(evict = {
+            @CacheEvict(value = "movies", allEntries = true),
+            @CacheEvict(value = "cinemas", allEntries = true)
+    })
     public Cinema removeMovieFromCinema(String cinemaId, String movieId) {
         boolean success = movieCinemaService.removeMovieFromCinema(movieId, cinemaId);
         if (success) {

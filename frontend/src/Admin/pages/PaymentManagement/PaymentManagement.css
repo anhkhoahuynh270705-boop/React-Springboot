@@ -49,8 +49,13 @@
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Stats Grid */
@@ -69,7 +74,6 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transition: all 0.3s ease;
   position: relative;
@@ -100,10 +104,21 @@
   color: white;
 }
 
-.stat-icon.total { background: linear-gradient(135deg, #667eea, #6089e2); }
-.stat-icon.pending { background: linear-gradient(135deg, #f59e0b, #f97316); }
-.stat-icon.paid { background: linear-gradient(135deg, #10b981, #059669); }
-.stat-icon.expired { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.stat-icon.total {
+  background: linear-gradient(135deg, #667eea, #6089e2);
+}
+
+.stat-icon.pending {
+  background: linear-gradient(135deg, #f59e0b, #f97316);
+}
+
+.stat-icon.paid {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.stat-icon.expired {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
 
 .stat-content {
   flex: 1;
@@ -481,7 +496,7 @@
 }
 
 .retry-btn {
-  background:#667eea;
+  background: #667eea;
   color: white;
   border: none;
   border-radius: 8px;
@@ -504,7 +519,7 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .detail-section {
     position: static;
   }
@@ -514,44 +529,44 @@
   .payment-management {
     padding: 16px;
   }
-  
+
   .header-content {
     flex-direction: column;
     gap: 16px;
     align-items: flex-start;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 16px;
   }
-  
+
   .stat-card {
     padding: 16px;
   }
-  
+
   .filters-section {
     flex-direction: column;
   }
-  
+
   .search-box {
     min-width: auto;
   }
-  
+
   .orders-table {
     font-size: 12px;
   }
-  
+
   .orders-table th,
   .orders-table td {
     padding: 12px 8px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     gap: 4px;
   }
-  
+
   .action-btn {
     font-size: 11px;
     padding: 6px 10px;
@@ -562,20 +577,20 @@
   .payment-management {
     padding: 12px;
   }
-  
+
   .header-title h1 {
     font-size: 24px;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .orders-table th,
   .orders-table td {
     padding: 8px 4px;
   }
-  
+
   .customer-info,
   .order-info {
     display: none;

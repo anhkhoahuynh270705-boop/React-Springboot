@@ -13,6 +13,7 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
   const navigate = useNavigate();
 
   console.log('MovieCard: Received movie:', movie);
+
   const getImageUrl = (movie) => {
     return movie.posterUrl || movie.poster || movie.imageUrl || movie.image || '/default-movie.jpg';
   };
@@ -49,11 +50,20 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
     return movie.releaseYear || movie.year || 'No information available';
   };
 
-  // Fetch showtimes from API 
+  // Check if movie is coming soon
+  const isComingSoon = (() => {
+    if (!movie || !movie.releaseDate) return false;
+    const release = new Date(movie.releaseDate);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return release > today;
+  })();
+
+  // Fetch showtimes from API
   useEffect(() => {
     const fetchShowtimes = async () => {
       try {
-        setLoading(true);     
+        setLoading(true);
         let data = [];
         if (cinemaId && selectedDate) {
           const byDate = await getShowtimesByDateAndCinema(cinemaId, selectedDate);
@@ -119,9 +129,7 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
       }
     };
 
-    // Listen for custom event when showtimes are updated
     window.addEventListener('showtimesUpdated', handleShowtimeUpdate);
-    
     return () => {
       window.removeEventListener('showtimesUpdated', handleShowtimeUpdate);
     };
@@ -131,7 +139,6 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
   const formatTime = (timeString) => {
     if (!timeString) return '';
     try {
-
       if (timeString.match(/^\d{2}:\d{2}$/)) {
         return timeString;
       }
@@ -139,7 +146,6 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
       if (isNaN(date.getTime())) {
         return timeString;
       }
-      
       return date.toLocaleTimeString('vi-VN', {
         hour: '2-digit',
         minute: '2-digit',
@@ -152,7 +158,7 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
     }
   };
 
-  // Handle showtime click
+  // Handle showtime click — only called for now-showing movies
   const handleShowtimeClick = (showtime) => {
     navigate('/seat-selection', {
       state: {
@@ -173,37 +179,53 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
           }}
         />
       </div>
-      
+
       <div className="movie-card-content">
         <h3 className="movie-title">{getTitle(movie)}</h3>
         {getEnglishTitle(movie) && (
           <p className="movie-english-title">{getEnglishTitle(movie)}</p>
         )}
         <div className="movie-rating-format">
-        <span className="rating-badge">{getAgeRating(movie)}</span>
+          <span className="rating-badge">{getAgeRating(movie)}</span>
         </div>
-  
-        
+
         <div className="movie-meta">
           <div className="meta-item">
-                <Clock size={16} />
+            <Clock size={16} />
             <span>{getDuration(movie)} {t('minutes')}</span>
           </div>
           <div className="meta-item">
-                <Calendar size={16} />
+            <Calendar size={16} />
             <span>{getReleaseDate(movie)}</span>
           </div>
         </div>
-        
-          <p className="movie-genre">{getGenre(movie)}</p>
-        
+
+        <p className="movie-genre">{getGenre(movie)}</p>
+
         <div className="trailer-link">
           <Link to={`/movie/${movie.id}?tab=info`} className="btn-trailer">Trailer</Link>
         </div>
 
         {cinemaId ? (
           <div className="showtimes-section">
-            {loading ? (
+            {isComingSoon ? (
+              // Coming Soon — block booking, show release date badge
+              <div className="no-showtimes" style={{
+                background: 'linear-gradient(135deg, #f59e0b22, #d9770611)',
+                border: '1px solid #f59e0b88',
+                borderRadius: '8px',
+                padding: '10px 14px',
+                color: '#d97706',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}>
+                <Calendar size={14} />
+                {t('Sắp ra mắt')} · {getReleaseDate(movie)}
+              </div>
+            ) : loading ? (
               <div className="showtimes-loading">{t('Loading...')}</div>
             ) : showtimes.length > 0 ? (
               <div className="showtimes-by-format">
@@ -216,8 +238,7 @@ const MovieCard = ({ movie, cinemaId, selectedDate }) => {
                     groups[format].push(showtime);
                     return groups;
                   }, {});
-                  
-                  // Render each format group
+
                   return Object.entries(groupedShowtimes).map(([format, timesInFormat]) => (
                     <div key={format} className="format-group">
                       <div className="format-label">{format}</div>

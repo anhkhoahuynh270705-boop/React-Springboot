@@ -4,7 +4,7 @@ import { X, Calendar, Clock, Star, Film, User, Users, Globe, Play, Shield, MapPi
 import { useTranslation } from 'react-i18next';
 
 const MovieDetailsModal = ({ movie, onClose }) => {
-  const { t } = useTranslation(); 
+  const { t } = useTranslation();
 
   const formatDate = (dateString) => {
     if (!dateString) return 'Chưa cập nhật';
@@ -71,8 +71,8 @@ const MovieDetailsModal = ({ movie, onClose }) => {
             {/* Poster */}
             <div className={styles.posterSection}>
               {(movie.posterUrl || movie.imageUrl || movie.poster || movie.image) ? (
-                <img 
-                  src={movie.posterUrl || movie.imageUrl || movie.poster || movie.image} 
+                <img
+                  src={movie.posterUrl || movie.imageUrl || movie.poster || movie.image}
                   alt={movie.title}
                   className={styles.poster}
                   onLoad={(e) => {
@@ -84,7 +84,7 @@ const MovieDetailsModal = ({ movie, onClose }) => {
                   }}
                 />
               ) : null}
-              <div 
+              <div
                 className={styles.placeholderPoster}
                 style={{ display: (movie.posterUrl || movie.imageUrl || movie.poster || movie.image) ? 'none' : 'flex' }}
               >
@@ -98,7 +98,7 @@ const MovieDetailsModal = ({ movie, onClose }) => {
               {movie.englishTitle && (
                 <h2 className={styles.englishTitle}>{movie.englishTitle}</h2>
               )}
-              
+
               {/* Basic Info */}
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
@@ -180,9 +180,9 @@ const MovieDetailsModal = ({ movie, onClose }) => {
               {movie.trailerUrl && (
                 <div className={styles.trailerSection}>
                   <h3>Trailer</h3>
-                  <a 
-                    href={movie.trailerUrl} 
-                    target="_blank" 
+                  <a
+                    href={movie.trailerUrl}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className={styles.trailerLink}
                   >
@@ -208,7 +208,7 @@ const MovieDetailsModal = ({ movie, onClose }) => {
                       <div key={showtime.id || index} className={styles.showtimeItem}>
                         <div className={styles.showtimeIcon}>
                           <MapPin size={20} />
-                          </div>
+                        </div>
                         <div className={styles.showtimeInfo}>
                           <div className={styles.cinemaName}>{showtime.cinemaName}</div>
                           <div className={styles.showtimeDateTime}>
@@ -223,7 +223,7 @@ const MovieDetailsModal = ({ movie, onClose }) => {
             </div>
           </div>
         </div>
-              
+
         <div className={styles.modalFooter}>
           <button className={styles.closeButton} onClick={onClose}>
             {t('Close')}

@@ -78,7 +78,13 @@ const EditNewsModal = ({ news, onClose, onNewsUpdated }) => {
       newErrors.category = 'Vui lòng chọn danh mục';
     }
 
-    if (formData.imageUrl && !/^https?:\/\/.+/.test(formData.imageUrl.trim())) {
+    if (!formData.tags.trim()) {
+      newErrors.tags = 'Tags không được để trống';
+    }
+
+    if (!formData.imageUrl && !formData.imageUrl.trim()) {
+      newErrors.imageUrl = 'URL hình ảnh không được để trống';
+    } else if (!/^https?:\/\/.+/.test(formData.imageUrl)) {
       newErrors.imageUrl = 'URL hình ảnh không hợp lệ (phải bắt đầu bằng http:// hoặc https://)';
     }
 
@@ -226,7 +232,9 @@ const EditNewsModal = ({ news, onClose, onNewsUpdated }) => {
               value={formData.tags}
               onChange={handleChange}
               placeholder="Examples: movies, cinema, entertainment"
+              style={errors.tags ? { borderColor: '#ef4444' } : {}}
             />
+            {errors.tags && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.tags}</span>}
           </div>
 
           <div className={`${styles['form-group']}`}>

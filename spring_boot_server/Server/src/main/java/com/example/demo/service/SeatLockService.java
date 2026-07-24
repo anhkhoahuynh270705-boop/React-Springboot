@@ -77,7 +77,8 @@ public class SeatLockService {
     }
 
     public void releaseSeats(String showtimeId, List<String> seatIds, String userId) {
-        if (showtimeId == null || seatIds == null || userId == null) return;
+        if (showtimeId == null || seatIds == null || userId == null)
+            return;
 
         for (String seatId : seatIds) {
             String key = SeatLockUtils.lockKey(showtimeId, seatId);
@@ -107,7 +108,8 @@ public class SeatLockService {
             String key = SeatLockUtils.lockKey(showtimeId, seatId);
             String owner = redisTemplate.opsForValue().get(key);
 
-            System.out.println("[SeatLock] Validating lock for seat: " + seatId + ", user: " + userId + ", owner in Redis: " + owner);
+            System.out.println("[SeatLock] Validating lock for seat: " + seatId + ", user: " + userId
+                    + ", owner in Redis: " + owner);
             if (!userId.equals(owner)) {
                 throw new BadRequestException("Seat lock expired or not owned by user");
             }

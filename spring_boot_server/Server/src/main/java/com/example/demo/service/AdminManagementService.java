@@ -12,7 +12,6 @@ import com.example.demo.mapper.TicketMapper;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.Ticket;
 import com.example.demo.model.User;
-import com.example.demo.repository.AdminRepository;
 import com.example.demo.repository.TicketRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.util.ResponseUtils;
@@ -23,14 +22,14 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AdminManagementService {
 
-    private final AdminRepository adminRepository;
     private final TicketRepository ticketRepository;
     private final UserRepository userRepository;
 
+    // Tickets change state frequently
     public Map<String, Object> getAllTickets() {
         List<Ticket> tickets = ticketRepository.findAll();
-        
-        // Load all unique user details in a single query to prevent N+1 performance bottleneck
+
+        // Load all unique user details in a single query to prevent N+1
         List<String> userIds = tickets.stream()
                 .map(Ticket::getUserId)
                 .filter(java.util.Objects::nonNull)
@@ -42,14 +41,13 @@ public class AdminManagementService {
                 .collect(java.util.stream.Collectors.toMap(
                         User::getId,
                         java.util.function.Function.identity(),
-                        (u1, u2) -> u1
-                ));
+                        (u1, u2) -> u1));
 
         for (Ticket ticket : tickets) {
             if (ticket.getUserId() != null) {
                 User user = userMap.get(ticket.getUserId());
                 if (user != null) {
-                    ticket.setUserName(user.getFullName());
+                    ticket.setUserName(user.getFullName() != null ? user.getFullName() : user.getUsername());
                     ticket.setUserEmail(user.getEmail());
                 }
             }
@@ -149,8 +147,7 @@ public class AdminManagementService {
     public Map<String, Object> searchUsers(String keyword) {
         String lowerKeyword = keyword == null ? "" : keyword.toLowerCase();
         List<User> users = userRepository.findAll().stream()
-                .filter(user ->
-                        containsIgnoreCase(user.getUsername(), lowerKeyword) ||
+                .filter(user -> containsIgnoreCase(user.getUsername(), lowerKeyword) ||
                         containsIgnoreCase(user.getFullName(), lowerKeyword) ||
                         containsIgnoreCase(user.getEmail(), lowerKeyword))
                 .toList();

@@ -1,6 +1,7 @@
 import { getAllCinemas as getCinemas } from '../../../services/cinemaService';
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Search, MapPin, Filter, Phone, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import styles from './CinemasPage.module.css';
 import { useTranslation } from 'react-i18next';
@@ -32,8 +33,8 @@ const CinemasPage = () => {
     };
 
     fetchCinemas();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // fetch only once on mount — t is stable, no need to re-fetch on language change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const cities = useMemo(() => {
     const set = new Set();
@@ -41,14 +42,13 @@ const CinemasPage = () => {
     return Array.from(set).sort();
   }, [cinemas]);
 
-  // Extract district from address (the part before the last comma tends to be district)
+  // Extract district from address
   const districts = useMemo(() => {
     const set = new Set();
     cinemas.forEach(c => {
       if (c.district) {
         set.add(c.district);
       } else if (c.address) {
-        // Extract "Quận X" / "Huyện X" pattern from address
         const match = c.address.match(/(Quận|Huyện|Thành phố|TP\.?)\s[\w\s]+/i);
         if (match) set.add(match[0].trim());
       }
@@ -56,7 +56,6 @@ const CinemasPage = () => {
     return Array.from(set).sort();
   }, [cinemas]);
 
-  // Pre-normalize all cinema search fields once when data loads (not on every filter call)
   const normalizedCinemas = useMemo(() => {
     const normalize = (str) => {
       if (!str) return '';
@@ -254,8 +253,8 @@ const CinemasPage = () => {
         ) : (
           <>
             <div className={styles['grid']}>
-              {paginatedCinemas.map(cinema => (
-                <div key={cinema.id} className={styles['card']}>
+              {paginatedCinemas.map((cinema, index) => (
+                <div key={cinema.id || cinema._id || index} className={styles['card']}>
                   <div className={styles['card-header']}>
                     <div className={styles['card-media']}>
                       {cinema.imageUrl ? (
@@ -286,6 +285,15 @@ const CinemasPage = () => {
                       <Clock size={14} />
                       <span>{cinema.openingHours || '08:00 - 23:00'}</span>
                     </div>
+                  </div>
+                  <div className={styles['card-actions']}>
+                    <Link
+                      to={`/cinema/${cinema.id || cinema._id}`}
+                      className={styles['btn-primary']}
+                      style={{ textAlign: 'center', gridColumn: 'span 2', textDecoration: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                      {t('viewDetail') || 'View Detail'}
+                    </Link>
                   </div>
                 </div>
               ))}

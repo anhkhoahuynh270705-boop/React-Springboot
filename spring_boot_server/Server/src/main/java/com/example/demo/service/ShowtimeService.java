@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -53,6 +54,21 @@ public class ShowtimeService {
 
         if (!cinema.hasMovie(showtime.getMovieId())) {
             throw new BadRequestException("Movie does not exist in this cinema");
+        }
+
+        // Block showtimes for coming-soon movies
+        if (movie.getReleaseDate() != null && !movie.getReleaseDate().isBlank()) {
+            try {
+                LocalDate releaseDate = LocalDate.parse(movie.getReleaseDate().substring(0, 10));
+                if (releaseDate.isAfter(LocalDate.now())) {
+                    throw new BadRequestException(
+                            "Cannot create showtime for a coming-soon movie. Release date: " + releaseDate);
+                }
+            } catch (BadRequestException e) {
+                throw e;
+            } catch (Exception ignored) {
+                // If releaseDate format is unparseable, allow it
+            }
         }
 
         showtime.setMovieName(MovieUtils.resolveTitle(movie));

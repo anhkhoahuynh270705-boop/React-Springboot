@@ -97,8 +97,10 @@ public class MoMoService {
         String qrCodeUrl;
 
         try {
+            @SuppressWarnings("rawtypes")
             ResponseEntity<Map> response = restTemplate.postForEntity(
                     endpoint, new HttpEntity<>(body, headers), Map.class);
+            @SuppressWarnings("unchecked")
             Map<String, Object> resp = response.getBody();
             log.info("[MoMo] Create order response: {}", resp);
 
@@ -117,10 +119,12 @@ public class MoMoService {
             qrCodeUrl = "";
         }
 
-        // generate a QR image from the payUrl
+        // generate a QR image from the payUrl with MoMo logo in the center
         if (qrCodeUrl == null || qrCodeUrl.isBlank()) {
-            qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data="
-                    + URLEncoder.encode(payUrl, StandardCharsets.UTF_8);
+            String logoUrl = "https://img.mservice.io/momo-payment/icon/images/logo512.png";
+            qrCodeUrl = "https://quickchart.io/qr?size=300&ecLevel=H"
+                    + "&centerImageUrl=" + URLEncoder.encode(logoUrl, StandardCharsets.UTF_8)
+                    + "&text=" + URLEncoder.encode(payUrl, StandardCharsets.UTF_8);
         }
 
         MoMoOrder order = new MoMoOrder(

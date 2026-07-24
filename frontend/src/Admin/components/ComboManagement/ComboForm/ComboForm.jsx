@@ -35,7 +35,7 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({
@@ -101,13 +101,13 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     setSubmitting(true);
-    
+
     try {
       const submitData = {
         ...formData,
@@ -141,10 +141,10 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className={errors.name ? 'error' : ''}
+                style={errors.name ? { border: '2px solid #ef4444' } : {}}
                 placeholder="Type combo name"
               />
-              {errors.name && <span className="error-text">{errors.name}</span>}
+              {errors.name && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.name}</span>}
             </div>
 
             <div className="form-group">
@@ -155,12 +155,12 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
                 name="price"
                 value={formData.price}
                 onChange={handleInputChange}
-                className={errors.price ? 'error' : ''}
+                style={errors.price ? { border: '2px solid #ef4444' } : {}}
                 placeholder="Input combo price"
                 min="0"
                 step="1000"
               />
-              {errors.price && <span className="error-text">{errors.price}</span>}
+              {errors.price && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.price}</span>}
             </div>
           </div>
 
@@ -171,11 +171,11 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
               name="description"
               value={formData.description}
               onChange={handleInputChange}
-              className={errors.description ? 'error' : ''}
+              style={errors.description ? { border: '2px solid #ef4444' } : {}}
               placeholder="Type combo description"
               rows="3"
             />
-            {errors.description && <span className="error-text">{errors.description}</span>}
+            {errors.description && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.description}</span>}
           </div>
 
           <div className="form-group">
@@ -186,15 +186,15 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
               name="imageUrl"
               value={formData.imageUrl}
               onChange={handleInputChange}
-              className={errors.imageUrl ? 'error' : ''}
+              style={errors.imageUrl ? { border: '2px solid #ef4444' } : {}}
               placeholder="https://example.com/image.jpg"
             />
-            {errors.imageUrl && <span className="error-text">{errors.imageUrl}</span>}
+            {errors.imageUrl && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.imageUrl}</span>}
             {formData.imageUrl && (
               <div className="image-preview">
-                <img 
-                  src={formData.imageUrl} 
-                  alt="Preview" 
+                <img
+                  src={formData.imageUrl}
+                  alt="Preview"
                   onError={(e) => {
                     e.target.style.display = 'none';
                   }}
@@ -213,7 +213,7 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
                     value={item}
                     onChange={(e) => handleItemChange(index, e.target.value)}
                     placeholder="Type item name in combo"
-                    className={errors.items ? 'error' : ''}
+                    style={errors.items ? { border: '2px solid #ef4444' } : {}}
                   />
                   {formData.items.length > 1 && (
                     <button
@@ -235,7 +235,7 @@ const ComboForm = ({ combo, onSubmit, onCancel }) => {
                 Add items
               </button>
             </div>
-            {errors.items && <span className="error-text">{errors.items}</span>}
+            {errors.items && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.items}</span>}
           </div>
 
           <div className="form-group">
