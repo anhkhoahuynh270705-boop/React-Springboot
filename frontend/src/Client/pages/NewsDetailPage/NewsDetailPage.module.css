@@ -466,8 +466,7 @@
 
 .cnewsd-related-category {
   display: inline-flex;
-
-  background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+  background: #1d4ed8;
   color: white;
 
   padding: 5px 11px;

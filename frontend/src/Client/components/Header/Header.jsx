@@ -74,7 +74,7 @@ const Header = ({ user, setUser, onLogin, onLogout }) => {
     } catch { }
   }, []);
 
-  // Save a search term to history
+  // Save a search term to history 
   const addToSearchHistory = useCallback((term) => {
     if (!term || !term.trim()) return;
     const trimmed = term.trim();

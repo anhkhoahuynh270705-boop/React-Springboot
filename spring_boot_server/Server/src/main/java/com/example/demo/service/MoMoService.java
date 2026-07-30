@@ -54,12 +54,12 @@ public class MoMoService {
 
     // Create Order — calls real MoMo API and saves pending order to DB
     public CreateMoMoResponse createOrder(String userLabel, long amount, String description) {
-        String orderId    = OrderIdGenerator.momoOrderId();
-        String requestId  = UUID.randomUUID().toString();
-        String orderInfo  = description != null ? description : "Movie ticket payment";
+        String orderId = OrderIdGenerator.momoOrderId();
+        String requestId = UUID.randomUUID().toString();
+        String orderInfo = description != null ? description : "Movie ticket payment";
         String redirectUrl = frontendUrl + "/payment-result?method=momo&orderId=" + orderId;
-        String extraData  = "";
-        String requestType = "payWithMethod";
+        String extraData = "";
+        String requestType = "payWithCC";
 
         // Build raw signature string
         String rawSignature = "accessKey=" + accessKey
@@ -109,28 +109,24 @@ public class MoMoService {
                 throw new RuntimeException("MoMo API error: " + resp.get("message"));
             }
 
-            payUrl    = (String) resp.get("payUrl");
-            qrCodeUrl = (String) resp.getOrDefault("qrCodeUrl", "");
+            payUrl = (String) resp.get("payUrl");
+            // MoMo API's qrCodeUrl field is often a web page link or raw data, not a direct
+            // PNG image.
+            // Always generate a reliable PNG QR code image URL from payUrl.
+            qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="
+                    + URLEncoder.encode(payUrl, StandardCharsets.UTF_8);
 
         } catch (Exception e) {
             log.error("[MoMo] Failed to create order via API, falling back to sandbox URL. Error: {}", e.getMessage());
             // Use Url for fallback
             payUrl = frontendUrl + "/payment/momo?orderId=" + orderId + "&amount=" + amount;
-            qrCodeUrl = "";
-        }
-
-        // generate a QR image from the payUrl with MoMo logo in the center
-        if (qrCodeUrl == null || qrCodeUrl.isBlank()) {
-            String logoUrl = "https://img.mservice.io/momo-payment/icon/images/logo512.png";
-            qrCodeUrl = "https://quickchart.io/qr?size=300&ecLevel=H"
-                    + "&centerImageUrl=" + URLEncoder.encode(logoUrl, StandardCharsets.UTF_8)
-                    + "&text=" + URLEncoder.encode(payUrl, StandardCharsets.UTF_8);
+            qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="
+                    + URLEncoder.encode(payUrl, StandardCharsets.UTF_8);
         }
 
         MoMoOrder order = new MoMoOrder(
                 null, orderId, userLabel, amount, description,
-                "PENDING", payUrl, qrCodeUrl, Instant.now(), Instant.now(), null
-        );
+                "PENDING", payUrl, qrCodeUrl, Instant.now(), Instant.now(), null);
         repo.save(order);
         return new CreateMoMoResponse(orderId, payUrl, qrCodeUrl);
     }

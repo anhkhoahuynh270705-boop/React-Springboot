@@ -15,7 +15,7 @@ public final class OrderIdGenerator {
     }
 
     public static String momoOrderId() {
-        return "MM-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        return "MM-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 4).toUpperCase();
     }
 
     public static String zaloPayOrderId() {

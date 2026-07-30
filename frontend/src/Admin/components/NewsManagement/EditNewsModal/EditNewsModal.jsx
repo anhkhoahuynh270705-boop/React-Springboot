@@ -212,12 +212,12 @@ const EditNewsModal = ({ news, onClose, onNewsUpdated }) => {
                 style={errors.category ? { borderColor: '#ef4444' } : {}}
               >
                 <option value="">Choose category</option>
-                <option value="Phim ảnh">Film</option>
-                <option value="Giải trí">Entertainment</option>
-                <option value="Công nghệ">Technology</option>
-                <option value="Thể thao">Sport</option>
-                <option value="Du lịch">Travel</option>
-                <option value="Khác">Others</option>
+                <option value="Film">Film</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Technology">Technology</option>
+                <option value="Sport">Sport</option>
+                <option value="Travel">Travel</option>
+                <option value="Others">Others</option>
               </select>
               {errors.category && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '4px', display: 'block' }}>{errors.category}</span>}
             </div>

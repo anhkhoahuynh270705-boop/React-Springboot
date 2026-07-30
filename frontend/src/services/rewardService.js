@@ -142,12 +142,6 @@ export function addCoins(userId, delta) {
   return setCoins(userId, next);
 }
 
-export function grantCheckInCoins(userId, amount = 10) {
-  if (!userId) return { granted: false, coins: 0 };
-  if (!hasCheckedInToday(userId)) return { granted: false, coins: getCoins(userId) };
-  const coins = addCoins(userId, amount);
-  return { granted: true, coins };
-}
 
 // Spin-related (legacy, kept for compatibility)
 export function canSpinToday(userId) {

@@ -25,18 +25,17 @@ public class PaymentService {
     public CreateOrderResponse createOrder(CreateOrderRequest req) {
         String orderId = OrderIdGenerator.localPaymentOrderId();
         PaymentOrder order = new PaymentOrder(
-            orderId,
-            req.getAmount(),
-            req.getOrderInfo(),
-            req.getMethod(),
-            "pending",
-            Instant.now(),
-            req.getUserId(),
-            req.getUserName(),
-            req.getUserEmail()
-        );
-        repo.save(order);   
-        
+                orderId,
+                req.getAmount(),
+                req.getOrderInfo(),
+                req.getMethod(),
+                "pending",
+                Instant.now(),
+                req.getUserId(),
+                req.getUserName(),
+                req.getUserEmail());
+        repo.save(order);
+
         // Generate QR code URL and data
         String bankBin = "970407";
         String accountNo = "1221868856";
@@ -45,7 +44,7 @@ public class PaymentService {
         String addInfo = order.getOrderInfo() != null ? order.getOrderInfo() : order.getOrderId();
 
         String qrUrl = "https://img.vietqr.io/image/" + bankBin + "-" + accountNo + "-" + template
-          + ".png?amount=" + amount + "&addInfo=" + urlEncode(addInfo);
+                + ".png?amount=" + amount + "&addInfo=" + urlEncode(addInfo);
 
         String qrData = "VietQR|" + bankBin + "|" + accountNo + "|" + amount + "|" + addInfo + "|" + order.getOrderId();
 
@@ -54,8 +53,8 @@ public class PaymentService {
 
     public VerifyResponse verify(String orderId) {
         return repo.findById(orderId)
-          .map(o -> new VerifyResponse(o.getOrderId(), o.getStatus()))
-          .orElseGet(() -> new VerifyResponse(orderId, "failed"));
+                .map(o -> new VerifyResponse(o.getOrderId(), o.getStatus()))
+                .orElseGet(() -> new VerifyResponse(orderId, "failed"));
     }
 
     public VerifyResponse markPaid(String orderId) {
@@ -80,7 +79,7 @@ public class PaymentService {
 
     public void deleteOrder(String orderId) {
         PaymentOrder order = repo.findById(orderId)
-            .orElseThrow(() -> new IllegalArgumentException("Order not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
         // Only allow deleting pending orders (not paid ones)
         if (!"pending".equalsIgnoreCase(order.getStatus())) {
             throw new IllegalStateException("Cannot cancel an order that is not pending");

@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.model.ChatMessage;
 import com.example.demo.repository.ChatMessageRepository;
+import com.example.demo.util.ChatPromptUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,13 +30,14 @@ public class ChatService {
     private String apiKey;
 
     private final ChatMessageRepository chatRepo;
-    
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     public List<ChatMessage> getAllMessages() {
         return chatRepo.findAll();
     }
-    public List<ChatMessage> getMessageByUserId(String userId){
+
+    public List<ChatMessage> getMessageByUserId(String userId) {
         return chatRepo.findByUserIdOrderByCreatedAtAsc(userId);
     }
 
@@ -44,43 +46,32 @@ public class ChatService {
         if (userMessage == null || userMessage.trim().isEmpty()) {
             return "Please enter a valid message.";
         }
-        chatRepo.save(new ChatMessage(userId,"user", userMessage));
+        chatRepo.save(new ChatMessage(userId, "user", userMessage));
 
         try {
             String apiUrl = "https://openrouter.ai/api/v1/chat/completions";
             // Prepare the request payload
 
-
             List<Map<String, Object>> messages = new ArrayList<>();
             messages.add(Map.of(
-                "role", "system", 
-                "content", """
-                You are a helpful AI assistant like ChatGPT Plus.
-                Always answer in the same language as the user's latest message.
-                If the user's latest message is in Vietnamese, answer in Vietnamese.
-                If the user's latest message is in English, answer in English.
-                You can answer general questions, programming questions, study questions, and movie-related questions.
-                If the question is about movies, answer like a cinema assistant.
-                Keep the answer clear and easy to understand.
-                """
-                ));
-            
-                List<ChatMessage> history = chatRepo.findTop20ByOrderByCreatedAtDesc();
-                Collections.reverse(history);
-                for (ChatMessage msg : history) {
-                    String role = "user".equals(msg.getSender()) ? "user" : "assistant";
-                    messages.add(Map.of(
+                    "role", "system",
+                    "content",
+                    ChatPromptUtils.systemPrompt()));
+
+            List<ChatMessage> history = chatRepo.findTop20ByOrderByCreatedAtDesc();
+            Collections.reverse(history);
+            for (ChatMessage msg : history) {
+                String role = "user".equals(msg.getSender()) ? "user" : "assistant";
+                messages.add(Map.of(
                         "role", role,
-                        "content", msg.getMessage()
-                    ));
-                }
+                        "content", msg.getMessage()));
+            }
 
             Map<String, Object> body = new HashMap<>();
             body.put("model", "openrouter/auto");
             body.put("messages", messages);
             body.put("temperature", 0.7);
             body.put("max_tokens", 800);
-            
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -108,7 +99,7 @@ public class ChatService {
                 }
             }
         } catch (Exception e) {
-             e.printStackTrace();
+            e.printStackTrace();
             return "ERROR: " + e.getMessage();
         }
         return "Sorry, I don't understand your question.";

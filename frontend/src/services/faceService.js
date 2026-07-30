@@ -1,5 +1,5 @@
 import * as faceapi from 'face-api.js';
-import { authFetch, parseAuthResponse, publicFetch, saveUserSession } from './apiClient';
+import { API_BASE_URL, authFetch, getAuthToken, parseAuthResponse, publicFetch, saveUserSession } from './apiClient';
 
 // Load face-api models
 let modelsLoaded = false;
@@ -310,9 +310,17 @@ export const verifyFaceDescriptor = async (descriptor) => {
 };
 
 // Check if user has registered face
+
 export const checkFaceRegistered = async (userId) => {
   try {
-    const response = await authFetch(`/users/${userId}/has-face`);
+    const token = getAuthToken();
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/has-face`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
 
     if (!response.ok) {
       return false;

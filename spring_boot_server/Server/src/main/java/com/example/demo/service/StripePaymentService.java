@@ -103,7 +103,6 @@ public class StripePaymentService {
         try {
             savedTicket = ticketService.bookTicket(ticket);
         } catch (RuntimeException e) {
-            // Race-condition guard
             Optional<Ticket> concurrent = ticketRepository.findByStripeSessionId(sessionId);
             if (concurrent.isPresent()) {
                 return concurrent.get();

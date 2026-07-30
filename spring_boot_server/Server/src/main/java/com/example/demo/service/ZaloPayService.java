@@ -3,7 +3,6 @@ package com.example.demo.service;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,7 +22,6 @@ import com.example.demo.model.ZaloPayOrder;
 import com.example.demo.repository.ZaloPayOrderRepository;
 import com.example.demo.util.HmacUtils;
 import com.example.demo.util.OrderIdGenerator;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +33,6 @@ public class ZaloPayService {
 
     private final ZaloPayOrderRepository repo;
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
 
     @Value("${zalopay.app-id}")
     private String appId;
@@ -58,15 +55,16 @@ public class ZaloPayService {
     @Value("${frontend.url}")
     private String frontendUrl;
 
-    private static final DateTimeFormatter ZP_DATE_FMT =
-            DateTimeFormatter.ofPattern("yyMMdd").withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
+    private static final DateTimeFormatter ZP_DATE_FMT = DateTimeFormatter.ofPattern("yyMMdd")
+            .withZone(ZoneId.of("Asia/Ho_Chi_Minh"));
 
     // Create Order
     public CreateZaloPayResponse createOrder(String userLabel, long amount, String description) {
         String appTransId = ZP_DATE_FMT.format(Instant.now()) + "_" + OrderIdGenerator.zaloPayOrderId();
-        long   appTime    = System.currentTimeMillis();
-        String orderInfo  = description != null ? description : "Movie ticket payment";
-        String embedData  = "{\"redirecturl\":\"" + frontendUrl + "/payment-result?method=zalopay&appTransId=" + appTransId + "\"}";
+        long appTime = System.currentTimeMillis();
+        String orderInfo = description != null ? description : "Movie ticket payment";
+        String embedData = "{\"redirecturl\":\"" + frontendUrl + "/payment-result?method=zalopay&appTransId="
+                + appTransId + "\"}";
         // MAC for create order
         String rawMac = appId + "|" + appTransId + "|" + appUser + "|" + amount
                 + "|" + appTime + "|" + embedData + "|[]";
@@ -74,16 +72,16 @@ public class ZaloPayService {
 
         // ZaloPay sandbox uses form-encoded POST
         MultiValueMap<String, String> form = new LinkedMultiValueMap<>();
-        form.add("app_id",       appId);
+        form.add("app_id", appId);
         form.add("app_trans_id", appTransId);
-        form.add("app_user",     appUser);
-        form.add("app_time",     String.valueOf(appTime));
-        form.add("amount",       String.valueOf(amount));
-        form.add("item",         "[]");
-        form.add("description",  orderInfo);
-        form.add("embed_data",   embedData);
+        form.add("app_user", appUser);
+        form.add("app_time", String.valueOf(appTime));
+        form.add("amount", String.valueOf(amount));
+        form.add("item", "[]");
+        form.add("description", orderInfo);
+        form.add("embed_data", embedData);
         form.add("callback_url", callbackUrl);
-        form.add("mac",          mac);
+        form.add("mac", mac);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -106,7 +104,7 @@ public class ZaloPayService {
             }
 
             payUrl = (String) resp.get("order_url");
-            qrUrl  = (String) resp.getOrDefault("qr_code", "");
+            qrUrl = (String) resp.getOrDefault("qr_code", "");
             if (qrUrl == null || qrUrl.isBlank()) {
                 qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data="
                         + java.net.URLEncoder.encode(payUrl, java.nio.charset.StandardCharsets.UTF_8);
@@ -116,14 +114,13 @@ public class ZaloPayService {
             log.error("[ZaloPay] Failed to create order via API, falling back. Error: {}", e.getMessage());
             // Fallback for local dev: encode transaction info in the QR
             payUrl = frontendUrl + "/payment/zalopay?appTransId=" + appTransId + "&amount=" + amount;
-            qrUrl  = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data="
+            qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=240x240&data="
                     + java.net.URLEncoder.encode(payUrl, java.nio.charset.StandardCharsets.UTF_8);
         }
 
         ZaloPayOrder order = new ZaloPayOrder(
                 null, appTransId, userLabel, amount, description,
-                "PENDING", payUrl, qrUrl, Instant.now(), Instant.now(), null
-        );
+                "PENDING", payUrl, qrUrl, Instant.now(), Instant.now(), null);
         repo.save(order);
         return new CreateZaloPayResponse(appTransId, payUrl, qrUrl);
     }

@@ -17,13 +17,12 @@ import lombok.NoArgsConstructor;
 @Document(collection = "user_checkins")
 @CompoundIndex(name = "user_date_idx", def = "{'userId': 1, 'checkInDate': 1}", unique = true)
 public class UserCheckIn {
-
     @Id
     private String id;
 
     private String userId;
 
-    // Lưu theo ngày (YYYY-MM-DD), không lưu giờ để dễ so sánh
+    // Lưu theo ngày (YYYY-MM-DD)
     private LocalDate checkInDate;
 
     private int coinsEarned;

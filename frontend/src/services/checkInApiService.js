@@ -16,7 +16,7 @@ export async function checkInTodayAPI() {
     const res = await authFetch('/checkin', { method: 'POST' });
 
     if (res.status === 409) {
-      // 409 Conflict: đã check-in rồi
+      // 409 Conflict
       return { success: false, coinsEarned: 0, error: 'already_checked_in' };
     }
 

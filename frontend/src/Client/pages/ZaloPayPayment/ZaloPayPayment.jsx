@@ -30,7 +30,7 @@ const ZaloPayPayment = () => {
   const timeoutRef = useRef(null);
   // Prevent double order creation
   const orderCreatedRef = useRef(false);
-  const appTransIdRef = useRef(''); // Track latest appTransId for cleanup
+  const appTransIdRef = useRef('');
 
   const amount = useMemo(() => summary?.totalPrice || summary?.amount || ticketData?.price || 0, [summary, ticketData]);
   const orderDescription = useMemo(() => (
@@ -43,7 +43,7 @@ const ZaloPayPayment = () => {
       return;
     }
 
-    // Prevent double order creation (React StrictMode or remount)
+    // Prevent double order creation
     if (orderCreatedRef.current) {
       return;
     }
@@ -206,8 +206,8 @@ const ZaloPayPayment = () => {
           )}
           {qrUrl && (
             <p style={{ fontSize: '12px', color: '#888', marginTop: '8px', textAlign: 'center' }}>
-              ⚠️ Quét mã QR này bằng <strong>ứng dụng ZaloPay</strong> (không phải camera điện thoại).
-              <br />Hoặc nhấn nút <strong>"Thanh toán ZaloPay"</strong> bên dưới.
+              Scan this QR code with <strong>ZaloPay app</strong>
+              <br />Or click <strong>"Thanh toán ZaloPay"</strong> button below.
             </p>
           )}
         </div>
@@ -222,7 +222,7 @@ const ZaloPayPayment = () => {
               className="zpay-btn zpay-primary"
               style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}
             >
-              Thanh toán ZaloPay
+              Pay with ZaloPay
             </a>
           )}
         </div>

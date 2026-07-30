@@ -3,7 +3,7 @@
 import { getAllCinemas } from '../../../services/cinemaService';
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock, Users, Star, Film, ArrowLeft, Calendar, Play, Building2, Globe, List } from 'lucide-react';
+import { MapPin, Film, ArrowLeft, Globe } from 'lucide-react';
 import { getMoviesByCinema } from '../../../services/movieService';
 import { getShowtimesByDateAndCinema } from '../../../services/showtimeService';
 import MovieCard from '../../components/MovieCard/MovieCard';

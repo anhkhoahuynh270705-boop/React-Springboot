@@ -46,9 +46,6 @@ public class UserCheckInService {
                 "checkInDate", today.toString());
     }
 
-    /**
-     * Lấy toàn bộ lịch sử check-in của user (mới nhất trước).
-     */
     public List<UserCheckIn> getCheckInHistory(String userId) {
         return checkInRepository.findByUserIdOrderByCheckInDateDesc(userId);
     }

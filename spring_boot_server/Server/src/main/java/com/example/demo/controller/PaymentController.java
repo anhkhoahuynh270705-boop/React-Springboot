@@ -32,13 +32,13 @@ public class PaymentController {
   @GetMapping("/orders")
   public ResponseEntity<List<PaymentOrder>> getAllOrders() {
     try {
-        List<PaymentOrder> orders = paymentService.getAllOrders();
-        return ResponseEntity.ok(orders);
+      List<PaymentOrder> orders = paymentService.getAllOrders();
+      return ResponseEntity.ok(orders);
     } catch (Exception e) {
-        return ResponseEntity.status(500).body(new ArrayList<>());
+      return ResponseEntity.status(500).body(new ArrayList<>());
     }
   }
-  
+
   // Create a new payment order
   @PostMapping("/create-order")
   public CreateOrderResponse createOrder(@RequestBody CreateOrderRequest req) {
@@ -61,7 +61,7 @@ public class PaymentController {
     return paymentService.markExpired(orderId);
   }
 
-  // Cancel (delete) a pending VietQR order when user switches payment method
+  // Cancel a pending order when user switches payment method
   @DeleteMapping("/cancel")
   public ResponseEntity<Void> cancelOrder(@RequestParam String orderId) {
     try {
@@ -75,6 +75,5 @@ public class PaymentController {
       return ResponseEntity.ok().build();
     }
   }
-
 
 }

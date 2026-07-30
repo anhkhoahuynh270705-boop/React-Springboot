@@ -104,9 +104,14 @@ public class ShowtimeService {
     }
 
     public List<Showtime> getShowtimesByMovie(String movieId) {
-        List<Showtime> showtimes = showtimeRepository.findByMovieId(movieId);
-        enrichAll(showtimes);
-        return showtimes;
+        LocalDateTime now = LocalDateTime.now();
+        List<Showtime> upcomingShowtimes = showtimeRepository.findByMovieId(movieId)
+                .stream()
+                .filter(st -> st.getStartTime() != null &&
+                        st.getStartTime().isAfter(now))
+                .toList();
+        enrichAll(upcomingShowtimes);
+        return upcomingShowtimes;
     }
 
     public List<Showtime> getShowtimesByDateAndCinema(String cinemaId, String date) {

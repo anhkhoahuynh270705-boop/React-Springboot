@@ -160,10 +160,6 @@ const MoMoPayment = () => {
     navigate(-1);
   };
 
-  const handleOpenMoMo = () => {
-    alert('Vui lòng mở ứng dụng MoMo và quét mã QR code ở trên để thanh toán.');
-  };
-
   const handleRetry = () => {
     navigate(0);
   };
@@ -172,11 +168,11 @@ const MoMoPayment = () => {
     return (
       <div className="momo-payment-page">
         <div className="momo-card">
-          <h2>Thanh toán MoMo</h2>
+          <h2>MoMo Payment</h2>
           <p className="momo-error">{error}</p>
           <div className="momo-actions">
-            <button className="momo-btn" onClick={() => navigate(-1)}>Quay lại</button>
-            <button className="momo-btn momo-primary" onClick={handleRetry}>Thử lại</button>
+            <button className="momo-btn" onClick={() => navigate(-1)}>Back</button>
+            <button className="momo-btn momo-primary" onClick={handleRetry}>Retry</button>
           </div>
         </div>
       </div>
@@ -186,19 +182,19 @@ const MoMoPayment = () => {
   return (
     <div className="momo-payment-page">
       <div className="momo-card">
-        <h2>Thanh toán MoMo</h2>
+        <h2>MoMo Payment</h2>
         <div className="momo-order">
           <div>
-            <span>Số tiền</span>
+            <span>Amount</span>
             <strong>{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount || 0)}</strong>
           </div>
           <div>
-            <span>Mô tả</span>
+            <span>Description</span>
             <strong>{orderDescription}</strong>
           </div>
           {!!orderId && (
             <div>
-              <span>Mã đơn hàng</span>
+              <span>Order ID</span>
               <strong>{orderId}</strong>
             </div>
           )}
@@ -208,42 +204,53 @@ const MoMoPayment = () => {
           {qrUrl ? (
             <img src={qrUrl} alt="MoMo QR" className="momo-qr-img" />
           ) : (
-            <div className="momo-qr-ph">Đang tạo mã QR...</div>
+            <div className="momo-qr-ph">Generating QR Code...</div>
           )}
         </div>
 
         <div className="momo-instructions">
           <p className="momo-instruction-text">
-            <strong>Hướng dẫn thanh toán:</strong>
+            <strong>Payment Instructions:</strong>
           </p>
           <ol className="momo-instruction-steps">
-            <li>Mở ứng dụng MoMo trên điện thoại</li>
-            <li>Chọn chức năng "Quét QR"</li>
-            <li>Quét mã QR MoMo ở trên</li>
-            <li>Nhập đúng số tiền hiển thị</li>
-            <li>Nhập nội dung chuyển tiền là mã đơn hàng:
+            <li>Open the MoMo app on your phone</li>
+            <li>Select "Scan QR"</li>
+            <li>Scan the MoMo QR code above</li>
+            <li>Enter the exact amount shown</li>
+            <li>Enter the content of the transfer as the order ID:
               <strong>{orderId}</strong>
             </li>
-            <li>Sau khi chuyển khoản thành công , vui lòng chờ 5-10 phút</li>
-            <li>Nếu chưa nhận được, vui lòng liên hệ admin</li>
+            <li>After successful transfer , please wait 5-10 minutes</li>
+            <li>If you haven't received it, please contact admin</li>
           </ol>
         </div>
 
         <div className="momo-actions">
-          <button className="momo-btn" onClick={handleBack}>Quay lại</button>
+          {payUrl && (
+            <a
+              href={payUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="momo-btn momo-primary"
+              style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+            >
+              Thanh toán qua cổng MoMo
+            </a>
+          )}
+          <button className="momo-btn" onClick={handleBack}>Back</button>
         </div>
 
         {status === 'PENDING' && (
-          <div className="momo-status momo-pending">Đang chờ xác nhận thanh toán... {timeLeft}s</div>
+          <div className="momo-status momo-pending">Waiting for payment confirmation... {timeLeft}s</div>
         )}
         {status === 'PAID' && (
-          <div className="momo-status momo-success">Thanh toán thành công. Đang hoàn tất đặt vé...</div>
+          <div className="momo-status momo-success">Payment successful. Completing booking...</div>
         )}
         {status === 'EXPIRED' && (
           <div className="momo-status momo-expired">
-            Đơn hàng đã hết hạn. Vui lòng thử lại.
+            Order has expired. Please try again.
             <div className="momo-actions-inline">
-              <button className="momo-btn" onClick={handleRetry}>Tạo đơn hàng mới</button>
+              <button className="momo-btn" onClick={handleRetry}>Create new order</button>
             </div>
           </div>
         )}

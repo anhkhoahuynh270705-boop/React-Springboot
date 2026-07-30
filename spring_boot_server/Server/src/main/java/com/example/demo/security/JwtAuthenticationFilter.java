@@ -45,22 +45,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 if ("ADMIN".equals(role)) {
                     adminRepository.findById(subjectId).ifPresent(admin -> {
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(
-                                        admin,
-                                        null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
-                                );
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                admin,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_ADMIN")));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     });
                 } else {
                     userRepository.findById(subjectId).ifPresent(user -> {
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(
-                                        user,
-                                        null,
-                                        List.of(new SimpleGrantedAuthority("ROLE_USER"))
-                                );
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                user,
+                                null,
+                                List.of(new SimpleGrantedAuthority("ROLE_USER")));
                         SecurityContextHolder.getContext().setAuthentication(authentication);
                     });
                 }

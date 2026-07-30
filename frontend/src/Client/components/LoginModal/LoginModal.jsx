@@ -459,7 +459,6 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
       localStorage.removeItem('adminUser');
 
       if (finalUser?.id) {
-        localStorage.setItem('authToken', 'user-token-' + finalUser.id);
         localStorage.setItem('currentUser', JSON.stringify(finalUser));
       }
 
