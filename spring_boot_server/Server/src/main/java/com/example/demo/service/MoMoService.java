@@ -111,8 +111,6 @@ public class MoMoService {
 
             payUrl = (String) resp.get("payUrl");
             // MoMo API's qrCodeUrl field is often a web page link or raw data, not a direct
-            // PNG image.
-            // Always generate a reliable PNG QR code image URL from payUrl.
             qrCodeUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data="
                     + URLEncoder.encode(payUrl, StandardCharsets.UTF_8);
 
