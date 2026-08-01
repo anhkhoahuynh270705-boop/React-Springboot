@@ -155,14 +155,40 @@ const EditCinemaModal = ({ cinema, onClose, onCinemaUpdated }) => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFormData(prev => ({
-          ...prev,
-          imageUrl: event.target.result
-        }));
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 500;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+          setFormData(prev => ({
+            ...prev,
+            imageUrl: compressedBase64
+          }));
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }
   };
+
 
   if (!cinema) return null;
 

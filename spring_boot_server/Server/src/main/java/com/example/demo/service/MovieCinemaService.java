@@ -75,17 +75,15 @@ public class MovieCinemaService {
         }
     }
     
-    // Get movies by cinema
+    // Get movies by cinema — push filter to MongoDB, not Java
     public List<Movie> getMoviesByCinema(String cinemaId) {
         try {
-            List<Movie> allMovies = movieRepository.findAll();
-            return allMovies.stream()
-                .filter(movie -> movie.getCinemaIds() != null && movie.getCinemaIds().contains(cinemaId))
-                .toList();
+            return movieRepository.findByCinemaIdsContaining(cinemaId);
         } catch (Exception e) {
             throw new RuntimeException("Error: " + e.getMessage());
         }
     }
+
     
     // Get cinemas by movie
 

@@ -1,6 +1,7 @@
 /* eslint-disable no-empty */
 /* eslint-disable no-unused-vars */
-import { getAllCinemas } from '../../../services/cinemaService';
+import { getCinemaById } from '../../../services/cinemaService';
+
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Film, ArrowLeft, Globe } from 'lucide-react';
@@ -70,9 +71,14 @@ const CinemaDetailPage = () => {
       setLoading(true);
       setError(null);
 
-      // Get a list of all theaters and search for theaters by ID
-      const allCinemas = await getAllCinemas();
-      const foundCinema = allCinemas.find(c => c.id === cinemaId || c._id === cinemaId);
+      // Run both requests in parallel instead of sequential
+      const [foundCinema, cinemaMovies] = await Promise.all([
+        getCinemaById(cinemaId),
+        getMoviesByCinema(cinemaId).catch((err) => {
+          console.error('Error fetching movies by cinema:', err);
+          return [];
+        }),
+      ]);
 
       if (!foundCinema) {
         setError(t('CinemaNotFound'));
@@ -95,15 +101,7 @@ const CinemaDetailPage = () => {
       };
 
       setCinema(cinemaData);
-
-      // get movies by cinema
-      try {
-        const cinemaMovies = await getMoviesByCinema(cinemaId);
-        setMovies(cinemaMovies);
-      } catch (movieErr) {
-        console.error('Error fetching movies by cinema:', movieErr);
-        setMovies([]);
-      }
+      setMovies(cinemaMovies);
 
     } catch (err) {
       console.error('Error fetching cinema data:', err);
@@ -112,6 +110,7 @@ const CinemaDetailPage = () => {
       setLoading(false);
     }
   };
+
 
   const formatDate = (dateString) => {
     if (!dateString) return t('CinemaDateNotFound');
@@ -152,15 +151,6 @@ const CinemaDetailPage = () => {
     return { day, dateStr: `${dayNum}/${month}` };
   };
 
-  if (loading) {
-    return (
-      <div className="cinema-detail-loading">
-        <div className="loading-spinner"></div>
-        <p>{t('LoadingCinemaData')}</p>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="cinema-detail-error">
@@ -176,20 +166,20 @@ const CinemaDetailPage = () => {
     );
   }
 
-  if (!cinema) {
+  if (!loading && !cinema) {
     return (
       <div className="cinema-detail-error">
         <div className="error-content">
           <h2>{t('CinemaNotFound')}</h2>
           <p>{t('CinemaNotFoundDescription')}</p>
           <button onClick={() => navigate('/')} className="back-button">
-
             {t('BackToHome')}
           </button>
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="cinema-detail-page">
@@ -205,61 +195,72 @@ const CinemaDetailPage = () => {
       {/* Cinema Info */}
       <div className="cinema-info-section">
         <div className="cinema-info-card">
-          <div className="cinema-header">
-            <div className="cinema-logo">
-              {cinema.imageUrl ? (
-                <img
-                  src={cinema.imageUrl}
-                  alt={cinema.name}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div
-                className="cinema-placeholder"
-                style={{ display: cinema.imageUrl ? 'none' : 'flex' }}
-              >
-              </div>
+          {loading ? (
+            <div style={{ padding: '20px 0' }}>
+              <div style={{ width: '40%', height: 24, background: '#e2e8f0', borderRadius: 6, marginBottom: 12 }} />
+              <div style={{ width: '70%', height: 16, background: '#f1f5f9', borderRadius: 4, marginBottom: 8 }} />
+              <div style={{ width: '30%', height: 16, background: '#f1f5f9', borderRadius: 4 }} />
             </div>
-
-            <div className="cinema-info">
-              <h2 className="cinema-name">{cinema.name}</h2>
-              <p className="cinema-address">{cinema.address}</p>
-
-              <div className="cinema-links">
-                <div className="cinema-link">
-                  <MapPin size={16} />
-                  <a
-                    href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d71201.48065974319!2d106.56698455245727!3d10.784670077217974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752dcece7b50db%3A0xf53f7643a9134531!2zQUVPTiBNQUxMIELDrG5oIFTDom4!5e1!3m2!1svi!2s!4v1758431025675!5m2!1svi!2s"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ marginLeft: "5px", textDecoration: "none", color: "inherit" }}
+          ) : cinema && (
+            <>
+              <div className="cinema-header">
+                <div className="cinema-logo">
+                  {cinema.imageUrl ? (
+                    <img
+                      src={cinema.imageUrl}
+                      alt={cinema.name}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className="cinema-placeholder"
+                    style={{ display: cinema.imageUrl ? 'none' : 'flex' }}
                   >
-                    {t('Map')}
-                  </a>
+                  </div>
                 </div>
 
-                <div className="cinema-link">
-                  <Globe size={16} />
-                  <span>{cinema.city}</span>
+                <div className="cinema-info">
+                  <h2 className="cinema-name">{cinema.name}</h2>
+                  <p className="cinema-address">{cinema.address}</p>
+
+                  <div className="cinema-links">
+                    <div className="cinema-link">
+                      <MapPin size={16} />
+                      <a
+                        href="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d71201.48065974319!2d106.56698455245727!3d10.784670077217974!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31752dcece7b50db%3A0xf53f7643a9134531!2zQUVPTiBNQUxMIELDrG5oIFTDom4!5e1!3m2!1svi!2s!4v1758431025675!5m2!1svi!2s"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ marginLeft: "5px", textDecoration: "none", color: "inherit" }}
+                      >
+                        {t('Map')}
+                      </a>
+                    </div>
+
+                    <div className="cinema-link">
+                      <Globe size={16} />
+                      <span>{cinema.city}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="cinema-description">
-            {cinema.description ? (
-              <p>{cinema.description}</p>
-            ) : (
-              <div className="no-description">
-                <p>{t('CinemaDescriptionNotFound')}</p>
+              <div className="cinema-description">
+                {cinema.description ? (
+                  <p>{cinema.description}</p>
+                ) : (
+                  <div className="no-description">
+                    <p>{t('CinemaDescriptionNotFound')}</p>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
       </div>
+
 
       {/* Movies Section */}
       <div className="movies-section">

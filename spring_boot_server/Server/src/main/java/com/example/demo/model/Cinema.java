@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,17 +17,21 @@ import lombok.Data;
 public class Cinema {
     @Id
     private String id;
+    @Indexed
     private String name;
     private String address;
+    @Indexed
     private String city;
     private String phone;
     private String email;
     private String description;
     private List<String> facilities; 
     private String imageUrl;
+    @Indexed
     private String status; 
     private int totalRooms;
     private int totalSeats;
+    @Indexed
     private List<String> movieIds; 
     private String openingHours; 
     private String website;

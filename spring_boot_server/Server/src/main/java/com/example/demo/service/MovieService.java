@@ -39,9 +39,11 @@ public class MovieService {
     private final MovieSyncService movieSyncService;
     private final ElasticsearchOperations elasticsearchOperations;
 
+    @Cacheable(value = "movies", key = "'all'")
     public List<Movie> getAllMovies() {
         return movieRepository.findAll();
     }
+
 
     public Optional<Movie> getMovieById(String id) {
         return Optional.ofNullable(getMovieFromCacheOrDb(id));
@@ -149,39 +151,24 @@ public class MovieService {
     }
 
     public List<Movie> getMoviesByGenre(String genre) {
-        List<Movie> allMovies = movieRepository.findAll();
-        String lowerGenre = genre.toLowerCase();
-        return allMovies.stream()
-                .filter(movie -> {
-                    if (movie.getGenres() != null) {
-                        for (String g : movie.getGenres()) {
-                            if (g != null && g.toLowerCase().contains(lowerGenre)) {
-                                return true;
-                            }
-                        }
-                    }
-                    return movie.getGenre() != null &&
-                            movie.getGenre().toLowerCase().contains(lowerGenre);
-                })
-                .toList();
+        // Push filter to MongoDB — avoids full collection scan in Java
+        return movieRepository.findByGenreContainingIgnoreCase(genre);
     }
 
     public List<Movie> getFeaturedMovies(double minRating) {
-        List<Movie> allMovies = movieRepository.findAll();
-        return allMovies.stream()
+        // Rating is stored as String in MongoDB — still needs Java filtering,
+        // but use cached result via @Cacheable on getAllMovies to avoid extra DB hit
+        return getAllMovies().stream()
                 .filter(movie -> {
                     try {
-                        if (movie.getRating() != null) {
-                            double rating = Double.parseDouble(movie.getRating());
-                            return rating >= minRating;
+                        if (movie.getRating() != null && !movie.getRating().isBlank()) {
+                            return Double.parseDouble(movie.getRating()) >= minRating;
                         }
-                        if (movie.getScore() != null) {
-                            double score = Double.parseDouble(movie.getScore());
-                            return score >= minRating;
+                        if (movie.getScore() != null && !movie.getScore().isBlank()) {
+                            return Double.parseDouble(movie.getScore()) >= minRating;
                         }
-                        if (movie.getVoteAverage() != null) {
-                            double voteAvg = Double.parseDouble(movie.getVoteAverage());
-                            return voteAvg >= minRating;
+                        if (movie.getVoteAverage() != null && !movie.getVoteAverage().isBlank()) {
+                            return Double.parseDouble(movie.getVoteAverage()) >= minRating;
                         }
                         return false;
                     } catch (NumberFormatException e) {
@@ -192,21 +179,15 @@ public class MovieService {
     }
 
     public List<Movie> getMoviesByYear(String year) {
-        List<Movie> allMovies = movieRepository.findAll();
-        return allMovies.stream()
-                .filter(movie -> {
-                    if (movie.getReleaseYear() != null && movie.getReleaseYear().equals(year)) {
-                        return true;
-                    }
-                    if (movie.getYear() != null && movie.getYear().equals(year)) {
-                        return true;
-                    }
-                    if (movie.getReleaseDate() != null && movie.getReleaseDate().contains(year)) {
-                        return true;
-                    }
-                    return false;
-                })
-                .toList();
+        // Push to MongoDB where possible, merge results in memory
+        List<Movie> byReleaseYear = movieRepository.findByReleaseYear(year);
+        List<Movie> byYear = movieRepository.findByYear(year);
+
+        // Merge and deduplicate by ID
+        Map<String, Movie> merged = new java.util.LinkedHashMap<>();
+        byReleaseYear.forEach(m -> merged.put(m.getId(), m));
+        byYear.forEach(m -> merged.putIfAbsent(m.getId(), m));
+        return new ArrayList<>(merged.values());
     }
 
     @Caching(evict = {

@@ -96,17 +96,18 @@ services:
     networks:
       - cinema-network
 
-  mongo-bi-connector:
-    image: ghcr.io/hasura/mongo-data-connector:v0.3.2
-    container_name: mongo-bi-connector
-    restart: unless-stopped
-    ports:
-      - "3307:3307"
-    environment:
-      - MONGODB_URI=mongodb+srv://huynhanhkhoa2707:Khoa123@react.gzfixip.mongodb.net/react?authSource=admin
-      - CONNECTOR_PORT=3307
-    networks:
-      - cinema-network
+#  mongo-bi-connector:
+#    image: ghcr.io/hasura/mongo-data-connector:v0.3.2
+#    container_name: mongo-bi-connector
+#    restart: unless-stopped
+#    ports:
+#      - "3307:3307"
+#    environment:
+#      - MONGODB_URI=mongodb+srv://huynhanhkhoa2707:Khoa123@react.gzfixip.mongodb.net/react?authSource=admin
+#      - CONNECTOR_PORT=3307
+#    networks:
+#      - cinema-network
+
 
 volumes:
   elasticsearch-data:

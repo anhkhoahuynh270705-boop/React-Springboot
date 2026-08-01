@@ -131,32 +131,49 @@ const CreateCinemaModal = ({ onClose, onCinemaCreated }) => {
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setErrors(prev => ({ ...prev, imageUrl: 'Chỉ chấp nhận file hình ảnh (jpg, png, webp...)' }));
         return;
       }
-      
-      // Validate file size (e.g., 2MB limit)
-      const maxSize = 2 * 1024 * 1024; // 2MB
-      if (file.size > maxSize) {
-        setErrors(prev => ({ ...prev, imageUrl: 'Kích thước ảnh không được vượt quá 2MB' }));
-        return;
-      }
 
-      // Clear image error if valid file is selected
       setErrors(prev => ({ ...prev, imageUrl: '' }));
 
       const reader = new FileReader();
       reader.onload = (event) => {
-        setFormData(prev => ({
-          ...prev,
-          imageUrl: event.target.result
-        }));
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 500;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+
+          setFormData(prev => ({
+            ...prev,
+            imageUrl: compressedBase64
+          }));
+        };
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     }
   };
+
 
   return (
     <div className={styles.modalOverlay}>

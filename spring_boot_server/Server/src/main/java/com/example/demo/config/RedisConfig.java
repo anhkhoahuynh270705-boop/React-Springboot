@@ -2,8 +2,13 @@ package com.example.demo.config;
 
 import java.time.Duration;
 import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.annotation.CachingConfigurer;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.CacheErrorHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,6 +16,7 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.RedisSentinelConfiguration;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
@@ -26,26 +32,27 @@ import io.lettuce.core.internal.HostAndPort;
 
 @Configuration
 @EnableCaching
-public class RedisConfig {
-        // docker run
-        @Value("${spring.data.redis.sentinel.master:mymaster}")
+public class RedisConfig implements CachingConfigurer {
+
+        private static final Logger log = LoggerFactory.getLogger(RedisConfig.class);
+
+        @Value("${spring.data.redis.sentinel.master:}")
         private String sentinelMaster;
 
-        @Value("${spring.data.redis.sentinel.nodes:127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381}")
+        @Value("${spring.data.redis.sentinel.nodes:}")
         private String sentinelNodes;
+
+        @Value("${spring.data.redis.host:localhost}")
+        private String redisHost;
+
+        @Value("${spring.data.redis.port:6379}")
+        private int redisPort;
 
         @Bean
         public LettuceConnectionFactory redisConnectionFactory() {
-                RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration();
-                sentinelConfig.setMaster(sentinelMaster);
-                Arrays.stream(sentinelNodes.split(","))
-                                .map(String::trim)
-                                .forEach(node -> {
-                                        String[] parts = node.split(":");
-                                        sentinelConfig.sentinel(parts[0], Integer.parseInt(parts[1]));
-                                });
+                boolean useSentinel = sentinelMaster != null && !sentinelMaster.isBlank() 
+                                    && sentinelNodes != null && !sentinelNodes.isBlank();
 
-                // Remap any address on port 6379 to 127.0.0.1:6379
                 MappingSocketAddressResolver resolver = MappingSocketAddressResolver.create(
                                 DnsResolver.jvmDefault(),
                                 hostAndPort -> {
@@ -63,13 +70,27 @@ public class RedisConfig {
                                 .clientResources(clientResources)
                                 .clientOptions(ClientOptions.builder()
                                                 .socketOptions(SocketOptions.builder()
-                                                                .connectTimeout(Duration.ofSeconds(5))
+                                                                .connectTimeout(Duration.ofSeconds(3))
                                                                 .build())
                                                 .build())
-                                .commandTimeout(Duration.ofSeconds(5))
+                                .commandTimeout(Duration.ofSeconds(3))
                                 .build();
 
-                return new LettuceConnectionFactory(sentinelConfig, clientConfig);
+                if (useSentinel) {
+                        RedisSentinelConfiguration sentinelConfig = new RedisSentinelConfiguration();
+                        sentinelConfig.setMaster(sentinelMaster);
+                        Arrays.stream(sentinelNodes.split(","))
+                                        .map(String::trim)
+                                        .filter(node -> !node.isEmpty())
+                                        .forEach(node -> {
+                                                String[] parts = node.split(":");
+                                                sentinelConfig.sentinel(parts[0], Integer.parseInt(parts[1]));
+                                        });
+                        return new LettuceConnectionFactory(sentinelConfig, clientConfig);
+                } else {
+                        RedisStandaloneConfiguration standaloneConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
+                        return new LettuceConnectionFactory(standaloneConfig, clientConfig);
+                }
         }
 
         @Bean
@@ -88,5 +109,35 @@ public class RedisConfig {
                 return RedisCacheManager.builder(connectionFactory)
                                 .cacheDefaults(defaultConfig)
                                 .build();
+        }
+
+        @Override
+        public CacheErrorHandler errorHandler() {
+                return new CacheErrorHandler() {
+                        @Override
+                        public void handleCacheGetError(RuntimeException exception, Cache cache, Object key) {
+                                log.warn("Redis Cache GET failed for key [{}] in cache [{}]: {}. Falling back to database.",
+                                                key, cache.getName(), exception.getMessage());
+                        }
+
+                        @Override
+                        public void handleCachePutError(RuntimeException exception, Cache cache, Object key,
+                                        Object value) {
+                                log.warn("Redis Cache PUT failed for key [{}] in cache [{}]: {}",
+                                                key, cache.getName(), exception.getMessage());
+                        }
+
+                        @Override
+                        public void handleCacheEvictError(RuntimeException exception, Cache cache, Object key) {
+                                log.warn("Redis Cache EVICT failed for key [{}] in cache [{}]: {}",
+                                                key, cache.getName(), exception.getMessage());
+                        }
+
+                        @Override
+                        public void handleCacheClearError(RuntimeException exception, Cache cache) {
+                                log.warn("Redis Cache CLEAR failed for cache [{}]: {}",
+                                                cache.getName(), exception.getMessage());
+                        }
+                };
         }
 }

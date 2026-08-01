@@ -200,14 +200,6 @@ const CinemaManagement = () => {
     return colorMap[status] || '#6b7280';
   };
 
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
-        <p>{t('Loading cinema list...')}</p>
-      </div>
-    );
-  }
 
   return (
     <div className={styles.cinemaManagement}>
@@ -259,125 +251,143 @@ const CinemaManagement = () => {
       </div>
 
       <div className={styles.cinemaGrid}>
-        {filteredCinemas.map((cinema, index) => (
-          <div key={cinema.id || cinema._id || index} className={styles.cinemaCard}>
-            <div className={styles.cinemaImage}>
-              {cinema.imageUrl ? (
-                <img
-                  src={cinema.imageUrl}
-                  alt={cinema.name}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div
-                className={styles.placeholderImage}
-                style={{ display: cinema.imageUrl ? 'none' : 'flex' }}
-              >
-                <Film size={40} />
-              </div>
-              <div
-                className={styles.ticketSalesBadge}
-                style={{ backgroundColor: getStatusColor(cinema.status) }}
-              >
-                {formatStatus(cinema.status)}
-              </div>
-            </div>
-
-            <div className={styles.cinemaContent}>
-              <h3 className={styles.cinemaName}>{cinema.name}</h3>
-
-              <div className={styles.cinemaInfo}>
-                <div className={styles.infoItem}>
-                  <MapPin size={16} />
-                  <span>{cinema.address}</span>
-                </div>
-                <div className={styles.infoItem}>
-                  <MapPin size={16} />
-                  <span>{cinema.city}</span>
-                </div>
-                {cinema.phone && (
-                  <div className={styles.infoItem}>
-                    <Phone size={16} />
-                    <span>{cinema.phone}</span>
+        {loading
+          ? Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className={`${styles.cinemaCard} ${styles.skeletonCard}`}>
+                <div className={styles.skeletonImage} />
+                <div className={styles.cinemaContent}>
+                  <div className={styles.skeletonLine} style={{ width: '60%', height: 20, marginBottom: 12 }} />
+                  <div className={styles.skeletonLine} style={{ width: '90%', height: 14, marginBottom: 8 }} />
+                  <div className={styles.skeletonLine} style={{ width: '70%', height: 14, marginBottom: 8 }} />
+                  <div className={styles.skeletonLine} style={{ width: '50%', height: 14, marginBottom: 20 }} />
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <div className={styles.skeletonLine} style={{ width: 80, height: 30, borderRadius: 6 }} />
+                    <div className={styles.skeletonLine} style={{ width: 80, height: 30, borderRadius: 6 }} />
+                    <div className={styles.skeletonLine} style={{ width: 80, height: 30, borderRadius: 6 }} />
                   </div>
-                )}
-                {cinema.email && (
-                  <div className={styles.infoItem}>
-                    <Mail size={16} />
-                    <span>{cinema.email}</span>
+                </div>
+              </div>
+            ))
+          : filteredCinemas.map((cinema, index) => (
+              <div key={cinema.id || cinema._id || index} className={styles.cinemaCard}>
+                <div className={styles.cinemaImage}>
+                  {cinema.imageUrl ? (
+                    <img
+                      src={cinema.imageUrl}
+                      alt={cinema.name}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                  ) : null}
+                  <div
+                    className={styles.placeholderImage}
+                    style={{ display: cinema.imageUrl ? 'none' : 'flex' }}
+                  >
+                    <Film size={40} />
                   </div>
-                )}
-              </div>
+                  <div
+                    className={styles.ticketSalesBadge}
+                    style={{ backgroundColor: getStatusColor(cinema.status) }}
+                  >
+                    {formatStatus(cinema.status)}
+                  </div>
+                </div>
 
-              <div className={styles.cinemaStats}>
-                <div className={styles.statItem}>
-                  <Users size={16} />
-                  <span>{cinema.totalSeats || 0} {t('seats')}</span>
-                </div>
-                <div className={styles.statItem}>
-                  <Clock size={16} />
-                  <span>{cinema.totalRooms || 0} {t('rooms')}</span>
-                </div>
-                <div className={styles.statItem}>
-                  <Star size={16} />
-                  <span>{movieCounts[cinema.id] || cinema.movieIds?.length || 0} {t('movies')}</span>
-                </div>
-              </div>
+                <div className={styles.cinemaContent}>
+                  <h3 className={styles.cinemaName}>{cinema.name}</h3>
 
-              {cinema.facilities && cinema.facilities.length > 0 && (
-                <div className={styles.facilities}>
-                  {cinema.facilities.slice(0, 3).map((facility, index) => (
-                    <span key={index} className={styles.facilityTag}>
-                      {facility}
-                    </span>
-                  ))}
-                  {cinema.facilities.length > 3 && (
-                    <span className={styles.moreFacilities}>
-                      +{cinema.facilities.length - 3} {t('other')}
-                    </span>
+                  <div className={styles.cinemaInfo}>
+                    <div className={styles.infoItem}>
+                      <MapPin size={16} />
+                      <span>{cinema.address}</span>
+                    </div>
+                    <div className={styles.infoItem}>
+                      <MapPin size={16} />
+                      <span>{cinema.city}</span>
+                    </div>
+                    {cinema.phone && (
+                      <div className={styles.infoItem}>
+                        <Phone size={16} />
+                        <span>{cinema.phone}</span>
+                      </div>
+                    )}
+                    {cinema.email && (
+                      <div className={styles.infoItem}>
+                        <Mail size={16} />
+                        <span>{cinema.email}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.cinemaStats}>
+                    <div className={styles.statItem}>
+                      <Users size={16} />
+                      <span>{cinema.totalSeats || 0} {t('seats')}</span>
+                    </div>
+                    <div className={styles.statItem}>
+                      <Clock size={16} />
+                      <span>{cinema.totalRooms || 0} {t('rooms')}</span>
+                    </div>
+                    <div className={styles.statItem}>
+                      <Star size={16} />
+                      <span>{movieCounts[cinema.id] || cinema.movieIds?.length || 0} {t('movies')}</span>
+                    </div>
+                  </div>
+
+                  {cinema.facilities && cinema.facilities.length > 0 && (
+                    <div className={styles.facilities}>
+                      {cinema.facilities.slice(0, 3).map((facility, idx) => (
+                        <span key={idx} className={styles.facilityTag}>
+                          {facility}
+                        </span>
+                      ))}
+                      {cinema.facilities.length > 3 && (
+                        <span className={styles.moreFacilities}>
+                          +{cinema.facilities.length - 3} {t('other')}
+                        </span>
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
 
-              <div className={styles.cinemaActions}>
-                <button
-                  onClick={() => handleViewCinema(cinema)}
-                  className={styles.actionButton}
-                  title={t('View details')}
-                >
-                  <Eye size={18} />
-                </button>
-                <button
-                  onClick={() => handleManageMovies(cinema)}
-                  className={styles.actionButton}
-                  title={t('Manage movies')}
-                >
-                  <Film size={18} />
-                </button>
-                <button
-                  onClick={() => handleEditCinema(cinema)}
-                  className={styles.actionButton}
-                  title={t('Edit')}
-                >
-                  <Edit size={18} />
-                </button>
-                <button
-                  onClick={() => handleDeleteCinema(cinema.id)}
-                  className={`${styles.actionButton} ${styles.deleteButton}`}
-                  title={t('Delete')}
-                >
-                  <Trash2 size={18} />
-                </button>
+                  <div className={styles.cinemaActions}>
+                    <button
+                      onClick={() => handleViewCinema(cinema)}
+                      className={styles.actionButton}
+                      title={t('View details')}
+                    >
+                      <Eye size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleManageMovies(cinema)}
+                      className={styles.actionButton}
+                      title={t('Manage movies')}
+                    >
+                      <Film size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleEditCinema(cinema)}
+                      className={styles.actionButton}
+                      title={t('Edit')}
+                    >
+                      <Edit size={18} />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCinema(cinema.id)}
+                      className={`${styles.actionButton} ${styles.deleteButton}`}
+                      title={t('Delete')}
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        ))}
+            ))
+        }
       </div>
 
-      {filteredCinemas.length === 0 && (
+      {!loading && filteredCinemas.length === 0 && (
         <div className={styles.emptyState}>
           <MapPin size={64} />
           <h3>{t('No cinemas found')}</h3>

@@ -37,6 +37,7 @@ public class MovieController {
             List<Movie> movies = movieService.getAllMovies();
             return ResponseEntity.ok(movies);
         } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(MovieController.class).error("Error fetching movies: ", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
