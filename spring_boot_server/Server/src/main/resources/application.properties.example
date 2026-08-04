@@ -1,10 +1,14 @@
 # MongoDB Configuration
 spring.data.mongodb.uri=YOUR_MONGODB_URI
 spring.data.mongodb.database=react
+
 # Spring Boot Configuration
 spring.application.name=movie-booking-api
 
-#Stripe key
+# Change to 'prod' when deploying with Redis Sentinel running.
+spring.profiles.active=dev
+
+# Stripe key
 stripe.secret.key=YOUR_STRIPE_SECRET_KEY
 
 # OpenRouter API Configuration 
@@ -12,11 +16,10 @@ openrouter.api.key=YOUR_OPENROUTER_API_KEY
 
 # Google OAuth Configuration
 google.client-id=YOUR_GOOGLE_CLIENT_ID
-google.oauth.client-id=${google.client-id}
 google.oauth.redirect-uri=http://localhost:5173
 google.oauth.scope=openid email profile
 
-#Github OAuth Configuration
+# Github OAuth Configuration
 github.client.id=YOUR_GITHUB_CLIENT_ID
 github.client.secret=YOUR_GITHUB_CLIENT_SECRET
 github.redirect.uri=http://localhost:8080/api/auth/github/callback
@@ -32,17 +35,44 @@ spring.mail.properties.mail.smtp.starttls.enable=true
 # Redis Configuration
 spring.data.redis.host=localhost
 spring.data.redis.port=6379
+spring.data.redis.sentinel.master=mymaster
+spring.data.redis.sentinel.nodes=127.0.0.1:26379,127.0.0.1:26380,127.0.0.1:26381
 spring.cache.type=redis
 spring.cache.redis.time-to-live=600000
 
-#JWT
+# Spring Actuator & Prometheus Configuration
+management.endpoints.web.exposure.include=prometheus,health,info
+management.endpoint.prometheus.enabled=true
+management.endpoint.health.show-details=always
+management.metrics.tags.application=${spring.application.name}
+
+# Elastic Search
+spring.elasticsearch.uris=http://localhost:9200
+spring.elasticsearch.username=elastic
+spring.elasticsearch.password=YOUR_ELASTICSEARCH_PASSWORD
+
+# JWT
 app.jwt.secret=YOUR_JWT_SECRET
 app.jwt.expiration-ms=86400000
 
 # Admin key
 admin.secret-key=YOUR_ADMIN_SECRET_KEY
-#Momo Qr
+
+# MoMo Payment Gateway (Sandbox)
 momo.static-qr-url=http://localhost:5173/payment-icons/momo-static-qr.jpg
+momo.partner-code=MOMO
+momo.access-key=YOUR_MOMO_ACCESS_KEY
+momo.secret-key=YOUR_MOMO_SECRET_KEY
+momo.endpoint=https://test-payment.momo.vn/v2/gateway/api/create
+momo.ipn-url=https://YOUR_NGROK_DOMAIN/api/momo/webhook
+
+# ZaloPay Payment Gateway (Sandbox)
+zalopay.app-id=YOUR_ZALOPAY_APP_ID
+zalopay.key1=YOUR_ZALOPAY_KEY1
+zalopay.key2=YOUR_ZALOPAY_KEY2
+zalopay.app-user=user123
+zalopay.endpoint=https://sb-openapi.zalopay.vn/v2/create
+zalopay.callback-url=https://YOUR_NGROK_DOMAIN/api/zalopay/webhook
 
 # Unique Index
 spring.data.mongodb.auto-index-creation=true

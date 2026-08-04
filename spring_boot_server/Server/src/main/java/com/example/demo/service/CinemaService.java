@@ -36,8 +36,7 @@ public class CinemaService {
                 int cleanedCount = 0;
                 for (Cinema cinema : cinemas) {
                     boolean modified = false;
-                    // Strip uncompressed oversized base64 (>150KB), but keep compressed uploaded
-                    // images
+                    // Strip uncompressed oversized base64 (>150KB), but keep compressed uploadeds
                     if (cinema.getImageUrl() != null && cinema.getImageUrl().length() > 150000) {
                         cinema.setImageUrl(DEFAULT_CINEMA_IMAGE);
                         modified = true;

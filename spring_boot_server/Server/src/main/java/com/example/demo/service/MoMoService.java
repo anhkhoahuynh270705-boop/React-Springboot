@@ -59,7 +59,7 @@ public class MoMoService {
         String orderInfo = description != null ? description : "Movie ticket payment";
         String redirectUrl = frontendUrl + "/payment-result?method=momo&orderId=" + orderId;
         String extraData = "";
-        String requestType = "payWithCC";
+        String requestType = "payWithMethod";
 
         // Build raw signature string
         String rawSignature = "accessKey=" + accessKey

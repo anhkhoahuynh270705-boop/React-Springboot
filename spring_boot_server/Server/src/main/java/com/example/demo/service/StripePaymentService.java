@@ -156,8 +156,7 @@ public class StripePaymentService {
         if (session.getClientReferenceId() != null && !session.getClientReferenceId().isBlank()) {
             return session.getClientReferenceId();
         }
-        // Fall back to ticket details
-        StringBuilder sb = new StringBuilder("Credit card – ");
+        StringBuilder sb = new StringBuilder();
         if (ticket.getMovieTitle() != null)
             sb.append(ticket.getMovieTitle());
         if (ticket.getCinemaName() != null)

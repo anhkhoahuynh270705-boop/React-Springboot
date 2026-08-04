@@ -20,7 +20,7 @@ import { useHoneypot, HoneypotField, HoneypotUrlField } from '../../../services/
 import './LoginModal.css';
 
 const LoginModal = ({ isOpen, onClose, onLogin }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const {
     honeypotValue,
     setHoneypotValue,
@@ -432,7 +432,8 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
               text: 'signin_with',
               shape: 'rectangular',
               logo_alignment: 'left',
-              width: buttonWidth
+              width: buttonWidth,
+              locale: i18n.language === 'vi' ? 'vi' : 'en'
             }
           );
         } catch (error) {
@@ -444,7 +445,7 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
         }
       }
     }
-  }, [isOpen, isAdmin, googleButtonRendered, onLogin, onClose, navigate, t]);
+  }, [isOpen, isAdmin, googleButtonRendered, onLogin, onClose, navigate, t, i18n.language]);
 
   const handleGithubLogin = () => {
     loginWithGithub();

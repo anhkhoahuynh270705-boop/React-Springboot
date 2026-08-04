@@ -2,8 +2,7 @@ package com.example.demo.config;
 
 import java.time.Duration;
 import java.util.Arrays;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.annotation.CachingConfigurer;
@@ -30,11 +29,10 @@ import io.lettuce.core.resource.DnsResolver;
 import io.lettuce.core.resource.MappingSocketAddressResolver;
 import io.lettuce.core.internal.HostAndPort;
 
+@Slf4j
 @Configuration
 @EnableCaching
 public class RedisConfig implements CachingConfigurer {
-
-        private static final Logger log = LoggerFactory.getLogger(RedisConfig.class);
 
         @Value("${spring.data.redis.sentinel.master:}")
         private String sentinelMaster;
@@ -50,8 +48,8 @@ public class RedisConfig implements CachingConfigurer {
 
         @Bean
         public LettuceConnectionFactory redisConnectionFactory() {
-                boolean useSentinel = sentinelMaster != null && !sentinelMaster.isBlank() 
-                                    && sentinelNodes != null && !sentinelNodes.isBlank();
+                boolean useSentinel = sentinelMaster != null && !sentinelMaster.isBlank()
+                                && sentinelNodes != null && !sentinelNodes.isBlank();
 
                 MappingSocketAddressResolver resolver = MappingSocketAddressResolver.create(
                                 DnsResolver.jvmDefault(),
@@ -88,7 +86,8 @@ public class RedisConfig implements CachingConfigurer {
                                         });
                         return new LettuceConnectionFactory(sentinelConfig, clientConfig);
                 } else {
-                        RedisStandaloneConfiguration standaloneConfig = new RedisStandaloneConfiguration(redisHost, redisPort);
+                        RedisStandaloneConfiguration standaloneConfig = new RedisStandaloneConfiguration(redisHost,
+                                        redisPort);
                         return new LettuceConnectionFactory(standaloneConfig, clientConfig);
                 }
         }

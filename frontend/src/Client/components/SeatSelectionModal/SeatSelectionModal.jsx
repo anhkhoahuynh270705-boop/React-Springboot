@@ -61,6 +61,13 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
       setLoading(true);
       const seatsData = await getSeatsByShowtime(showtime.id);
       setSeats(seatsData);
+      // Auto re-select seats temporarily locked by this user (Redis lock, not yet permanently booked)
+      const myLockedSeats = seatsData.filter(
+        seat => seat.tempLockedBy === userId
+      );
+      if (myLockedSeats.length > 0) {
+        setSelectedSeats(myLockedSeats);
+      }
     } catch (error) {
       console.error('Error fetching seats:', error);
       setMessage(t('Unable to load seat list'));
@@ -70,7 +77,10 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
   };
 
   const handleSeatClick = (seat) => {
-    if (seat.booked && seat.bookedBy && seat.bookedBy.trim() !== '') return;
+    // Permanently booked in DB → blocked for everyone
+    if (seat.booked) return;
+    // Temp locked by someone else in Redis → blocked
+    if (seat.tempLockedBy && seat.tempLockedBy !== userId) return;
 
     setSelectedSeats(prev => {
       const isSelected = prev.find(s => s.id === seat.id);
@@ -313,7 +323,9 @@ const SeatSelectionModal = ({ isOpen, onClose, showtime, movie, userId }) => {
                 >
                   {seats.map(seat => {
                     const isSelected = selectedSeats.find(s => s.id === seat.id);
-                    const isActuallyBooked = seat.booked && seat.bookedBy && seat.bookedBy.trim() !== '';
+                    // Permanently booked in DB (by anyone) OR temp locked by someone else
+                    const isActuallyBooked = seat.booked ||
+                      (seat.tempLockedBy && seat.tempLockedBy !== userId);
                     const seatType = getSeatType(seat);
                     const className = `seat seat-${seatType.toLowerCase()} ${isActuallyBooked ? 'booked' : ''} ${isSelected ? 'selected' : ''
                       }`;

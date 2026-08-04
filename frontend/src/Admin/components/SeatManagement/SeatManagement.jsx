@@ -318,14 +318,13 @@ const SeatManagement = () => {
     if (!dateString) return 'Not Updated yet';
 
     try {
-      const date = new Date(dateString);
+      const normalized = dateString.includes('T') ? dateString : `${dateString}T00:00:00`;
+      const date = new Date(normalized);
 
       return date.toLocaleDateString('vi-VN', {
         year: 'numeric',
         month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
+        day: '2-digit'
       });
     } catch (error) {
       console.error('Error formatting date:', error);
@@ -354,9 +353,9 @@ const SeatManagement = () => {
   const getSeatTypeClass = (seat) => {
     const type = (seat.seatType || 'REGULAR').toUpperCase();
 
-    if (type === 'VIP') 
+    if (type === 'VIP')
       return styles.vip;
-    if (type === 'COUPLE') 
+    if (type === 'COUPLE')
       return styles.couple;
 
     return styles.regular;
@@ -386,18 +385,16 @@ const SeatManagement = () => {
     <div className={styles.seatManagement}>
       <div className={styles.subTabs}>
         <button
-          className={`${styles.subTabButton} ${
-            seatTab === 'layout' ? styles.activeSubTab : ''
-          }`}
+          className={`${styles.subTabButton} ${seatTab === 'layout' ? styles.activeSubTab : ''
+            }`}
           onClick={() => setSeatTab('layout')}
         >
           Layout Management
         </button>
 
         <button
-          className={`${styles.subTabButton} ${
-            seatTab === 'seats' ? styles.activeSubTab : ''
-          }`}
+          className={`${styles.subTabButton} ${seatTab === 'seats' ? styles.activeSubTab : ''
+            }`}
           onClick={() => setSeatTab('seats')}
         >
           Seat By Showtime

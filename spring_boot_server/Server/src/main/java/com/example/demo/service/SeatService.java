@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import com.example.demo.model.Showtime;
 import com.example.demo.repository.SeatLayoutRepository;
 import com.example.demo.repository.SeatRepository;
 import com.example.demo.repository.ShowtimeRepository;
+import com.example.demo.util.SeatLockUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +28,7 @@ public class SeatService {
     private final SeatRepository seatRepository;
     private final ShowtimeRepository showtimeRepository;
     private final SeatLayoutRepository seatLayoutRepository;
+    private final StringRedisTemplate redisTemplate;
 
     public List<Seat> getAllSeats() {
         return seatRepository.findAll();
@@ -36,7 +39,18 @@ public class SeatService {
     }
 
     public List<Seat> getSeatsByShowtime(String showtimeId) {
-        return seatRepository.findByShowtimeId(showtimeId);
+        List<Seat> seats = seatRepository.findByShowtimeId(showtimeId);
+        // Overlay Redis lock status: only for seats NOT permanently booked in DB
+        for (Seat seat : seats) {
+            if (!seat.isBooked()) {
+                String lockOwner = redisTemplate.opsForValue()
+                        .get(SeatLockUtils.lockKey(showtimeId, seat.getId()));
+                if (lockOwner != null) {
+                    seat.setTempLockedBy(lockOwner);
+                }
+            }
+        }
+        return seats;
     }
 
     public Seat createSeat(Seat seat) {

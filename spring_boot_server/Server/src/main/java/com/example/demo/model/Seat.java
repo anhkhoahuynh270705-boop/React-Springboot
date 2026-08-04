@@ -1,6 +1,7 @@
 package com.example.demo.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -24,14 +25,17 @@ public class Seat {
     private int rowIndex;
     private int colIndex;
     private int colSpan = 1;
-    
+
     private boolean booked;
     private String bookedBy;
     private String bookedAt;
-    
+
     // Seat type: REGULAR, VIP, COUPLE
     private String seatType = "REGULAR";
-    
+
     // Price for this seat (in VND)
     private double price = 0.0;
+
+    @Transient
+    private String tempLockedBy;
 }
